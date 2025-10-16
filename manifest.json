@@ -1,0 +1,9 @@
+{
+  "name": "StudySpace",
+  "short_name": "StudySpace",
+  "description": "Plataforma de Estudio con Repaso Espaciado",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000"
+}

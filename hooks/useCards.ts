@@ -1,0 +1,250 @@
+import { useState } from "react";
+import { Card, CreateCardData, UpdateCardData } from "../src/types/cards";
+import { useAuth } from "../src/context/AuthContext";
+import { API_URL } from "../src/config";
+
+const API_BASE_URL = API_URL || "http://localhost:3000/api"; // añadir al .env ¿?
+
+export const useCards = () => {
+  const [cards, setCards] = useState<Card[]>([]);
+  const [allCards, setAllCards] = useState<Card[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    pageSize: 10,
+  });
+  const { user } = useAuth();
+
+  //funcion para obtener token
+  const getToken = () => {
+    const token = localStorage.getItem("token");
+    if (!token)
+      throw new Error("No se encontró token. Por favor inicia sesión.");
+    return token;
+  };
+
+  const fetchCardsByTopic = async (topicId: number): Promise<Card[]> => {
+    if (!user) throw new Error("Usuario no autenticado");
+
+    setLoading(true);
+    setError(null);
+    try {
+      const token = getToken();
+      const response = await fetch(`${API_BASE_URL}/cards/topic/${topicId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error("Error al obtener tarjetas");
+
+      const data = await response.json();
+      const cardsArray: Card[] = data.cards || [];
+      setAllCards(cardsArray);
+      const pageSize = 10;
+      const totalPages = Math.ceil(cardsArray.length / pageSize);
+      setPagination({
+        currentPage: 1,
+        totalPages,
+        totalItems: cardsArray.length,
+        pageSize,
+      });
+      setCards(cardsArray.slice(0, pageSize));
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error desconocido");
+      setCards([]);
+      setAllCards([]);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const searchCards = async (
+    searchTerm: string,
+    page: number = 1,
+    limit: number = 10
+  ): Promise<Card[]> => {
+    if (!user) throw new Error("Usuario no autenticado");
+
+    setLoading(true);
+    setError(null);
+    try {
+      const token = getToken();
+      const response = await fetch(
+        `${API_BASE_URL}/cards/search?search=${encodeURIComponent(
+          searchTerm
+        )}&page=${page}&limit=${limit}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (!response.ok) throw new Error("Error al buscar tarjetas");
+
+      const data = await response.json();
+      const cardsArray: Card[] = data.cards || [];
+      setCards(cardsArray);
+      const pag = data.pagination || {};
+      setPagination({
+        currentPage: pag.page || page,
+        totalPages:
+          pag.totalPages || Math.ceil((pag.total || 0) / (pag.limit || limit)),
+        totalItems: pag.total || 0,
+        pageSize: pag.limit || limit,
+      });
+      return cardsArray;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error desconocido");
+      setCards([]);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addCard = async (cardData: CreateCardData): Promise<Card> => {
+    if (!user) throw new Error("Usuario no autenticado");
+
+    setLoading(true);
+    setError(null);
+    try {
+      const token = getToken();
+      const response = await fetch(`${API_BASE_URL}/cards`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(cardData),
+      });
+
+      if (!response.ok) throw new Error("Error al crear tarjeta");
+
+      const newCard = await response.json();
+      setAllCards((prev) => [...prev, newCard.card]);
+      setCards((prev) => [...prev, newCard.card]);
+      // Update pagination
+      const newTotal = allCards.length + 1;
+      const pageSize = 10;
+      const newTotalPages = Math.ceil(newTotal / pageSize);
+      setPagination((prev) => ({
+        ...prev,
+        totalItems: newTotal,
+        totalPages: newTotalPages,
+      }));
+      return newCard.card;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error desconocido");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateCard = async (
+    id: number,
+    updates: UpdateCardData
+  ): Promise<Card> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const token = getToken();
+      const response = await fetch(`${API_BASE_URL}/cards/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updates),
+      });
+
+      if (!response.ok) throw new Error("Error al actualizar tarjeta");
+
+      const updatedCard = await response.json();
+      setAllCards((prev) =>
+        prev.map((card) => (card.id === id ? updatedCard.card : card))
+      );
+      setCards(
+        (prev) => prev.map((card) => (card.id === id ? updatedCard.card : card)) //api returns { card: updatedCard }
+      );
+      return updatedCard.card;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error desconocido");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteCard = async (id: number): Promise<void> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const token = getToken();
+      const response = await fetch(`${API_BASE_URL}/cards/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) throw new Error("Error al eliminar tarjeta");
+
+      setAllCards((prev) => prev.filter((card) => card.id !== id));
+      setCards((prev) => prev.filter((card) => card.id !== id));
+      // Update pagination
+      const newTotal = allCards.length - 1;
+      const pageSize = 10;
+      const newTotalPages = Math.ceil(newTotal / pageSize);
+      setPagination((prev) => {
+        const newPag = {
+          ...prev,
+          totalItems: newTotal,
+          totalPages: newTotalPages,
+        };
+        // If current page is now empty and not first, go to previous
+        if (prev.currentPage > 1 && prev.currentPage > newTotalPages) {
+          setTimeout(() => changePage(newTotalPages), 0); // Delay to after state update
+        }
+        return newPag;
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error desconocido");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const changePage = (page: number) => {
+    const pageSize = 10;
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+    setCards(allCards.slice(start, end));
+    setPagination((prev) => ({ ...prev, currentPage: page }));
+  };
+
+  const clearCards = () => {
+    setCards([]);
+    setAllCards([]);
+  };
+
+  return {
+    cards,
+    loading,
+    error,
+    pagination,
+    fetchCardsByTopic,
+    searchCards,
+    changePage,
+    addCard,
+    updateCard,
+    deleteCard,
+    clearCards,
+  };
+};
