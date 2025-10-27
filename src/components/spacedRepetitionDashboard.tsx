@@ -3,6 +3,7 @@ import { useReviews } from "../../hooks/useReviews";
 import ReviewSessionList from "./reviewSessionList";
 import StudySession from "./studySession";
 import ProgressSection from "./progressSection";
+import CalendarWidget from "./calendarWidget";
 import { BookOpen, Clock, TrendingUp, Play } from "lucide-react";
 
 const SpacedRepetitionDashboard: React.FC = () => {
@@ -188,6 +189,17 @@ const SpacedRepetitionDashboard: React.FC = () => {
       </div>
 
       <ProgressSection />
+
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Calendario de sesiones de repaso programadas
+            </h2>
+          </div>
+        </div>
+        <CalendarWidget />
+      </div>
 
       <ReviewSessionList
         sessions={groupedSessions}
