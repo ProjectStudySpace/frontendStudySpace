@@ -20,19 +20,6 @@ const StudySessions = () => {
 
   return (
     <div className="max-w-7xl mx-auto">
-      {/* Calendario */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Calendario de sesiones de repaso programadas
-            </h1>
-          </div>
-        </div>
-        <CalendarWidget />
-      </div>
-
-      {/* Contadores */}
       <SpacedRepetitionDashboard />
     </div>
   );
