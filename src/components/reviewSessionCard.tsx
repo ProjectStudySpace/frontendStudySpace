@@ -18,6 +18,36 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({ session, onSessio
     setCurrentSession(session);
   }, [session]);
 
+  const generateTimeOptions = () => {
+    const times = [];
+    for (let hour = 0; hour < 24; hour++) {
+      const timeString = `${hour.toString().padStart(2, '0')}:00`;
+      times.push(timeString);
+    }
+    return times;
+  };
+  
+  const getAvailableTimes = () => {
+    const allTimes = generateTimeOptions();
+    
+    if (!selectedDate) {
+      return allTimes;
+    }
+    
+    const today = new Date();
+    const isToday = selectedDate.toDateString() === today.toDateString();
+    
+    if (!isToday) {
+      return allTimes;
+    }
+    
+    const currentHour = today.getHours();
+    return allTimes.filter(time => {
+      const hour = parseInt(time.split(':')[0]);
+      return hour > currentHour;
+    });
+  };
+
   const getStatusConfig = (type: string) => {
     switch (type) {
       case 'pending':
@@ -222,19 +252,11 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({ session, onSessio
                   onChange={(e) => setSelectedTime(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 >
-                  <option value="08:00">08:00</option>
-                  <option value="09:00">09:00</option>
-                  <option value="10:00">10:00</option>
-                  <option value="11:00">11:00</option>
-                  <option value="12:00">12:00</option>
-                  <option value="13:00">13:00</option>
-                  <option value="14:00">14:00</option>
-                  <option value="15:00">15:00</option>
-                  <option value="16:00">16:00</option>
-                  <option value="17:00">17:00</option>
-                  <option value="18:00">18:00</option>
-                  <option value="19:00">19:00</option>
-                  <option value="20:00">20:00</option>
+                  {getAvailableTimes().map(time => (
+                    <option key={time} value={time}>
+                      {time}
+                    </option>
+                  ))}
                 </select>
               </div>
 
