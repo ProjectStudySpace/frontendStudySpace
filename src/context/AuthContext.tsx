@@ -58,6 +58,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (response.ok) {
           const data = await response.json();
           setUser(data.user);
+          // Persistir zona horaria en localStorage si viene del backend
+          if (data.user?.userTimezone) {
+            localStorage.setItem("userTimezone", data.user.userTimezone);
+          }
         } else {
           // Token inválido o expirado
           localStorage.removeItem("token");
@@ -85,11 +89,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
+      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const res = await fetch(`${API_URL}/users/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, timezone: userTimezone }),
       });
 
       if (!res.ok) return false;
@@ -97,6 +102,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const data = await res.json();
       setUser(data.user);
       localStorage.setItem("token", data.token);
+      // Persistir zona horaria en localStorage
+      if (data.user?.userTimezone) {
+        localStorage.setItem("userTimezone", data.user.userTimezone);
+      }
       return true;
     } catch (error) {
       console.error(error);
@@ -110,11 +119,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     password: string
   ): Promise<boolean> => {
     try {
+      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const res = await fetch(`${API_URL}/users/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, timezone: userTimezone }),
       });
 
       if (!res.ok) return false;
@@ -161,6 +171,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.error("Error durante logout:", error);
     } finally {
       localStorage.removeItem("token");
+      localStorage.removeItem("userTimezone");
       setUser(null);
     }
   };

@@ -4,13 +4,21 @@ import { useAuth } from "../context/AuthContext";
 import { TopicsManager } from "../components/topicsManager";
 import { CardsManager } from "../components/cardsManager";
 import { useStreak } from "../../hooks/useStreaks";
+import { getStoredUserTimezone, formatDateForUser } from "../utils/dateUtils";
 
 const Dashboard = () => {
   const [selectedTopicId, setSelectedTopicId] = useState<number | null>(null);
   const [dashboardData, setDashboardData] = useState<any | null>(null);
+  const [userTimezone, setUserTimezone] = useState<string>("");
 
   const { getDashboard } = useAuth();
   const { streakData, loading: streakLoading } = useStreak();
+
+  useEffect(() => {
+    // Obtener zona horaria del usuario
+    const timezone = getStoredUserTimezone();
+    setUserTimezone(timezone);
+  }, []);
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -36,6 +44,18 @@ const Dashboard = () => {
     if (dashboardData.recentActivity) {
       completedToday = dashboardData.recentActivity.filter((activity: any) => {
         const completeDate = new Date(activity.completedAt);
+        // Si hay zona horaria del usuario, convertir la fecha completada a zona horaria local
+        if (userTimezone) {
+          try {
+            const userDate = new Date(
+              formatDateForUser(activity.completedAt, userTimezone)
+            );
+            return userDate >= startOfToday;
+          } catch (error) {
+            console.warn("Error convirtiendo fecha con zona horaria:", error);
+            return completeDate >= startOfToday;
+          }
+        }
         return completeDate >= startOfToday;
       }).length;
     }

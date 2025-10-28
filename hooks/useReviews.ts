@@ -8,6 +8,7 @@ import {
 } from "../src/types/reviews";
 import { API_URL } from "../src/config";
 import { reviewsUpdateEvent } from "./reviewsUpdateEvent";
+import { getStoredUserTimezone } from "../src/utils/dateUtils";
 
 const API_BASE = API_URL || "http://localhost:3000/api";
 
@@ -27,6 +28,7 @@ export const useReviews = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userTimezone, setUserTimezone] = useState<string>("");
 
   const fetchAllReviews = useCallback(async () => {
     try {
@@ -58,6 +60,11 @@ export const useReviews = () => {
       if (!response.ok) throw new Error("Error de carga de revisiones de hoy");
       const data = await response.json();
       setPendingReviews(data.pendingReviews || []);
+      // Procesar userTimezone de la respuesta
+      if (data.userTimezone) {
+        setUserTimezone(data.userTimezone);
+        localStorage.setItem("userTimezone", data.userTimezone);
+      }
     } catch (err) {
       setPendingReviews([]);
       throw err;
@@ -92,6 +99,11 @@ export const useReviews = () => {
         totalItems: pag.total || 0,
         pageSize: pag.limit || limit,
       });
+      // Procesar userTimezone de la respuesta
+      if (data.userTimezone) {
+        setUserTimezone(data.userTimezone);
+        localStorage.setItem("userTimezone", data.userTimezone);
+      }
     } catch (err) {
       setUpcomingReviews([]);
       throw err;
@@ -236,6 +248,11 @@ export const useReviews = () => {
 
   useEffect(() => {
     fetchAllReviews();
+    // Inicializar zona horaria desde localStorage si existe
+    const storedTimezone = getStoredUserTimezone();
+    if (storedTimezone) {
+      setUserTimezone(storedTimezone);
+    }
   }, [fetchAllReviews]);
 
   return {
@@ -247,6 +264,7 @@ export const useReviews = () => {
     totalUpcomingCount,
     loading,
     error,
+    userTimezone,
     fetchAllReviews,
     fetchPendingReviews,
     fetchUpcomingReviews,
