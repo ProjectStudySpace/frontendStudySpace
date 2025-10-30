@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TopicFormProps } from '../types/topics';
+import { TopicFormProps, CreateTopicData, UpdateTopicData } from '../types/topics';
 
 // Convierte la opción de dificultad en color
 const getColorFromDifficulty = (difficulty: "easy" | "medium" | "hard") => {
@@ -42,14 +42,19 @@ export const TopicForm: React.FC<TopicFormProps> = ({
 
     setIsSubmitting(true);
     try {
-      await onSubmit({
+      const formData = {
         name,
         description: description || undefined,
         color: getColorFromDifficulty(difficulty),
-      });
-      setName('');
-      setDescription('');
-      setDifficulty("medium");
+      };
+
+      await onSubmit(formData);
+
+      if (!isEditing) {
+        setName('');
+        setDescription('');
+        setDifficulty("medium");
+      }
     } catch (error) {
       console.error('Error al guardar tema:', error);
     } finally {
@@ -63,7 +68,7 @@ export const TopicForm: React.FC<TopicFormProps> = ({
       className="bg-white rounded-lg shadow-lg p-6 border-2 border-purple-300 max-w-md mx-auto space-y-4"
     >
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Nombre de la materia *</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Nombre de la materia</label>
         <input
           type="text"
           value={name}
@@ -93,9 +98,9 @@ export const TopicForm: React.FC<TopicFormProps> = ({
           disabled={isSubmitting}
           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
         >
-          <option value="easy">Easy</option>
-          <option value="medium">Medium</option>
-          <option value="hard">Hard</option>
+          <option value="easy">Fácil</option>
+          <option value="medium">Medio</option>
+          <option value="hard">Difícil</option>
         </select>
       </div>
 

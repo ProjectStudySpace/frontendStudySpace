@@ -46,4 +46,12 @@ export interface TopicsManagerProps {
   onSelectTopic?: (topicId: number | null) => void; 
   onTopicsChange?: (topics: Topic[]) => void;
   selectedTopicId?: number | null;
+  initialTopic?: Topic | null;
+}
+
+export interface TopicCardProps {
+  topic: Topic;
+  onSelect: (topicId: number) => void;
+  onEdit: (topic: Topic) => void;
+  onDelete: (topicId: number) => void;
 }
