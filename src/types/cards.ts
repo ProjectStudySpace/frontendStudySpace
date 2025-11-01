@@ -3,6 +3,13 @@ export interface Card {
   question: string;
   answer: string;
   topicId: number;
+  topic?: {
+    id: number;
+    name: string;
+    color: string;
+    description?: string;
+    createdAt?: string;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
