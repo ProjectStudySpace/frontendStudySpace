@@ -37,7 +37,7 @@ export const CardItem: React.FC<CardItemProps> = ({ card, onEdit, onDelete }) =>
           <div 
             className="w-2 h-2 rounded-full flex-shrink-0 bg-white/80"
           />
-          <h4 className="text-sm font-semibold uppercase tracking-wide text-gray-900 drop-shadow-sm">
+          <h4 className="text-sm font-semibold uppercase tracking-wide text-gray-900">
             {card.topic?.name || 'Sin tema'}
           </h4>
         </div>
