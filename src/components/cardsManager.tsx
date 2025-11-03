@@ -138,14 +138,6 @@ export const CardsManager: React.FC<CardsManagerProps> = ({ topicId }) => {
             className="w-full md:flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         )}
-        {!showForm && (
-          <button
-            onClick={handleCreateCard}
-            className="bg-indigo-500 hover:bg-indigo-600 text-white font-medium py-2 px-4 rounded-lg transition-colors whitespace-nowrap"
-          >
-            + Nueva Tarjeta
-          </button>
-        )}
       </div>
 
       {showForm ? (
@@ -163,6 +155,7 @@ export const CardsManager: React.FC<CardsManagerProps> = ({ topicId }) => {
           topicId={topicId}
           pagination={pagination}
           onPageChange={handlePageChange}
+          onCreateCard={handleCreateCard}
         />
       )}
     </div>

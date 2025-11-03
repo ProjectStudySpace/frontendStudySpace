@@ -39,6 +39,7 @@ export interface CardListProps {
     pageSize: number;
   };
   onPageChange?: (page: number) => void;
+  onCreateCard?: () => void;
 }
 
 export interface CardsManagerProps {
