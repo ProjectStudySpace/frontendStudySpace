@@ -40,7 +40,7 @@ export const TopicCard: React.FC<TopicCardProps> = ({
         <div className="flex gap-2 justify-end mt-auto">
           <button
             onClick={() => onSelect(topic.id)}
-            className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-all"
+            className="bg-[#7C3AED] hover:bg-[#6D28D9] text-white px-3 py-2 rounded-lg text-sm font-medium transition-all"
           >
             Ver Tarjetas
           </button>
