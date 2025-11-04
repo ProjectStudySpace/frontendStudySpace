@@ -23,81 +23,59 @@ export const CardItem: React.FC<CardItemProps> = ({ card, onEdit, onDelete }) =>
   };
 
   return (
-    <div 
-      className="bg-white rounded-2xl shadow-soft hover:shadow-elevated transition-all duration-300 overflow-hidden group"
+    <div
+      className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-200 flex flex-col min-h-[200px]"
     >
-      {/* Encabezado */}
-      <div 
-        className="px-6 py-5 relative overflow-hidden"
-        style={{ 
-          background: `linear-gradient(135deg, ${lighterColor}30, ${lighterColor})`,
+      {/* Encabezado con color del tema */}
+      <div
+        className="px-4 py-3"
+        style={{
+          backgroundColor: `${lighterColor}30`,
         }}
       >
-        <div className="flex items-center justify-center gap-2 relative z-10">
-          <div 
-            className="w-2 h-2 rounded-full flex-shrink-0 bg-white/80"
-          />
-          <h4 className="text-sm font-semibold uppercase tracking-wide text-gray-900">
-            {card.topic?.name || 'Sin tema'}
-          </h4>
-        </div>
+        <h4 className="text-xs font-semibold text-gray-700 text-center uppercase tracking-wide">
+          {card.topic?.name || 'Sin tema'}
+        </h4>
       </div>
   
       {/* Contenido principal */}
-      <div className="p-6 bg-white">
-        <div className="mb-4">
-          {/* Pregunta */}
-          <h3 className="text-xl font-semibold text-gray-900 mb-4 text-center leading-tight">
-            {card.question}
-          </h3>
-          
-          {/* Botón de mostrar respuesta */}
-          <button 
+      <div className="p-4 flex-1 flex flex-col">
+        {/* Pregunta */}
+        <h3 className="text-base font-semibold text-gray-900 mb-3 line-clamp-3">
+          {card.question}
+        </h3>
+        
+        {/* Botón de mostrar respuesta */}
+        <div className="flex justify-center mb-3">
+          <button
             onClick={() => setShowAnswer(!showAnswer)}
-            className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-6 py-3.5 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg transform hover:scale-[1.02] mb-4 cursor-pointer group/answer"
+            className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all"
           >
-            <span className="flex items-center justify-center gap-2">
-              <svg className={`w-4 h-4 transition-transform ${showAnswer ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-              {showAnswer ? 'Ocultar respuesta' : 'Mostrar respuesta'}
-            </span>
+            {showAnswer ? 'Ocultar' : 'Ver respuesta'}
           </button>
-          
-          {/* Respuesta */}
-          {showAnswer && (
-            <div 
-              className="transition-all duration-500 transform origin-top"
-              style={{ 
-                animation: 'slideDown 0.3s ease-out'
-              }}
-            >
-              <div className="p-5 rounded-xl bg-gray-50/80 text-gray-700 leading-relaxed">
-                <p className="whitespace-pre-wrap">{card.answer}</p>
-              </div>
-            </div>
-          )}
         </div>
         
+        {/* Respuesta */}
+        {showAnswer && (
+          <div className="mb-3 p-3 rounded-lg bg-gray-50 text-gray-700 text-sm flex-1 overflow-auto">
+            <p className="whitespace-pre-wrap line-clamp-4">{card.answer}</p>
+          </div>
+        )}
+        
         {/* Botones de acción */}
-        <div className="flex gap-2 justify-end flex-wrap">
-          <button 
+        <div className="flex gap-2 justify-end mt-auto">
+          <button
             onClick={() => onEdit(card)}
-            className="bg-white hover:bg-blue-50 text-blue-600 border border-blue-200 hover:border-blue-300 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105"
+            className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
           >
             Editar
           </button>
-          <button 
-            onClick={handleDelete} 
+          <button
+            onClick={handleDelete}
             disabled={isDeleting}
-            className="bg-white hover:bg-red-50 text-red-600 border border-red-200 hover:border-red-300 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-200 disabled:cursor-not-allowed"
+            className="bg-red-100 hover:bg-red-200 text-red-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
           >
-            {isDeleting ? (
-              <span className="flex items-center gap-2">
-                <div className="w-3 h-3 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
-                Eliminando...
-              </span>
-            ) : 'Eliminar'}
+            {isDeleting ? 'Eliminando...' : 'Eliminar'}
           </button>
         </div>
       </div>

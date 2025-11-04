@@ -111,7 +111,7 @@ const Dashboard = () => {
         <div className="flex items-center gap-4 mb-6">
           <button
             onClick={() => setSelectedTopicId(null)}
-            className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+            className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2"
           >
             ← Volver a materias
           </button>
@@ -208,16 +208,6 @@ const Dashboard = () => {
               Gestiona tus materias y accede a sus tarjetas de estudio
             </p>
           </div>
-
-          <button
-            onClick={() => {
-              setEditingTopic(null);
-              setShowTopicForm(true);
-            }}
-            className="bg-indigo-500 hover:bg-indigo-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-          >
-            + Nueva materia
-          </button>
         </div>
 
         {/* Barra de búsqueda */}
@@ -251,7 +241,7 @@ const Dashboard = () => {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredTopics.map((topic) => (
               <TopicCard
                 key={topic.id}
@@ -261,6 +251,21 @@ const Dashboard = () => {
                 onDelete={handleDeleteTopic}
               />
             ))}
+            {/* Botón + al final */}
+            <button
+              onClick={() => {
+                setEditingTopic(null);
+                setShowTopicForm(true);
+              }}
+              className="bg-gray-50 hover:bg-gray-100 border-2 border-dashed border-gray-300 hover:border-indigo-400 rounded-2xl p-6 transition-all duration-200 flex flex-col items-center justify-center min-h-[200px] group"
+            >
+              <div className="w-12 h-12 rounded-full bg-indigo-100 group-hover:bg-indigo-500 flex items-center justify-center mb-3 transition-colors">
+                <span className="text-3xl text-indigo-600 group-hover:text-white transition-colors">+</span>
+              </div>
+              <span className="text-gray-600 group-hover:text-indigo-600 font-medium transition-colors">
+                Nueva materia
+              </span>
+            </button>
           </div>
         )}
       </div>
