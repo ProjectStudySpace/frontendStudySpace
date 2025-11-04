@@ -47,11 +47,22 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ className = "" }) => {
     // Días del mes actual
     for (let day = 1; day <= lastDay.getDate(); day++) {
       const date = new Date(year, month, day);
-      const dateKey = date.toISOString().split("T")[0];
+      
+      // Normalizar fecha a medianoche en zona horaria local
+      const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
       const hasSession = sessions.some((session) => {
+        // Parsear la fecha de la sesión
         const sessionDate = new Date(session.dueDate);
-        return sessionDate.toISOString().split("T")[0] === dateKey;
+        // Normalizar a medianoche en zona horaria local
+        const sessionDateOnly = new Date(
+          sessionDate.getFullYear(),
+          sessionDate.getMonth(),
+          sessionDate.getDate()
+        );
+        
+        // Comparar fechas normalizadas
+        return dateOnly.getTime() === sessionDateOnly.getTime();
       });
 
       days.push({
