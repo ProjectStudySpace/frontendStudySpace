@@ -43,18 +43,18 @@ export const useCards = () => {
       const data = await response.json();
       const cardsArray: Card[] = data.cards || [];
 
-      const cardsWithTopic: Card[] = cardsArray.map(card => ({
+      const cardsWithTopic: Card[] = cardsArray.map((card) => ({
         ...card,
         topic: {
           id: card.topic?.id || topicId,
-          name: card.topic?.name || 'Materia',
-          color: card.topic?.color || '#93C5FD',
-          description: card.topic?.description || ''
-        }
+          name: card.topic?.name || "Materia",
+          color: card.topic?.color || "#93C5FD",
+          description: card.topic?.description || "",
+        },
       }));
-      
+
       setAllCards(cardsWithTopic);
-      const pageSize = 10;
+      const pageSize = 5;
       const totalPages = Math.ceil(cardsWithTopic.length / pageSize);
       setPagination({
         currentPage: 1,
@@ -141,7 +141,7 @@ export const useCards = () => {
       setCards((prev) => [...prev, newCard.card]);
       // Update pagination
       const newTotal = allCards.length + 1;
-      const pageSize = 10;
+      const pageSize = 5;
       const newTotalPages = Math.ceil(newTotal / pageSize);
       setPagination((prev) => ({
         ...prev,
@@ -210,7 +210,7 @@ export const useCards = () => {
       setCards((prev) => prev.filter((card) => card.id !== id));
       // Update pagination
       const newTotal = allCards.length - 1;
-      const pageSize = 10;
+      const pageSize = 5;
       const newTotalPages = Math.ceil(newTotal / pageSize);
       setPagination((prev) => {
         const newPag = {
@@ -233,7 +233,7 @@ export const useCards = () => {
   };
 
   const changePage = (page: number) => {
-    const pageSize = 10;
+    const pageSize = 5;
     const start = (page - 1) * pageSize;
     const end = start + pageSize;
     setCards(allCards.slice(start, end));

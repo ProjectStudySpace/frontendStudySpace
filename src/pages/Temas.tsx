@@ -18,6 +18,8 @@ const Dashboard = () => {
   const [editingTopic, setEditingTopic] = useState<Topic | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [refreshTopics, setRefreshTopics] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5;
 
   const { getDashboard } = useAuth();
   const { streakData, loading: streakLoading } = useStreak();
@@ -30,6 +32,7 @@ const Dashboard = () => {
   const {
     topics,
     loading,
+    pagination,
     fetchUserTopics,
     deleteTopic,
     updateTopic,
@@ -42,8 +45,8 @@ const Dashboard = () => {
       setDashboardData(data);
     };
     fetchDashboard();
-    fetchUserTopics();
-  }, [refreshTopics]);
+    fetchUserTopics(currentPage, pageSize);
+  }, [refreshTopics, currentPage]);
 
   //funcion para calcular el progreso promedio
   const calculateProgress = () => {
@@ -88,6 +91,10 @@ const Dashboard = () => {
       topic.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       topic.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   const handleDeleteTopic = async (topicId: number) => {
     if (window.confirm("¿Estás seguro de que quieres eliminar esta materia?")) {
@@ -241,32 +248,59 @@ const Dashboard = () => {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredTopics.map((topic) => (
-              <TopicCard
-                key={topic.id}
-                topic={topic}
-                onSelect={setSelectedTopicId}
-                onEdit={handleEditTopic}
-                onDelete={handleDeleteTopic}
-              />
-            ))}
-            {/* Botón + al final */}
-            <button
-              onClick={() => {
-                setEditingTopic(null);
-                setShowTopicForm(true);
-              }}
-              className="bg-gray-50 hover:bg-gray-100 border-2 border-dashed border-gray-300 hover:border-indigo-400 rounded-2xl p-6 transition-all duration-200 flex flex-col items-center justify-center min-h-[200px] group"
-            >
-              <div className="w-12 h-12 rounded-full bg-indigo-100 group-hover:bg-indigo-500 flex items-center justify-center mb-3 transition-colors">
-                <span className="text-3xl text-indigo-600 group-hover:text-white transition-colors">+</span>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filteredTopics.map((topic) => (
+                <TopicCard
+                  key={topic.id}
+                  topic={topic}
+                  onSelect={setSelectedTopicId}
+                  onEdit={handleEditTopic}
+                  onDelete={handleDeleteTopic}
+                />
+              ))}
+              {/* Botón + al final */}
+              <button
+                onClick={() => {
+                  setEditingTopic(null);
+                  setShowTopicForm(true);
+                }}
+                className="bg-gray-50 hover:bg-gray-100 border-2 border-dashed border-gray-300 hover:border-indigo-400 rounded-2xl p-6 transition-all duration-200 flex flex-col items-center justify-center min-h-[200px] group"
+              >
+                <div className="w-12 h-12 rounded-full bg-indigo-100 group-hover:bg-indigo-500 flex items-center justify-center mb-3 transition-colors">
+                  <span className="text-3xl text-indigo-600 group-hover:text-white transition-colors">
+                    +
+                  </span>
+                </div>
+                <span className="text-gray-600 group-hover:text-indigo-600 font-medium transition-colors">
+                  Nueva materia
+                </span>
+              </button>
+            </div>
+
+            {/* Pagination */}
+            {pagination && pagination.totalPages > 1 && (
+              <div className="flex justify-center items-center gap-4 mt-8">
+                <button
+                  onClick={() => handlePageChange(pagination.currentPage - 1)}
+                  disabled={pagination.currentPage <= 1}
+                  className="px-4 py-2 bg-indigo-500 text-white rounded-lg disabled:bg-gray-300 hover:bg-indigo-600 transition-colors disabled:cursor-not-allowed"
+                >
+                  Anterior
+                </button>
+                <span className="text-gray-600">
+                  Página {pagination.currentPage} de {pagination.totalPages}
+                </span>
+                <button
+                  onClick={() => handlePageChange(pagination.currentPage + 1)}
+                  disabled={pagination.currentPage >= pagination.totalPages}
+                  className="px-4 py-2 bg-indigo-500 text-white rounded-lg disabled:bg-gray-300 hover:bg-indigo-600 transition-colors disabled:cursor-not-allowed"
+                >
+                  Siguiente
+                </button>
               </div>
-              <span className="text-gray-600 group-hover:text-indigo-600 font-medium transition-colors">
-                Nueva materia
-              </span>
-            </button>
-          </div>
+            )}
+          </>
         )}
       </div>
 

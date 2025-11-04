@@ -88,6 +88,13 @@ export interface ReviewSessionListProps {
     pageSize: number;
   };
   onUpcomingPageChange?: (page: number) => void;
+  pendingPagination?: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    pageSize: number;
+  };
+  onPendingPageChange?: (page: number) => void;
 }
 
 export interface ReviewSessionCardProps {

@@ -8,6 +8,8 @@ const ReviewSessionList: React.FC<ReviewSessionListProps> = ({
   onSessionsUpdate,
   upcomingPagination,
   onUpcomingPageChange,
+  pendingPagination,
+  onPendingPageChange,
 }) => {
   const groupedSessions = {
     pending: sessions.filter((s) => s.type === "pending"),
@@ -22,7 +24,11 @@ const ReviewSessionList: React.FC<ReviewSessionListProps> = ({
           <div className="flex items-center gap-3 mb-4">
             <div className="w-2 h-6 bg-red-500 rounded-full"></div>
             <h2 className="text-xl font-semibold text-gray-900">
-              Pendientes para Hoy ({groupedSessions.pending.length})
+              Pendientes para Hoy (
+              {pendingPagination
+                ? pendingPagination.totalItems
+                : groupedSessions.pending.length}
+              )
             </h2>
           </div>
           <div className="grid gap-4">
@@ -34,6 +40,37 @@ const ReviewSessionList: React.FC<ReviewSessionListProps> = ({
               />
             ))}
           </div>
+          {pendingPagination &&
+            onPendingPageChange &&
+            pendingPagination.totalPages > 1 && (
+              <div className="flex justify-center items-center gap-4 mt-8">
+                <button
+                  onClick={() =>
+                    onPendingPageChange(pendingPagination.currentPage - 1)
+                  }
+                  disabled={pendingPagination.currentPage <= 1}
+                  className="px-4 py-2 bg-indigo-500 text-white rounded-lg disabled:bg-gray-300 hover:bg-indigo-600 transition-colors disabled:cursor-not-allowed"
+                >
+                  Anterior
+                </button>
+                <span className="text-gray-600">
+                  Página {pendingPagination.currentPage} de{" "}
+                  {pendingPagination.totalPages}
+                </span>
+                <button
+                  onClick={() =>
+                    onPendingPageChange(pendingPagination.currentPage + 1)
+                  }
+                  disabled={
+                    pendingPagination.currentPage >=
+                    pendingPagination.totalPages
+                  }
+                  className="px-4 py-2 bg-indigo-500 text-white rounded-lg disabled:bg-gray-300 hover:bg-indigo-600 transition-colors disabled:cursor-not-allowed"
+                >
+                  Siguiente
+                </button>
+              </div>
+            )}
         </section>
       )}
 
@@ -61,17 +98,17 @@ const ReviewSessionList: React.FC<ReviewSessionListProps> = ({
           {upcomingPagination &&
             onUpcomingPageChange &&
             upcomingPagination.totalPages > 1 && (
-              <div className="flex justify-between items-center mt-4">
+              <div className="flex justify-center items-center gap-4 mt-8">
                 <button
                   onClick={() =>
                     onUpcomingPageChange(upcomingPagination.currentPage - 1)
                   }
                   disabled={upcomingPagination.currentPage <= 1}
-                  className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
+                  className="px-4 py-2 bg-indigo-500 text-white rounded-lg disabled:bg-gray-300 hover:bg-indigo-600 transition-colors disabled:cursor-not-allowed"
                 >
                   Anterior
                 </button>
-                <span>
+                <span className="text-gray-600">
                   Página {upcomingPagination.currentPage} de{" "}
                   {upcomingPagination.totalPages}
                 </span>
@@ -83,7 +120,7 @@ const ReviewSessionList: React.FC<ReviewSessionListProps> = ({
                     upcomingPagination.currentPage >=
                     upcomingPagination.totalPages
                   }
-                  className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
+                  className="px-4 py-2 bg-indigo-500 text-white rounded-lg disabled:bg-gray-300 hover:bg-indigo-600 transition-colors disabled:cursor-not-allowed"
                 >
                   Siguiente
                 </button>

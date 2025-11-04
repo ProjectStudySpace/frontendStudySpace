@@ -12,12 +12,14 @@ const SpacedRepetitionDashboard: React.FC = () => {
     upcoming7DaysCount,
     totalUpcomingCount,
     upcomingPagination,
+    pendingPagination,
     loading,
     error,
     completeReview,
     getGroupedSessions,
     fetchAllReviews,
     fetchUpcomingReviews,
+    fetchPendingReviews,
   } = useReviews();
 
   const [currentSession, setCurrentSession] = useState<number>(0);
@@ -29,9 +31,16 @@ const SpacedRepetitionDashboard: React.FC = () => {
 
   const handleUpcomingPageChange = useCallback(
     (page: number) => {
-      fetchUpcomingReviews(7, page, 10);
+      fetchUpcomingReviews(7, page, 5);
     },
     [fetchUpcomingReviews]
+  );
+
+  const handlePendingPageChange = useCallback(
+    (page: number) => {
+      fetchPendingReviews(page, 5);
+    },
+    [fetchPendingReviews]
   );
 
   const startStudySession = () => {
@@ -206,6 +215,8 @@ const SpacedRepetitionDashboard: React.FC = () => {
         onSessionsUpdate={handleSessionsUpdate}
         upcomingPagination={upcomingPagination}
         onUpcomingPageChange={handleUpcomingPageChange}
+        pendingPagination={pendingPagination}
+        onPendingPageChange={handlePendingPageChange}
       />
     </div>
   );
