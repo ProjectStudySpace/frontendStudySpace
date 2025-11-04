@@ -76,6 +76,10 @@ export interface StudySessionProps {
   totalCards: number;
   onComplete: (difficulty: 1 | 2 | 3) => void;
   onExit: () => void;
+  onNext: () => void;
+  onPrevious: () => void;
+  canGoNext: boolean;
+  canGoPrevious: boolean;
 }
 
 export interface ReviewSessionListProps {

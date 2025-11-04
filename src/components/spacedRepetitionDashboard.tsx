@@ -55,15 +55,21 @@ const SpacedRepetitionDashboard: React.FC = () => {
 
     try {
       await completeReview(currentReview.id, difficulty);
-
-      if (currentSession < pendingReviews.length - 1) {
-        setCurrentSession((prev) => prev + 1);
-      } else {
-        setShowStudySession(false);
-        setCurrentSession(0);
-      }
+      // No avanzar automáticamente, el usuario debe usar los botones de navegación
     } catch (error) {
       console.error("Error completando revisión:", error);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentSession < pendingReviews.length - 1) {
+      setCurrentSession((prev) => prev + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentSession > 0) {
+      setCurrentSession((prev) => prev - 1);
     }
   };
 
@@ -108,6 +114,10 @@ const SpacedRepetitionDashboard: React.FC = () => {
         totalCards={pendingReviews.length}
         onComplete={handleCompleteReview}
         onExit={handleExitStudySession}
+        onNext={handleNext}
+        onPrevious={handlePrevious}
+        canGoNext={currentSession < pendingReviews.length - 1}
+        canGoPrevious={currentSession > 0}
       />
     );
   }
