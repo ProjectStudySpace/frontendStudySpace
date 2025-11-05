@@ -12,12 +12,14 @@ const SpacedRepetitionDashboard: React.FC = () => {
     upcoming7DaysCount,
     totalUpcomingCount,
     upcomingPagination,
+    pendingPagination,
     loading,
     error,
     completeReview,
     getGroupedSessions,
     fetchAllReviews,
     fetchUpcomingReviews,
+    fetchPendingReviews,
   } = useReviews();
 
   const [currentSession, setCurrentSession] = useState<number>(0);
@@ -29,9 +31,16 @@ const SpacedRepetitionDashboard: React.FC = () => {
 
   const handleUpcomingPageChange = useCallback(
     (page: number) => {
-      fetchUpcomingReviews(7, page, 10);
+      fetchUpcomingReviews(7, page, 5);
     },
     [fetchUpcomingReviews]
+  );
+
+  const handlePendingPageChange = useCallback(
+    (page: number) => {
+      fetchPendingReviews(page, 5);
+    },
+    [fetchPendingReviews]
   );
 
   const startStudySession = () => {
@@ -46,15 +55,21 @@ const SpacedRepetitionDashboard: React.FC = () => {
 
     try {
       await completeReview(currentReview.id, difficulty);
-
-      if (currentSession < pendingReviews.length - 1) {
-        setCurrentSession((prev) => prev + 1);
-      } else {
-        setShowStudySession(false);
-        setCurrentSession(0);
-      }
+      // No avanzar automáticamente, el usuario debe usar los botones de navegación
     } catch (error) {
       console.error("Error completando revisión:", error);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentSession < pendingReviews.length - 1) {
+      setCurrentSession((prev) => prev + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentSession > 0) {
+      setCurrentSession((prev) => prev - 1);
     }
   };
 
@@ -99,6 +114,10 @@ const SpacedRepetitionDashboard: React.FC = () => {
         totalCards={pendingReviews.length}
         onComplete={handleCompleteReview}
         onExit={handleExitStudySession}
+        onNext={handleNext}
+        onPrevious={handlePrevious}
+        canGoNext={currentSession < pendingReviews.length - 1}
+        canGoPrevious={currentSession > 0}
       />
     );
   }
@@ -206,6 +225,8 @@ const SpacedRepetitionDashboard: React.FC = () => {
         onSessionsUpdate={handleSessionsUpdate}
         upcomingPagination={upcomingPagination}
         onUpcomingPageChange={handleUpcomingPageChange}
+        pendingPagination={pendingPagination}
+        onPendingPageChange={handlePendingPageChange}
       />
     </div>
   );

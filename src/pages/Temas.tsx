@@ -18,6 +18,8 @@ const Dashboard = () => {
   const [editingTopic, setEditingTopic] = useState<Topic | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [refreshTopics, setRefreshTopics] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5;
 
   const { getDashboard } = useAuth();
   const { streakData, loading: streakLoading } = useStreak();
@@ -30,6 +32,7 @@ const Dashboard = () => {
   const {
     topics,
     loading,
+    pagination,
     fetchUserTopics,
     deleteTopic,
     updateTopic,
@@ -42,8 +45,8 @@ const Dashboard = () => {
       setDashboardData(data);
     };
     fetchDashboard();
-    fetchUserTopics();
-  }, [refreshTopics]);
+    fetchUserTopics(currentPage, pageSize);
+  }, [refreshTopics, currentPage]);
 
   //funcion para calcular el progreso promedio
   const calculateProgress = () => {
@@ -88,6 +91,10 @@ const Dashboard = () => {
       topic.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       topic.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   const handleDeleteTopic = async (topicId: number) => {
     if (window.confirm("¿Estás seguro de que quieres eliminar esta materia?")) {
@@ -199,85 +206,12 @@ const Dashboard = () => {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        {showTopicForm ? (
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Tus materias de estudio
-            </h2>
-            <p className="text-gray-600">
-              Gestiona tus materias y accede a sus tarjetas de estudio
-            </p>
-          </div>
-        </div>
-
-        {/* Barra de búsqueda */}
-        <div className="mb-6">
-          <input
-            type="text"
-            placeholder="Buscar materias por nombre o descripción..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-        </div>
-
-        {/* Lista de materias en formato tarjeta */}
-        {loading ? (
-          <div className="text-center py-8 text-gray-600">
-            Cargando materias...
-          </div>
-        ) : filteredTopics.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
-            <BookOpen size={48} className="mx-auto mb-4 text-gray-300" />
-            <p className="text-lg mb-2">No hay materias creadas</p>
-            <p className="text-sm mb-4">
-              Crea tu primera materia para comenzar a organizar tu estudio
-            </p>
-            <button
-              onClick={() => setShowTopicForm(true)}
-              className="bg-indigo-500 hover:bg-indigo-600 text-white font-medium py-2 px-6 rounded-lg transition-colors"
-            >
-              Crea la primera materia
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredTopics.map((topic) => (
-              <TopicCard
-                key={topic.id}
-                topic={topic}
-                onSelect={setSelectedTopicId}
-                onEdit={handleEditTopic}
-                onDelete={handleDeleteTopic}
-              />
-            ))}
-            {/* Botón + al final */}
-            <button
-              onClick={() => {
-                setEditingTopic(null);
-                setShowTopicForm(true);
-              }}
-              className="bg-gray-50 hover:bg-gray-100 border-2 border-dashed border-gray-300 hover:border-indigo-400 rounded-2xl p-6 transition-all duration-200 flex flex-col items-center justify-center min-h-[200px] group"
-            >
-              <div className="w-12 h-12 rounded-full bg-indigo-100 group-hover:bg-indigo-500 flex items-center justify-center mb-3 transition-colors">
-                <span className="text-3xl text-indigo-600 group-hover:text-white transition-colors">+</span>
-              </div>
-              <span className="text-gray-600 group-hover:text-indigo-600 font-medium transition-colors">
-                Nueva materia
-              </span>
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Modal para formulario de materia */}
-      {showTopicForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-6">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-gray-900">
+              <h2 className="text-2xl font-bold text-gray-900">
                 {editingTopic ? "Editar Materia" : "Nueva Materia"}
-              </h3>
+              </h2>
               <button
                 onClick={() => {
                   setShowTopicForm(false);
@@ -288,7 +222,6 @@ const Dashboard = () => {
                 ×
               </button>
             </div>
-
             <TopicForm
               onSubmit={async (topicData) => {
                 try {
@@ -312,8 +245,111 @@ const Dashboard = () => {
               isEditing={!!editingTopic}
             />
           </div>
-        </div>
-      )}
+        ) : (
+          <>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                  Tus materias de estudio
+                </h2>
+                <p className="text-gray-600">
+                  Gestiona tus materias y accede a sus tarjetas de estudio
+                </p>
+              </div>
+            </div>
+
+            {/* Barra de búsqueda */}
+            <div className="mb-6">
+              <input
+                type="text"
+                placeholder="Buscar materias por nombre o descripción..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
+            {/* Lista de materias en formato tarjeta */}
+            {loading ? (
+              <div className="text-center py-8 text-gray-600">
+                Cargando materias...
+              </div>
+            ) : filteredTopics.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                <BookOpen size={48} className="mx-auto mb-4 text-gray-300" />
+                <p className="text-lg mb-2">No hay materias creadas</p>
+                <p className="text-sm mb-4">
+                  Crea tu primera materia para comenzar a organizar tu estudio
+                </p>
+                <button
+                  onClick={() => setShowTopicForm(true)}
+                  className="bg-indigo-500 hover:bg-indigo-600 text-white font-medium py-2 px-6 rounded-lg transition-colors"
+                >
+                  Crea la primera materia
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {filteredTopics.map((topic) => (
+                    <TopicCard
+                      key={topic.id}
+                      topic={topic}
+                      onSelect={setSelectedTopicId}
+                      onEdit={handleEditTopic}
+                      onDelete={handleDeleteTopic}
+                    />
+                  ))}
+                  {/* Botón + al final */}
+                  <button
+                    onClick={() => {
+                      setEditingTopic(null);
+                      setShowTopicForm(true);
+                    }}
+                    className="bg-gray-50 hover:bg-gray-100 border-2 border-dashed border-gray-300 hover:border-indigo-400 rounded-2xl p-6 transition-all duration-200 flex flex-col items-center justify-center min-h-[200px] group"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-indigo-100 group-hover:bg-indigo-500 flex items-center justify-center mb-3 transition-colors">
+                      <span className="text-3xl text-indigo-600 group-hover:text-white transition-colors">
+                        +
+                      </span>
+                    </div>
+                    <span className="text-gray-600 group-hover:text-indigo-600 font-medium transition-colors">
+                      Nueva materia
+                    </span>
+                  </button>
+                </div>
+
+                {/* Pagination */}
+                {pagination && pagination.totalPages > 1 && (
+                  <div className="flex justify-center items-center gap-4 mt-8">
+                    <button
+                      onClick={() =>
+                        handlePageChange(pagination.currentPage - 1)
+                      }
+                      disabled={pagination.currentPage <= 1}
+                      className="px-4 py-2 bg-indigo-500 text-white rounded-lg disabled:bg-gray-300 hover:bg-indigo-600 transition-colors disabled:cursor-not-allowed"
+                    >
+                      Anterior
+                    </button>
+                    <span className="text-gray-600">
+                      Página {pagination.currentPage} de {pagination.totalPages}
+                    </span>
+                    <button
+                      onClick={() =>
+                        handlePageChange(pagination.currentPage + 1)
+                      }
+                      disabled={pagination.currentPage >= pagination.totalPages}
+                      className="px-4 py-2 bg-indigo-500 text-white rounded-lg disabled:bg-gray-300 hover:bg-indigo-600 transition-colors disabled:cursor-not-allowed"
+                    >
+                      Siguiente
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 };

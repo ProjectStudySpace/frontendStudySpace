@@ -24,7 +24,13 @@ export const useReviews = () => {
     currentPage: 1,
     totalPages: 1,
     totalItems: 0,
-    pageSize: 10,
+    pageSize: 5,
+  });
+  const [pendingPagination, setPendingPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    pageSize: 5,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,18 +54,29 @@ export const useReviews = () => {
     }
   }, []);
 
-  const fetchPendingReviews = async () => {
+  const fetchPendingReviews = async (page: number = 1, limit: number = 5) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`${API_BASE}/reviews/pending`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${API_BASE}/reviews/pending?page=${page}&limit=${limit}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
       if (!response.ok) throw new Error("Error de carga de revisiones de hoy");
       const data = await response.json();
       setPendingReviews(data.pendingReviews || []);
+      const pag = data.pagination || {};
+      setPendingPagination({
+        currentPage: pag.page || page,
+        totalPages:
+          pag.totalPages || Math.ceil((pag.total || 0) / (pag.limit || limit)),
+        totalItems: pag.total || 0,
+        pageSize: pag.limit || limit,
+      });
       // Procesar userTimezone de la respuesta
       if (data.userTimezone) {
         setUserTimezone(data.userTimezone);
@@ -74,7 +91,7 @@ export const useReviews = () => {
   const fetchUpcomingReviews = async (
     days: number = 7,
     page: number = 1,
-    limit: number = 10
+    limit: number = 5
   ) => {
     try {
       const token = localStorage.getItem("token");
@@ -260,6 +277,7 @@ export const useReviews = () => {
     upcomingReviews,
     allUpcomingReviews,
     upcomingPagination,
+    pendingPagination,
     upcoming7DaysCount,
     totalUpcomingCount,
     loading,

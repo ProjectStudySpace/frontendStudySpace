@@ -76,6 +76,10 @@ export interface StudySessionProps {
   totalCards: number;
   onComplete: (difficulty: 1 | 2 | 3) => void;
   onExit: () => void;
+  onNext: () => void;
+  onPrevious: () => void;
+  canGoNext: boolean;
+  canGoPrevious: boolean;
 }
 
 export interface ReviewSessionListProps {
@@ -88,6 +92,13 @@ export interface ReviewSessionListProps {
     pageSize: number;
   };
   onUpcomingPageChange?: (page: number) => void;
+  pendingPagination?: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    pageSize: number;
+  };
+  onPendingPageChange?: (page: number) => void;
 }
 
 export interface ReviewSessionCardProps {
