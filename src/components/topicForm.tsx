@@ -1,15 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { TopicFormProps } from '../types/topics';
+import { TopicFormProps, CreateTopicData, UpdateTopicData } from '../types/topics';
+import { useColorSelector } from '../../hooks/useColor';
+import { ColorSelector } from './colorSelector';
+import { PastelColor } from '../types/colors';
 
-// Convierte la opción de dificultad en color
-const getColorFromDifficulty = (difficulty: "easy" | "medium" | "hard") => {
-  switch (difficulty) {
-    case "easy": return "#10B981"; // verde
-    case "medium": return "#F59E0B"; // amarillo
-    case "hard": return "#EF4444"; // rojo
-    default: return "#3B82F6"; // azul por defecto
-  }
-};
+const getDefaultColor = () => '#93C5FD';
 
 export const TopicForm: React.FC<TopicFormProps> = ({
   onSubmit,
@@ -19,20 +14,14 @@ export const TopicForm: React.FC<TopicFormProps> = ({
 }) => {
   const [name, setName] = useState(initialData?.name || '');
   const [description, setDescription] = useState(initialData?.description || '');
-  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const colorSelector = useColorSelector(initialData?.color);
 
   useEffect(() => {
     if (initialData) {
       setName(initialData.name || '');
       setDescription(initialData.description || '');
-      // Inferir dificultad desde color si existe
-      switch (initialData.color) {
-        case "#10B981": setDifficulty("easy"); break;
-        case "#F59E0B": setDifficulty("medium"); break;
-        case "#EF4444": setDifficulty("hard"); break;
-        default: setDifficulty("medium");
-      }
     }
   }, [initialData]);
 
@@ -42,14 +31,18 @@ export const TopicForm: React.FC<TopicFormProps> = ({
 
     setIsSubmitting(true);
     try {
-      await onSubmit({
+      const formData = {
         name,
         description: description || undefined,
-        color: getColorFromDifficulty(difficulty),
-      });
-      setName('');
-      setDescription('');
-      setDifficulty("medium");
+        color: colorSelector.selectedColor.value,
+      };
+
+      await onSubmit(formData);
+
+      if (!isEditing) {
+        setName('');
+        setDescription('');
+      }
     } catch (error) {
       console.error('Error al guardar tema:', error);
     } finally {
@@ -63,7 +56,7 @@ export const TopicForm: React.FC<TopicFormProps> = ({
       className="bg-white rounded-lg shadow-lg p-6 border-2 border-purple-300 max-w-md mx-auto space-y-4"
     >
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Nombre de la materia *</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Nombre de la materia</label>
         <input
           type="text"
           value={name}
@@ -85,18 +78,18 @@ export const TopicForm: React.FC<TopicFormProps> = ({
         />
       </div>
 
+      {/* Selector de color */}
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Categoría (Dificultad)</label>
-        <select
-          value={difficulty}
-          onChange={e => setDifficulty(e.target.value as "easy" | "medium" | "hard")}
-          disabled={isSubmitting}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
-        >
-          <option value="easy">Easy</option>
-          <option value="medium">Medium</option>
-          <option value="hard">Hard</option>
-        </select>
+        <ColorSelector
+          selectedColor={colorSelector.selectedColor}
+          onColorSelect={colorSelector.selectColor}
+          isOpen={colorSelector.isOpen}
+          onToggle={colorSelector.toggleColorPicker}
+          onClose={colorSelector.closeColorPicker}
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          Elige un color para esta materia
+        </p>
       </div>
 
       <div className="flex gap-3 justify-end">

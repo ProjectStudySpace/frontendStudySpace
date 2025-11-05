@@ -7,10 +7,9 @@ export interface Topic {
   createdAt: string;
   updatedAt: string;
   description: string;
-  color: string; // nuevo campo que indica categoría/dificultad
+  color: string; // Color personalizado en tono pastel
 }
 
-// Para crear un topic ahora enviamos color en lugar de difficulty
 export type CreateTopicData = Pick<Topic, 'name' | 'description' | 'color'>;
 export type UpdateTopicData = Partial<CreateTopicData>;
 
@@ -46,4 +45,12 @@ export interface TopicsManagerProps {
   onSelectTopic?: (topicId: number | null) => void; 
   onTopicsChange?: (topics: Topic[]) => void;
   selectedTopicId?: number | null;
+  initialTopic?: Topic | null;
+}
+
+export interface TopicCardProps {
+  topic: Topic;
+  onSelect: (topicId: number) => void;
+  onEdit: (topic: Topic) => void;
+  onDelete: (topicId: number) => void;
 }

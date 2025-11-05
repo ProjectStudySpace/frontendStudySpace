@@ -1,6 +1,6 @@
 import React from 'react';
 import { TopicListProps } from '../types/topics';
-import { TopicItem } from './topicItem';
+import { TopicCard } from './topicCard';
 
 export const TopicList: React.FC<TopicListProps> = ({
   topics,
@@ -25,12 +25,12 @@ export const TopicList: React.FC<TopicListProps> = ({
       </div>
       <div className="space-y-4">
         {topics.map(topic => (
-          <TopicItem
+          <TopicCard
             key={topic.id}
             topic={topic}
             onEdit={onEdit}
             onDelete={onDelete}
-            onViewCards={onViewCards}
+            onSelect={() => onViewCards?.(topic.id)}
           />
         ))}
       </div>

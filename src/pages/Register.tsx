@@ -1,40 +1,48 @@
-import React, { useState } from 'react';
-import { Button, TextField, Typography, Container, Alert } from '@mui/material';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import './Register.css';
+import React, { useState, useEffect } from "react";
+import { Button, TextField, Typography, Container, Alert } from "@mui/material";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { getUserTimezone } from "../utils/dateUtils";
+import "./Register.css";
 
 const Register: React.FC = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [userTimezone, setUserTimezone] = useState("");
   const { register } = useAuth();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    // Capturar zona horaria del navegador al cargar el componente
+    const timezone = getUserTimezone();
+    setUserTimezone(timezone);
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     if (password !== confirmPassword) {
-      setError('Las contraseñas no coinciden');
+      setError("Las contraseñas no coinciden");
       return;
     }
 
     if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
+      setError("La contraseña debe tener al menos 6 caracteres");
       return;
     }
 
     const success = await register(name, email, password);
     if (success) {
-      setSuccess('Cuenta creada exitosamente. Redirigiendo al login...');
-      setTimeout(() => navigate('/login'), 2000);
+      setSuccess("Cuenta creada exitosamente. Redirigiendo al login...");
+      setTimeout(() => navigate("/login"), 2000);
     } else {
-      setError('Error al crear la cuenta. El email ya puede estar registrado.');
+      setError("Error al crear la cuenta. El email ya puede estar registrado.");
     }
   };
 
@@ -48,8 +56,16 @@ const Register: React.FC = () => {
           Regístrate para acceder a tu cuenta
         </Typography>
 
-        {error && <Alert className="error-alert" severity="error">{error}</Alert>}
-        {success && <Alert className="error-alert" severity="success">{success}</Alert>}
+        {error && (
+          <Alert className="error-alert" severity="error">
+            {error}
+          </Alert>
+        )}
+        {success && (
+          <Alert className="error-alert" severity="success">
+            {success}
+          </Alert>
+        )}
 
         <form onSubmit={handleSubmit} className="login-form">
           <TextField
@@ -93,8 +109,11 @@ const Register: React.FC = () => {
         </form>
 
         <Typography className="test-credentials">
-          ¿Ya tienes cuenta?{' '}
-          <Link to="/login" className="text-blue-500 hover:text-blue-700 font-medium">
+          ¿Ya tienes cuenta?{" "}
+          <Link
+            to="/login"
+            className="text-blue-500 hover:text-blue-700 font-medium"
+          >
             Inicia sesión
           </Link>
         </Typography>

@@ -8,6 +8,7 @@ import {
 } from "../src/types/reviews";
 import { API_URL } from "../src/config";
 import { reviewsUpdateEvent } from "./reviewsUpdateEvent";
+import { getStoredUserTimezone } from "../src/utils/dateUtils";
 
 const API_BASE = API_URL || "http://localhost:3000/api";
 
@@ -23,10 +24,17 @@ export const useReviews = () => {
     currentPage: 1,
     totalPages: 1,
     totalItems: 0,
-    pageSize: 10,
+    pageSize: 5,
+  });
+  const [pendingPagination, setPendingPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    pageSize: 5,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userTimezone, setUserTimezone] = useState<string>("");
 
   const fetchAllReviews = useCallback(async () => {
     try {
@@ -46,18 +54,34 @@ export const useReviews = () => {
     }
   }, []);
 
-  const fetchPendingReviews = async () => {
+  const fetchPendingReviews = async (page: number = 1, limit: number = 5) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`${API_BASE}/reviews/pending`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${API_BASE}/reviews/pending?page=${page}&limit=${limit}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
       if (!response.ok) throw new Error("Error de carga de revisiones de hoy");
       const data = await response.json();
       setPendingReviews(data.pendingReviews || []);
+      const pag = data.pagination || {};
+      setPendingPagination({
+        currentPage: pag.page || page,
+        totalPages:
+          pag.totalPages || Math.ceil((pag.total || 0) / (pag.limit || limit)),
+        totalItems: pag.total || 0,
+        pageSize: pag.limit || limit,
+      });
+      // Procesar userTimezone de la respuesta
+      if (data.userTimezone) {
+        setUserTimezone(data.userTimezone);
+        localStorage.setItem("userTimezone", data.userTimezone);
+      }
     } catch (err) {
       setPendingReviews([]);
       throw err;
@@ -67,7 +91,7 @@ export const useReviews = () => {
   const fetchUpcomingReviews = async (
     days: number = 7,
     page: number = 1,
-    limit: number = 10
+    limit: number = 5
   ) => {
     try {
       const token = localStorage.getItem("token");
@@ -92,6 +116,11 @@ export const useReviews = () => {
         totalItems: pag.total || 0,
         pageSize: pag.limit || limit,
       });
+      // Procesar userTimezone de la respuesta
+      if (data.userTimezone) {
+        setUserTimezone(data.userTimezone);
+        localStorage.setItem("userTimezone", data.userTimezone);
+      }
     } catch (err) {
       setUpcomingReviews([]);
       throw err;
@@ -236,6 +265,11 @@ export const useReviews = () => {
 
   useEffect(() => {
     fetchAllReviews();
+    // Inicializar zona horaria desde localStorage si existe
+    const storedTimezone = getStoredUserTimezone();
+    if (storedTimezone) {
+      setUserTimezone(storedTimezone);
+    }
   }, [fetchAllReviews]);
 
   return {
@@ -243,10 +277,12 @@ export const useReviews = () => {
     upcomingReviews,
     allUpcomingReviews,
     upcomingPagination,
+    pendingPagination,
     upcoming7DaysCount,
     totalUpcomingCount,
     loading,
     error,
+    userTimezone,
     fetchAllReviews,
     fetchPendingReviews,
     fetchUpcomingReviews,

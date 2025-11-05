@@ -8,6 +8,7 @@ export const TopicsManager: React.FC<TopicsManagerProps> = ({
   onSelectTopic,
   onTopicsChange,
   selectedTopicId,
+  initialTopic = null
 }) => {
   const [showForm, setShowForm] = useState(false);
   const [editingTopic, setEditingTopic] = useState<Topic | undefined>();
@@ -28,6 +29,13 @@ export const TopicsManager: React.FC<TopicsManagerProps> = ({
     updateTopic,
     deleteTopic,
   } = useTopics();
+
+  useEffect(() => {
+    if (initialTopic) {
+      setEditingTopic(initialTopic);
+      setShowForm(true);
+    }
+  }, [initialTopic]);
 
   useEffect(() => {
     fetchUserTopics().then((fetched) => {

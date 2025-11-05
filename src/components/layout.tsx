@@ -150,6 +150,7 @@ const Layout = () => {
                     to={link.to}
                     className="flex items-center gap-3 p-4 rounded-xl transition-all duration-200 text-gray-700 font-medium hover:bg-indigo-50 hover:text-indigo-600 active:scale-95"
                     onClick={handleLinkClick}
+                    title={link.label}
                   >
                     <Icon size={22} />
                     <span>{link.label}</span>
@@ -181,54 +182,51 @@ const Layout = () => {
       </div>
 
       {/* Sidebar Desktop - Static */}
-      <div className="hidden lg:block lg:fixed lg:top-0 lg:left-0 lg:bottom-0 lg:w-64 bg-white border-r border-gray-200 shadow-sm overflow-hidden">
+      <div className="hidden lg:block lg:fixed lg:top-0 lg:left-0 lg:bottom-0 lg:w-16 bg-white border-r border-gray-200 shadow-sm overflow-hidden">
         <div className="flex flex-col h-full">
           {/* Header del sidebar */}
-          <div className="flex items-center gap-3 p-6 border-b border-gray-200 flex-shrink-0">
-            <Link to="/topics" className="flex items-center gap-3">
+          <div className="flex items-center justify-center p-4 border-b border-gray-200 flex-shrink-0">
+            <Link to="/topics" className="flex items-center justify-center">
               <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600">
                 <Brain size={24} className="text-white" />
               </div>
-              <h1 className="text-xl font-bold bg-gradient-to-br from-indigo-500 to-purple-600 bg-clip-text text-transparent">
-                Study Space
-              </h1>
             </Link>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 flex flex-col gap-2 overflow-hidden">
+          <nav className="flex-1 p-2 flex flex-col gap-2 overflow-hidden">
             {navLinks.map((link) => {
               const Icon = link.icon;
               return (
                 <Link
                   key={link.label}
                   to={link.to}
-                  className="flex items-center gap-2.5 p-3 py-2.5 rounded-lg text-gray-600 font-medium hover:bg-gray-100 hover:text-indigo-600 transition-colors flex-shrink-0"
+                  className="flex items-center justify-center p-3 py-2.5 rounded-lg text-gray-600 font-medium hover:bg-gray-100 hover:text-indigo-600 transition-colors flex-shrink-0"
+                  title={link.label}
                 >
-                  <Icon size={20} />
-                  {link.label}
+                  <Icon size={24} />
                 </Link>
               );
             })}
           </nav>
 
           {/* Logout button at bottom */}
-          <div className="p-4 border-t border-gray-200 flex-shrink-0">
+          <div className="p-2 border-t border-gray-200 flex-shrink-0">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-2.5 p-3 py-2.5 rounded-lg text-red-600 text-sm font-medium hover:bg-red-50 transition-colors"
+              className="w-full flex items-center justify-center p-3 py-2.5 rounded-lg text-red-600 text-sm font-medium hover:bg-red-50 transition-colors"
+              title="Cerrar sesión"
             >
-              <LogOut size={20} />
-              Cerrar sesión
+              <LogOut size={24} />
             </button>
           </div>
         </div>
       </div>
 
       {/* Header Desktop */}
-      <header className="hidden lg:block bg-white shadow-sm fixed top-0 left-64 right-0 z-20">
-        <div className="p-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">
+      <header className="hidden lg:block bg-white shadow-sm fixed top-0 left-16 right-0 z-20">
+        <div className="p-4 flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-gray-900 gap-3 flex items-center">
             ¡Bienvenido de vuelta! 👋
           </h2>
           <button className="relative p-2 text-gray-600 rounded-xl hover:bg-gray-100 transition-colors">
@@ -239,7 +237,7 @@ const Layout = () => {
       </header>
 
       {/* Contenido principal */}
-      <div className="lg:ml-64 lg:pt-20">
+      <div className="lg:ml-16 lg:pt-20">
         <div className="p-4 lg:p-8">
           {/* Welcome message mobile */}
           <div className="lg:hidden mb-6 bg-white rounded-xl shadow-sm p-4">
