@@ -1,5 +1,3 @@
 name = "memopal"
 compatibility_date = "2025-11-05"
-
-[site]
-bucket = "./dist"
+pages_build_output_dir = "dist"
