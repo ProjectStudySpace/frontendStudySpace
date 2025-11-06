@@ -49,26 +49,31 @@ const StudySession: React.FC<StudySessionProps> = ({
       <div className="bg-white rounded-xl shadow-lg max-w-3xl w-full my-8 border border-gray-200 flex flex-col">
         <div className="flex-shrink-0">
           {/* Header */}
-          <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-4 sm:px-6 py-4 flex justify-between items-center rounded-t-xl">
-            <div className="text-white flex-1">
-              <h2 className="text-lg sm:text-xl font-semibold mb-1">Sesión de Estudio</h2>
-              <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm opacity-90">
-                <div className="flex items-center gap-1">
-                  <BookOpen size={14} className="sm:w-4 sm:h-4" />
-                  <span>Tarjeta {currentCard} de {totalCards}</span>
-                </div>
-                <div className="text-xs sm:text-sm">
-                  {review.card.topic.name}
-                </div>
-              </div>
-            </div>
+          <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-4 sm:px-6 py-4 rounded-t-xl relative">
+            {/* Botón cerrar en la esquina */}
             <button
               onClick={onExit}
-              className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-colors flex-shrink-0 ml-2"
+              className="absolute top-4 right-4 text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-colors"
               aria-label="Cerrar"
             >
               <X size={20} className="sm:w-6 sm:h-6" />
             </button>
+
+            {/* Contenido centrado */}
+            <div className="text-center text-white pr-12">
+              <h2 className="text-lg sm:text-xl font-semibold mb-2">Sesión de Estudio</h2>
+              
+              {/* Nombre de la materia destacado */}
+              <p className="text-xl sm:text-2xl font-bold mb-2">
+                {review.card.topic.name}
+              </p>
+              
+              {/* Contador de tarjetas */}
+              <div className="flex items-center justify-center gap-2 text-sm sm:text-base text-white text-opacity-90">
+                <BookOpen size={16} className="sm:w-4 sm:h-4" />
+                <span>Tarjeta {currentCard} de {totalCards}</span>
+              </div>
+            </div>
           </div>
 
           {/* Progress bar */}
