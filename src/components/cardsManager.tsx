@@ -91,12 +91,17 @@ export const CardsManager: React.FC<CardsManagerProps> = ({ topicId }) => {
   const handleSubmit = async (cardData: {
     question: string;
     answer: string;
+    questionImage?: File;
+    answerImage?: File;
   }) => {
     try {
       if (editingCard) {
         await updateCard(editingCard.id, cardData);
       } else {
-        await addCard({ ...cardData, topicId });
+        await addCard({
+          ...cardData,
+          topicId,
+        });
       }
       setShowForm(false);
       setEditingCard(undefined);

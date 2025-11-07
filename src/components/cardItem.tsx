@@ -13,6 +13,12 @@ export const CardItem: React.FC<CardItemProps> = ({
   const topicColor = card.topic?.color || "#93C5FD";
   const lighterColor = getLighterColor(topicColor);
 
+  // Obtener imágenes por tipo
+  const questionImages =
+    card.images?.filter((img) => img.imageType === "question") || [];
+  const answerImages =
+    card.images?.filter((img) => img.imageType === "answer") || [];
+
   const handleDelete = async () => {
     if (window.confirm("¿Estás seguro de que quieres eliminar esta tarjeta?")) {
       setIsDeleting(true);
@@ -43,14 +49,48 @@ export const CardItem: React.FC<CardItemProps> = ({
       {/* Contenido principal */}
       <div className="p-4 flex-1 flex flex-col">
         {/* Pregunta */}
-        <h3 className="text-base font-semibold text-gray-900 mb-3 line-clamp-3">
-          {card.question}
-        </h3>
+        <div className="mb-3">
+          <h3 className="text-base font-semibold text-gray-900 mb-2 line-clamp-3">
+            {card.question}
+          </h3>
+
+          {/* Imágenes de pregunta */}
+          {questionImages.length > 0 && (
+            <div className="mt-2 flex gap-2 flex-wrap">
+              {questionImages.map((img) => (
+                <img
+                  key={img.id}
+                  src={img.imageUrl}
+                  alt={img.altText || "Imagen de pregunta"}
+                  className="w-20 h-20 object-cover rounded-md border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => window.open(img.imageUrl, "_blank")}
+                />
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Respuesta */}
         {showAnswer && (
           <div className="mb-3 p-3 rounded-lg bg-gray-50 text-gray-700 text-sm flex-1 overflow-auto">
-            <p className="whitespace-pre-wrap line-clamp-4">{card.answer}</p>
+            <p className="whitespace-pre-wrap line-clamp-4 mb-2">
+              {card.answer}
+            </p>
+
+            {/* Imágenes de respuesta */}
+            {answerImages.length > 0 && (
+              <div className="mt-2 flex gap-2 flex-wrap">
+                {answerImages.map((img) => (
+                  <img
+                    key={img.id}
+                    src={img.imageUrl}
+                    alt={img.altText || "Imagen de respuesta"}
+                    className="w-20 h-20 object-cover rounded-md border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => window.open(img.imageUrl, "_blank")}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
 

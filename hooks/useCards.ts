@@ -125,13 +125,28 @@ export const useCards = () => {
     setError(null);
     try {
       const token = getToken();
+
+      // Crear FormData para enviar archivos
+      const formData = new FormData();
+      formData.append("question", cardData.question);
+      formData.append("answer", cardData.answer);
+      formData.append("topicId", cardData.topicId.toString());
+
+      // Agregar imágenes si existen
+      if (cardData.questionImage) {
+        formData.append("questionImage", cardData.questionImage);
+      }
+      if (cardData.answerImage) {
+        formData.append("answerImage", cardData.answerImage);
+      }
+
       const response = await fetch(`${API_BASE_URL}/cards`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
+          // NO incluir Content-Type, el browser lo maneja con boundary
         },
-        body: JSON.stringify(cardData),
+        body: formData,
       });
 
       if (!response.ok) throw new Error("Error al crear tarjeta");
@@ -139,7 +154,7 @@ export const useCards = () => {
       const newCard = await response.json();
       setAllCards((prev) => [...prev, newCard.card]);
       setCards((prev) => [...prev, newCard.card]);
-      // Update pagination
+
       const newTotal = allCards.length + 1;
       const pageSize = 5;
       const newTotalPages = Math.ceil(newTotal / pageSize);
@@ -165,13 +180,27 @@ export const useCards = () => {
     setError(null);
     try {
       const token = getToken();
+
+      // Crear FormData para enviar archivos
+      const formData = new FormData();
+      if (updates.question) formData.append("question", updates.question);
+      if (updates.answer) formData.append("answer", updates.answer);
+
+      // Agregar imágenes si existen
+      if (updates.questionImage) {
+        formData.append("questionImage", updates.questionImage);
+      }
+      if (updates.answerImage) {
+        formData.append("answerImage", updates.answerImage);
+      }
+
       const response = await fetch(`${API_BASE_URL}/cards/${id}`, {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
+          // NO incluir Content-Type
         },
-        body: JSON.stringify(updates),
+        body: formData,
       });
 
       if (!response.ok) throw new Error("Error al actualizar tarjeta");
@@ -180,8 +209,8 @@ export const useCards = () => {
       setAllCards((prev) =>
         prev.map((card) => (card.id === id ? updatedCard.card : card))
       );
-      setCards(
-        (prev) => prev.map((card) => (card.id === id ? updatedCard.card : card)) //api returns { card: updatedCard }
+      setCards((prev) =>
+        prev.map((card) => (card.id === id ? updatedCard.card : card))
       );
       return updatedCard.card;
     } catch (err) {

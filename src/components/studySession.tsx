@@ -1,7 +1,28 @@
-import React, { useState } from 'react';
-import { ScheduledReview, StudySessionProps } from '../types/reviews'
-import DifficultySelector from './difficultySelector';
-import { X, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
+import React, { useState } from "react";
+import { ScheduledReview, StudySessionProps } from "../types/reviews";
+import DifficultySelector from "./difficultySelector";
+import { X, ChevronLeft, ChevronRight, BookOpen } from "lucide-react";
+
+const ImageDisplay: React.FC<{ images: any[]; type: string }> = ({
+  images,
+  type,
+}) => {
+  if (!images || images.length === 0) return null;
+
+  return (
+    <div className="mt-3 flex gap-2 flex-wrap justify-center">
+      {images.map((img) => (
+        <img
+          key={img.id}
+          src={img.imageUrl}
+          alt={img.altText || `Imagen de ${type}`}
+          className="max-w-[200px] max-h-[200px] object-contain rounded-lg border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={() => window.open(img.imageUrl, "_blank")}
+        />
+      ))}
+    </div>
+  );
+};
 
 const StudySession: React.FC<StudySessionProps> = ({
   review,
@@ -15,7 +36,14 @@ const StudySession: React.FC<StudySessionProps> = ({
   canGoPrevious,
 }) => {
   const [showAnswer, setShowAnswer] = useState(false);
-  const [selectedDifficulty, setSelectedDifficulty] = useState<1 | 2 | 3 | null>(null);
+  const [selectedDifficulty, setSelectedDifficulty] = useState<
+    1 | 2 | 3 | null
+  >(null);
+
+  const questionImages =
+    review.card.images?.filter((img) => img.imageType === "question") || [];
+  const answerImages =
+    review.card.images?.filter((img) => img.imageType === "answer") || [];
 
   const handleShowAnswer = () => {
     setShowAnswer(true);
@@ -51,11 +79,15 @@ const StudySession: React.FC<StudySessionProps> = ({
           {/* Header */}
           <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-4 sm:px-6 py-4 flex justify-between items-center rounded-t-xl">
             <div className="text-white flex-1">
-              <h2 className="text-lg sm:text-xl font-semibold mb-1">Sesión de Estudio</h2>
+              <h2 className="text-lg sm:text-xl font-semibold mb-1">
+                Sesión de Estudio
+              </h2>
               <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm opacity-90">
                 <div className="flex items-center gap-1">
                   <BookOpen size={14} className="sm:w-4 sm:h-4" />
-                  <span>Tarjeta {currentCard} de {totalCards}</span>
+                  <span>
+                    Tarjeta {currentCard} de {totalCards}
+                  </span>
                 </div>
                 <div className="text-xs sm:text-sm">
                   {review.card.topic.name}
@@ -89,6 +121,7 @@ const StudySession: React.FC<StudySessionProps> = ({
             <p className="text-base sm:text-lg text-gray-900 whitespace-pre-wrap leading-relaxed">
               {review.card.question}
             </p>
+            <ImageDisplay images={questionImages} type="pregunta" />
           </div>
 
           {/* Answer section */}
@@ -100,6 +133,7 @@ const StudySession: React.FC<StudySessionProps> = ({
               <p className="text-base sm:text-lg text-gray-900 whitespace-pre-wrap leading-relaxed">
                 {review.card.answer}
               </p>
+              <ImageDisplay images={answerImages} type="respuesta" />
             </div>
           ) : (
             <div className="flex justify-center">
@@ -132,7 +166,7 @@ const StudySession: React.FC<StudySessionProps> = ({
               <ChevronLeft size={20} />
               <span className="hidden sm:inline">Anterior</span>
             </button>
-            
+
             <span className="text-sm text-gray-600">
               {currentCard} / {totalCards}
             </span>

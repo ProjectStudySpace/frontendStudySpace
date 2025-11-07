@@ -7,6 +7,13 @@ export interface StudyCard {
     name: string;
     color: string;
   };
+  images?: {
+    id: number;
+    imageUrl: string;
+    imageType: "question" | "answer";
+    order: number;
+    altText?: string;
+  }[];
 }
 
 export interface ScheduledReview {

@@ -1,3 +1,13 @@
+export interface CardImage {
+  id: number;
+  cardId: number;
+  imageUrl: string;
+  imageType: "question" | "answer";
+  order: number;
+  altText?: string;
+  createdAt: Date;
+}
+
 export interface Card {
   id: number;
   question: string;
@@ -10,6 +20,7 @@ export interface Card {
     description?: string;
     createdAt?: string;
   };
+  images?: CardImage[]; // NUEVO
   createdAt: Date;
   updatedAt: Date;
 }
@@ -21,9 +32,19 @@ export interface CardItemProps {
 }
 
 export interface CardFormProps {
-  onSubmit: (card: { question: string; answer: string }) => void;
+  onSubmit: (card: {
+    question: string;
+    answer: string;
+    questionImage?: File; // NUEVO
+    answerImage?: File; // NUEVO
+  }) => void;
   onCancel: () => void;
-  initialData?: { question: string; answer: string };
+  initialData?: {
+    question: string;
+    answer: string;
+    questionImageUrl?: string; // NUEVO - para edición
+    answerImageUrl?: string; // NUEVO - para edición
+  };
   isEditing?: boolean;
 }
 
@@ -46,5 +67,13 @@ export interface CardsManagerProps {
   topicId: number;
 }
 
-export type CreateCardData = Omit<Card, 'id' | 'createdAt' | 'updatedAt'>;
-export type UpdateCardData = Partial<Omit<Card, 'id' | 'createdAt' | 'updatedAt'>>;
+// Actualizar CreateCardData para incluir FormData
+export type CreateCardData = {
+  topicId: number;
+  question: string;
+  answer: string;
+  questionImage?: File;
+  answerImage?: File;
+};
+
+export type UpdateCardData = Partial<Omit<CreateCardData, "topicId">>;
