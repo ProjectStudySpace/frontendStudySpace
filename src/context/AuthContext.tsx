@@ -146,7 +146,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       await api.post(`/users/logout`);
     } catch (error) {
-      console.error("Error durante logout:", error);
+      // Ignorar errores del servidor (404, etc.) - el logout local es suficiente
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
+        // Endpoint no existe, continuar con logout local
+      } else {
+        console.error("Error durante logout:", error);
+      }
     } finally {
       localStorage.removeItem("token");
       localStorage.removeItem("userTimezone");
