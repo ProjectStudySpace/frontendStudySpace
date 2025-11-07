@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import axios from "axios";
 import {
   ScheduledReview,
   UpcomingReviews,
@@ -11,6 +12,20 @@ import { reviewsUpdateEvent } from "./reviewsUpdateEvent";
 import { getStoredUserTimezone } from "../src/utils/dateUtils";
 
 const API_BASE = API_URL || "http://localhost:3000/api";
+
+// Configurar instancia de axios
+const api = axios.create({
+  baseURL: API_BASE,
+});
+
+// Interceptor para agregar token automáticamente
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 export const useReviews = () => {
   const [pendingReviews, setPendingReviews] = useState<ScheduledReview[]>([]);
@@ -56,18 +71,9 @@ export const useReviews = () => {
 
   const fetchPendingReviews = async (page: number = 1, limit: number = 5) => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        `${API_BASE}/reviews/pending?page=${page}&limit=${limit}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      if (!response.ok) throw new Error("Error de carga de revisiones de hoy");
-      const data = await response.json();
+      const { data } = await api.get(`/reviews/pending`, {
+        params: { page, limit }
+      });
       setPendingReviews(data.pendingReviews || []);
       const pag = data.pagination || {};
       setPendingPagination({
@@ -94,19 +100,9 @@ export const useReviews = () => {
     limit: number = 5
   ) => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        `${API_BASE}/reviews/upcoming?days=${days}&page=${page}&limit=${limit}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      if (!response.ok)
-        throw new Error("Error de carga de revisiones de los próximos días");
-      const data = await response.json();
+      const { data } = await api.get(`/reviews/upcoming`, {
+        params: { days, page, limit }
+      });
       setUpcomingReviews(data.upcomingReviews || []);
       const pag = data.pagination || {};
       setUpcomingPagination({
@@ -129,16 +125,9 @@ export const useReviews = () => {
 
   const fetchAllUpcomingReviews = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${API_BASE}/reviews/upcoming?days=30`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+      const { data } = await api.get(`/reviews/upcoming`, {
+        params: { days: 30 }
       });
-      if (!response.ok)
-        throw new Error("Error de carga de todas las revisiones futuras");
-      const data = await response.json();
       setAllUpcomingReviews(data.upcomingReviews || {});
     } catch (err) {
       setAllUpcomingReviews({});
@@ -151,22 +140,10 @@ export const useReviews = () => {
     difficultyRating: 1 | 2 | 3
   ) => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${API_BASE}/reviews/complete`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          scheduledReviewId,
-          difficultyRating,
-        }),
+      const { data: result } = await api.post(`/reviews/complete`, {
+        scheduledReviewId,
+        difficultyRating,
       });
-
-      if (!response.ok) throw new Error("Error al completar la revisión");
-
-      const result = await response.json();
 
       await fetchAllReviews();
 
@@ -185,25 +162,9 @@ export const useReviews = () => {
 
   const rescheduleReview = async (reviewId: number, newDate: string) => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        `${API_BASE}/reviews/reschedule/${reviewId}`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ newDate }),
-        }
-      );
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Error reprogramando la revisión: ${errorText}`);
-      }
-
-      const result = await response.json();
+      const { data: result } = await api.put(`/reviews/reschedule/${reviewId}`, {
+        newDate
+      });
 
       await fetchAllReviews();
 

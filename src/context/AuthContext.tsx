@@ -5,8 +5,23 @@ import React, {
   useEffect,
   ReactNode,
 } from "react";
+import axios from "axios";
 import { User } from "../types";
 import { API_URL } from "../config";
+
+// Configurar instancia de axios
+const api = axios.create({
+  baseURL: API_URL || "http://localhost:3000/api",
+});
+
+// Interceptor para agregar token automáticamente
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 interface AuthContextType {
   user: User | null;
@@ -48,24 +63,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           return;
         }
 
-        const response = await fetch(`${API_URL}/users/profile`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          credentials: "include",
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setUser(data.user);
-          // Persistir zona horaria en localStorage si viene del backend
-          if (data.user?.userTimezone) {
-            localStorage.setItem("userTimezone", data.user.userTimezone);
-          }
-        } else {
-          // Token inválido o expirado
-          localStorage.removeItem("token");
-          setUser(null);
+        const { data } = await api.get(`/users/profile`);
+        setUser(data.user);
+        // Persistir zona horaria en localStorage si viene del backend
+        if (data.user?.userTimezone) {
+          localStorage.setItem("userTimezone", data.user.userTimezone);
         }
       } catch (error) {
         console.error("Error verificando sesión:", error);
@@ -90,16 +92,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const res = await fetch(`${API_URL}/users/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ email, password, timezone: userTimezone }),
+      const { data } = await api.post(`/users/login`, {
+        email,
+        password,
+        timezone: userTimezone
       });
-
-      if (!res.ok) return false;
-
-      const data = await res.json();
       setUser(data.user);
       localStorage.setItem("token", data.token);
       // Persistir zona horaria en localStorage
@@ -120,14 +117,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   ): Promise<boolean> => {
     try {
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const res = await fetch(`${API_URL}/users/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ name, email, password, timezone: userTimezone }),
+      await api.post(`/users/register`, {
+        name,
+        email,
+        password,
+        timezone: userTimezone
       });
-
-      if (!res.ok) return false;
 
       // Registration successful, but do not auto-login
       return true;
@@ -139,17 +134,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const getDashboard = async (): Promise<any> => {
     try {
-      const token = getToken();
-      const res = await fetch(`${API_URL}/users/dashboard`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) return null;
-
-      const data = await res.json();
+      const { data } = await api.get(`/users/dashboard`);
       return data.dashboard;
     } catch (error) {
       console.error(error);
@@ -159,14 +144,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async (): Promise<void> => {
     try {
-      const token = localStorage.getItem("token");
-      await fetch(`${API_URL}/users/logout`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        credentials: "include",
-      });
+      await api.post(`/users/logout`);
     } catch (error) {
       console.error("Error durante logout:", error);
     } finally {
