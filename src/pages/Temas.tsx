@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { BookOpen, FileText, TrendingUp, Flame } from "lucide-react";
+import { BookOpen, FileText, TrendingUp, Flame, Play } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { TopicsManager } from "../components/topicsManager";
 import { CardsManager } from "../components/cardsManager";
@@ -9,6 +9,10 @@ import { TopicCard } from "../components/topicCard";
 import { useTopics } from "../../hooks/useTopics";
 import { Topic, CreateTopicData } from "../types/topics";
 import { TopicForm } from "../components/topicForm";
+import { useReviews } from "../../hooks/useReviews";
+import StudySession from "../components/studySession";
+import SpacedRepetitionDashboard from "../components/spacedRepetitionDashboard";
+
 
 const Dashboard = () => {
   const [selectedTopicId, setSelectedTopicId] = useState<number | null>(null);
@@ -23,21 +27,20 @@ const Dashboard = () => {
 
   const { getDashboard } = useAuth();
   const { streakData, loading: streakLoading } = useStreak();
+  const { topics, loading, pagination, fetchUserTopics, deleteTopic, updateTopic, addTopic } = useTopics();
+
+  const { pendingReviews } = useReviews();
+
+  // Estado y función para mostrar sesión de repaso
+  const [showStudySession, setShowStudySession] = useState(false);
+  const startStudySession = () => {
+    setShowStudySession(true);
+  };
 
   useEffect(() => {
-    // Obtener zona horaria del usuario
     const timezone = getStoredUserTimezone();
     setUserTimezone(timezone);
   }, []);
-  const {
-    topics,
-    loading,
-    pagination,
-    fetchUserTopics,
-    deleteTopic,
-    updateTopic,
-    addTopic,
-  } = useTopics();
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -48,28 +51,19 @@ const Dashboard = () => {
     fetchUserTopics(currentPage, pageSize);
   }, [refreshTopics, currentPage]);
 
-  //funcion para calcular el progreso promedio
   const calculateProgress = () => {
     if (!dashboardData?.stats) return 0;
-
     const pendingToday = streakData?.pendingToday ?? 0;
     let completedToday = 0;
     const today = new Date();
-    const startOfToday = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate()
-    );
+    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
     if (dashboardData.recentActivity) {
       completedToday = dashboardData.recentActivity.filter((activity: any) => {
         const completeDate = new Date(activity.completedAt);
-        // Si hay zona horaria del usuario, convertir la fecha completada a zona horaria local
         if (userTimezone) {
           try {
-            const userDate = new Date(
-              formatDateForUser(activity.completedAt, userTimezone)
-            );
+            const userDate = new Date(formatDateForUser(activity.completedAt, userTimezone));
             return userDate >= startOfToday;
           } catch (error) {
             console.warn("Error convirtiendo fecha con zona horaria:", error);
@@ -80,9 +74,7 @@ const Dashboard = () => {
       }).length;
     }
     const totalToday = completedToday + pendingToday;
-
     if (totalToday === 0) return 100;
-
     return Math.round((completedToday / totalToday) * 100);
   };
 
@@ -92,9 +84,7 @@ const Dashboard = () => {
       topic.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
+  const handlePageChange = (page: number) => setCurrentPage(page);
 
   const handleDeleteTopic = async (topicId: number) => {
     if (window.confirm("¿Estás seguro de que quieres eliminar esta materia?")) {
@@ -112,6 +102,11 @@ const Dashboard = () => {
     setShowTopicForm(true);
   };
 
+  // Si el usuario ha iniciado la sesión de repaso, mostrarla directamente
+  if (showStudySession) {
+    return <SpacedRepetitionDashboard />;
+  }
+
   if (selectedTopicId) {
     return (
       <div>
@@ -122,9 +117,7 @@ const Dashboard = () => {
           >
             ← Volver a materias
           </button>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Gestión de tarjetas
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900">Gestión de tarjetas</h1>
         </div>
         <CardsManager topicId={selectedTopicId} />
       </div>
@@ -142,12 +135,11 @@ const Dashboard = () => {
             </div>
             <div>
               <p className="text-gray-600 text-sm mb-1">Materias activas</p>
-              <p className="text-3xl font-bold text-gray-900">
-                {dashboardData?.stats?.totalTopics}
-              </p>
+              <p className="text-3xl font-bold text-gray-900">{dashboardData?.stats?.totalTopics}</p>
             </div>
           </div>
         </div>
+
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-green-100">
@@ -155,12 +147,11 @@ const Dashboard = () => {
             </div>
             <div>
               <p className="text-gray-600 text-sm mb-1">Tarjetas totales</p>
-              <p className="text-3xl font-bold text-gray-900">
-                {dashboardData?.stats?.totalCards}
-              </p>
+              <p className="text-3xl font-bold text-gray-900">{dashboardData?.stats?.totalCards}</p>
             </div>
           </div>
         </div>
+
         {/* Racha */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
           <div className="flex items-center gap-4">
@@ -176,14 +167,10 @@ const Dashboard = () => {
                 <span className="text-sm text-gray-500">días</span>
               </div>
               {streakData && streakData.longestStreak > 0 && (
-                <p className="text-xs text-gray-500 mt-1">
-                  Récord: {streakData.longestStreak} días
-                </p>
+                <p className="text-xs text-gray-500 mt-1">Récord: {streakData.longestStreak} días</p>
               )}
               {streakData?.wasAutoReset && (
-                <p className="text-xs text-orange-600 mt-1">
-                  Reiniciada por inactividad
-                </p>
+                <p className="text-xs text-orange-600 mt-1">Reiniciada por inactividad</p>
               )}
             </div>
           </div>
@@ -197,9 +184,7 @@ const Dashboard = () => {
             </div>
             <div>
               <p className="text-gray-600 text-sm mb-1">Progreso promedio</p>
-              <p className="text-3xl font-bold text-gray-900">
-                {calculateProgress()}%
-              </p>
+              <p className="text-3xl font-bold text-gray-900">{calculateProgress()}%</p>
             </div>
           </div>
         </div>
@@ -247,15 +232,25 @@ const Dashboard = () => {
           </div>
         ) : (
           <>
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+            <div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                  Tus materias de estudio
-                </h2>
-                <p className="text-gray-600">
-                  Gestiona tus materias y accede a sus tarjetas de estudio
-                </p>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Tus materias de estudio</h2>
+                <p className="text-gray-600">Gestiona tus materias y accede a sus tarjetas de estudio</p>
               </div>
+            </div>
+
+            {/* Botón de Iniciar Repaso */}
+            {pendingReviews.length > 0 && (
+              <button
+                onClick={startStudySession}
+                className="mt-4 sm:mt-0 flex items-center gap-2 px-4 sm:px-6 py-3 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl justify-center"
+              >
+                <Play size={20} />
+                <span className="sm:hidden">Iniciar ({pendingReviews.length})</span>
+                <span className="hidden sm:inline">Iniciar repaso ({pendingReviews.length})</span>
+              </button>
+            )}
             </div>
 
             {/* Barra de búsqueda */}
@@ -269,11 +264,9 @@ const Dashboard = () => {
               />
             </div>
 
-            {/* Lista de materias en formato tarjeta */}
+            {/* Lista de materias */}
             {loading ? (
-              <div className="text-center py-8 text-gray-600">
-                Cargando materias...
-              </div>
+              <div className="text-center py-8 text-gray-600">Cargando materias...</div>
             ) : filteredTopics.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
                 <BookOpen size={48} className="mx-auto mb-4 text-gray-300" />
@@ -323,9 +316,7 @@ const Dashboard = () => {
                 {pagination && pagination.totalPages > 1 && (
                   <div className="flex justify-center items-center gap-4 mt-8">
                     <button
-                      onClick={() =>
-                        handlePageChange(pagination.currentPage - 1)
-                      }
+                      onClick={() => handlePageChange(pagination.currentPage - 1)}
                       disabled={pagination.currentPage <= 1}
                       className="px-4 py-2 bg-indigo-500 text-white rounded-lg disabled:bg-gray-300 hover:bg-indigo-600 transition-colors disabled:cursor-not-allowed"
                     >
@@ -335,9 +326,7 @@ const Dashboard = () => {
                       Página {pagination.currentPage} de {pagination.totalPages}
                     </span>
                     <button
-                      onClick={() =>
-                        handlePageChange(pagination.currentPage + 1)
-                      }
+                      onClick={() => handlePageChange(pagination.currentPage + 1)}
                       disabled={pagination.currentPage >= pagination.totalPages}
                       className="px-4 py-2 bg-indigo-500 text-white rounded-lg disabled:bg-gray-300 hover:bg-indigo-600 transition-colors disabled:cursor-not-allowed"
                     >
