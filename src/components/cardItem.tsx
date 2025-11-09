@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { CardItemProps } from "../types/cards";
 import { getLighterColor } from "../types/colors";
+import { ImageModal } from "./ImageModal";
 
 export const CardItem: React.FC<CardItemProps> = ({
   card,
@@ -9,6 +10,7 @@ export const CardItem: React.FC<CardItemProps> = ({
 }) => {
   const [showAnswer, setShowAnswer] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<{ url: string; alt?: string } | null>(null);
 
   const topicColor = card.topic?.color || "#93C5FD";
   const lighterColor = getLighterColor(topicColor);
@@ -32,8 +34,13 @@ export const CardItem: React.FC<CardItemProps> = ({
     }
   };
 
+  const handleImageClick = (imageUrl: string, altText?: string) => {
+    setSelectedImage({ url: imageUrl, alt: altText });
+  };
+
   return (
-    <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-200 flex flex-col min-h-[200px]">
+    <>
+      <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-200 flex flex-col min-h-[300px]">
       {/* Encabezado con color del tema */}
       <div
         className="px-4 py-3"
@@ -48,45 +55,55 @@ export const CardItem: React.FC<CardItemProps> = ({
 
       {/* Contenido principal */}
       <div className="p-4 flex-1 flex flex-col">
-        {/* Pregunta */}
-        <div className="mb-3">
-          <h3 className="text-base font-semibold text-gray-900 mb-2 line-clamp-3">
+        {/* Pregunta - Centrada */}
+        <div className="mb-3 text-center">
+          <h3 className="text-base font-semibold text-gray-900 mb-3">
             {card.question}
           </h3>
 
-          {/* Imágenes de pregunta */}
+          {/* Imágenes de pregunta - Centradas */}
           {questionImages.length > 0 && (
-            <div className="mt-2 flex gap-2 flex-wrap">
+            <div className="mt-3 flex gap-2 justify-center flex-wrap">
               {questionImages.map((img) => (
                 <img
                   key={img.id}
                   src={img.imageUrl}
                   alt={img.altText || "Imagen de pregunta"}
-                  className="w-20 h-20 object-cover rounded-md border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"
-                  onClick={() => window.open(img.imageUrl, "_blank")}
+                  className="w-24 h-24 object-cover rounded-md border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => handleImageClick(img.imageUrl, img.altText)}
                 />
               ))}
             </div>
           )}
         </div>
 
-        {/* Respuesta */}
+        {/* Botón Ver respuesta - Centrado */}
+        <div className="flex justify-center mb-3">
+          <button
+            onClick={() => setShowAnswer(!showAnswer)}
+            className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all"
+          >
+            {showAnswer ? "Ocultar" : "Ver respuesta"}
+          </button>
+        </div>
+
+        {/* Respuesta - NO centrada */}
         {showAnswer && (
           <div className="mb-3 p-3 rounded-lg bg-gray-50 text-gray-700 text-sm flex-1 overflow-auto">
-            <p className="whitespace-pre-wrap line-clamp-4 mb-2">
+            <p className="whitespace-pre-wrap mb-2">
               {card.answer}
             </p>
 
-            {/* Imágenes de respuesta */}
+            {/* Imágenes de respuesta - Centradas */}
             {answerImages.length > 0 && (
-              <div className="mt-2 flex gap-2 flex-wrap">
+              <div className="mt-3 flex gap-2 justify-center flex-wrap">
                 {answerImages.map((img) => (
                   <img
                     key={img.id}
                     src={img.imageUrl}
                     alt={img.altText || "Imagen de respuesta"}
-                    className="w-20 h-20 object-cover rounded-md border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"
-                    onClick={() => window.open(img.imageUrl, "_blank")}
+                    className="w-24 h-24 object-cover rounded-md border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => handleImageClick(img.imageUrl, img.altText)}
                   />
                 ))}
               </div>
@@ -96,12 +113,6 @@ export const CardItem: React.FC<CardItemProps> = ({
 
         {/* Botones de acción */}
         <div className="flex gap-2 justify-end mt-auto">
-          <button
-            onClick={() => setShowAnswer(!showAnswer)}
-            className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all"
-          >
-            {showAnswer ? "Ocultar" : "Ver respuesta"}
-          </button>
           <button
             onClick={() => onEdit(card)}
             className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
@@ -118,5 +129,15 @@ export const CardItem: React.FC<CardItemProps> = ({
         </div>
       </div>
     </div>
+
+    {/* Modal de imagen */}
+    {selectedImage && (
+      <ImageModal
+        imageUrl={selectedImage.url}
+        altText={selectedImage.alt}
+        onClose={() => setSelectedImage(null)}
+      />
+    )}
+  </>
   );
 };
