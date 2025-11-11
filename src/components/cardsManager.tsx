@@ -8,74 +8,36 @@ export const CardsManager: React.FC<CardsManagerProps> = ({ topicId }) => {
   const [showForm, setShowForm] = useState(false);
   const [editingCard, setEditingCard] = useState<Card | undefined>();
   const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedTerm, setDebouncedTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isSearching, setIsSearching] = useState(false);
   const {
     cards,
     loading,
     error,
     pagination,
     fetchCardsByTopic,
-    searchCards,
     changePage,
     addCard,
     updateCard,
     deleteCard,
-    clearCards,
   } = useCards();
-
-  const loadCards = async (page: number) => {
-    if (isSearching) {
-      await searchCards(debouncedTerm, page);
-    } else {
-      changePage(page);
-    }
-  };
 
   useEffect(() => {
     if (topicId) {
       setSearchTerm("");
-      setDebouncedTerm("");
-      setCurrentPage(1);
-      setIsSearching(false);
       fetchCardsByTopic(topicId).catch((error) =>
         console.error("Error fetching cards:", error)
       );
     }
   }, [topicId]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedTerm(searchTerm);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
-
-  useEffect(() => {
-    const trimmedTerm = debouncedTerm.trim();
-    setIsSearching(trimmedTerm !== "");
-    setCurrentPage(1);
-    if (topicId) {
-      if (trimmedTerm === "") {
-        loadCards(1).catch((error) =>
-          console.error("Error fetching cards:", error)
-        );
-      } else if (trimmedTerm.length >= 2) {
-        loadCards(1).catch((error) =>
-          console.error("Error searching cards:", error)
-        );
-      } else {
-        clearCards();
-      }
-    }
-  }, [debouncedTerm, topicId]);
+  // Filtrar tarjetas localmente (como en Temas.tsx)
+  const filteredCards = cards.filter(
+    (card) =>
+      card.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      card.answer.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    loadCards(page).catch((error) =>
-      console.error("Error loading cards:", error)
-    );
+    changePage(page);
   };
 
   const handleCreateCard = () => {
@@ -91,17 +53,12 @@ export const CardsManager: React.FC<CardsManagerProps> = ({ topicId }) => {
   const handleSubmit = async (cardData: {
     question: string;
     answer: string;
-    questionImage?: File;
-    answerImage?: File;
   }) => {
     try {
       if (editingCard) {
         await updateCard(editingCard.id, cardData);
       } else {
-        await addCard({
-          ...cardData,
-          topicId,
-        });
+        await addCard({ ...cardData, topicId });
       }
       setShowForm(false);
       setEditingCard(undefined);
@@ -154,7 +111,7 @@ export const CardsManager: React.FC<CardsManagerProps> = ({ topicId }) => {
         />
       ) : (
         <CardList
-          cards={cards}
+          cards={filteredCards}
           onEdit={handleEditCard}
           onDelete={handleDeleteCard}
           topicId={topicId}
