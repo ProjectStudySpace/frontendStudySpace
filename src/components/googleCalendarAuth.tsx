@@ -116,6 +116,27 @@ export const GoogleCalendarAuth: React.FC<GoogleCalendarAuthProps> = ({
     window.location.href = url;
   };
 
+  const handleDisconnectGoogle = async () => {
+    try {
+      setIsLoading(true);
+
+      const { data } = await api.post("/auth/google/disconnect");
+
+      if (data) {
+        setIsAuthenticated(false);
+        setSyncInfo(null);
+        alert("Google Calendar desconectado exitosamente");
+      }
+    } catch (error) {
+      console.error("Error desconectando Google Calendar:", error);
+      alert(
+        "Error al desconectar Google Calendar. Por favor, intenta de nuevo."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
@@ -157,6 +178,12 @@ export const GoogleCalendarAuth: React.FC<GoogleCalendarAuthProps> = ({
               Tus sesiones de estudio se sincronizarán automáticamente con tu
               calendario.
             </p>
+            <button
+              onClick={handleDisconnectGoogle}
+              className="mt-3 bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
+            >
+              Desconectar Google Calendar
+            </button>
           </div>
         </div>
 
