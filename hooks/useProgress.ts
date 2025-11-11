@@ -1,7 +1,21 @@
 import { useState, useEffect, useCallback } from "react";
+import axios from "axios";
 import { API_URL } from "../src/config";
 
 const API_BASE = API_URL || "http://localhost:3000/api";
+
+const api = axios.create({
+  baseURL: API_BASE,
+});
+
+//interceptor para agregar token automáticamente
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 interface ProgressData {
   totalTopics: number;
@@ -21,17 +35,10 @@ export const useProgress = () => {
     try {
       setLoading(true);
       setError(null);
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${API_BASE}/users/dashboard`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const { data } = await api.get(`/users/dashboard`);
 
-      if (!response.ok)
-        throw new Error(`Error fetching progress data: ${response.status}`);
-      const data = await response.json();
+      if (!data)
+        throw new Error(`Error fetching progress data: ${data.status}`);
       setProgressData(data.dashboard.stats);
     } catch (err) {
       setError(
