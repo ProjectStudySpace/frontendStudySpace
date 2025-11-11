@@ -8,7 +8,6 @@ dist/
 node_modules/
 
 # Build cache
-.parcel-cache/
 .cache
 
 # Environment variables
@@ -36,6 +35,10 @@ yarn-error.log*
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Vite
+dist/
+.vite/
 
 
 
