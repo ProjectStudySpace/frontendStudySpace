@@ -1,9 +1,24 @@
 import { useState } from "react";
+import axios from "axios";
 import { Card, CreateCardData, UpdateCardData } from "../src/types/cards";
 import { useAuth } from "../src/context/AuthContext";
 import { API_URL } from "../src/config";
 
 const API_BASE_URL = API_URL || "http://localhost:3000/api";
+
+// Configurar instancia de axios
+const api = axios.create({
+  baseURL: API_BASE_URL,
+});
+
+// Interceptor para agregar token automáticamente
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 export const useCards = () => {
   const [cards, setCards] = useState<Card[]>([]);
@@ -32,15 +47,10 @@ export const useCards = () => {
     setLoading(true);
     setError(null);
     try {
-      const token = getToken();
-      const response = await fetch(`${API_BASE_URL}/cards/topic/${topicId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) throw new Error("Error al obtener tarjetas");
+      const { data } = await api.get(`/cards/topic/${topicId}`);
 
-      const data = await response.json();
+      if (!data) throw new Error("Error al obtener tarjetas");
+
       const cardsArray: Card[] = data.cards || [];
 
       const cardsWithTopic: Card[] = cardsArray.map((card) => ({
@@ -84,20 +94,11 @@ export const useCards = () => {
     setLoading(true);
     setError(null);
     try {
-      const token = getToken();
-      const response = await fetch(
-        `${API_BASE_URL}/cards/search?search=${encodeURIComponent(
-          searchTerm
-        )}&page=${page}&limit=${limit}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      if (!response.ok) throw new Error("Error al buscar tarjetas");
+      const { data } = await api.get(`/cards/search`, {
+        params: { search: searchTerm, page, limit },
+      });
+      if (!data) throw new Error("Error al buscar tarjetas");
 
-      const data = await response.json();
       const cardsArray: Card[] = data.cards || [];
       setCards(cardsArray);
       const pag = data.pagination || {};
@@ -124,8 +125,6 @@ export const useCards = () => {
     setLoading(true);
     setError(null);
     try {
-      const token = getToken();
-
       // Crear FormData para enviar archivos
       const formData = new FormData();
       formData.append("question", cardData.question);
@@ -140,18 +139,10 @@ export const useCards = () => {
         formData.append("answerImage", cardData.answerImage);
       }
 
-      const response = await fetch(`${API_BASE_URL}/cards`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          // NO incluir Content-Type, el browser lo maneja con boundary
-        },
-        body: formData,
-      });
+      const { data: newCard } = await api.post(`/cards`, formData);
 
-      if (!response.ok) throw new Error("Error al crear tarjeta");
+      if (!newCard) throw new Error("Error al crear tarjeta");
 
-      const newCard = await response.json();
       setAllCards((prev) => [...prev, newCard.card]);
       setCards((prev) => [...prev, newCard.card]);
 
@@ -179,8 +170,6 @@ export const useCards = () => {
     setLoading(true);
     setError(null);
     try {
-      const token = getToken();
-
       // Crear FormData para enviar archivos
       const formData = new FormData();
       if (updates.question) formData.append("question", updates.question);
@@ -194,18 +183,10 @@ export const useCards = () => {
         formData.append("answerImage", updates.answerImage);
       }
 
-      const response = await fetch(`${API_BASE_URL}/cards/${id}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          // NO incluir Content-Type
-        },
-        body: formData,
-      });
+      const { data: updatedCard } = await api.put(`/cards/${id}`, formData);
 
-      if (!response.ok) throw new Error("Error al actualizar tarjeta");
+      if (!updatedCard) throw new Error("Error al actualizar tarjeta");
 
-      const updatedCard = await response.json();
       setAllCards((prev) =>
         prev.map((card) => (card.id === id ? updatedCard.card : card))
       );
@@ -225,15 +206,7 @@ export const useCards = () => {
     setLoading(true);
     setError(null);
     try {
-      const token = getToken();
-      const response = await fetch(`${API_BASE_URL}/cards/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) throw new Error("Error al eliminar tarjeta");
+      await api.delete(`/cards/${id}`);
 
       setAllCards((prev) => prev.filter((card) => card.id !== id));
       setCards((prev) => prev.filter((card) => card.id !== id));
