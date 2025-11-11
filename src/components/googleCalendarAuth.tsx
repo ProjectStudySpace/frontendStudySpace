@@ -1,10 +1,27 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { API_URL } from "../config";
 import {
   GoogleCalendarAuthProps,
   GoogleCalendarSyncInfo,
 } from "../types/googleCalendar";
+
+const API_BASE = API_URL || "http://localhost:3000/api";
+
+// Configurar instancia de axios
+const api = axios.create({
+  baseURL: API_BASE,
+});
+
+// Interceptor para agregar token automáticamente
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 export const GoogleCalendarAuth: React.FC<GoogleCalendarAuthProps> = ({
   onAuthComplete,
@@ -61,15 +78,9 @@ export const GoogleCalendarAuth: React.FC<GoogleCalendarAuthProps> = ({
     }
 
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${API_URL}/auth/google/status`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const { data } = await api.get("/auth/google/status");
 
-      if (response.ok) {
-        const data = await response.json();
+      if (data) {
         setIsAuthenticated(data.authenticated);
       }
     } catch (error) {

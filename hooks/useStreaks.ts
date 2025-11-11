@@ -1,5 +1,18 @@
 import { useState, useEffect } from "react";
+import axios from "axios";
 import { API_URL } from "../src/config";
+
+const api = axios.create({
+  baseURL: API_URL || "http://localhost:3000/api",
+});
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 interface StreakStats {
   currentStreak: number;
@@ -20,20 +33,12 @@ export const useStreak = () => {
     try {
       setLoading(true);
       setError(null);
+      const { data } = await api.get(`/streak/status`);
 
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${API_URL}/streak/status`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
+      if (!data) {
         throw new Error("Error al obtener datos de racha");
       }
 
-      const data = await response.json();
       setStreakData(data.streak);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");

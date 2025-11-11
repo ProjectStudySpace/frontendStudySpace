@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { BookOpen, FileText, TrendingUp, Flame } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { TopicsManager } from "../components/topicsManager";
@@ -11,7 +12,11 @@ import { Topic, CreateTopicData } from "../types/topics";
 import { TopicForm } from "../components/topicForm";
 
 const Dashboard = () => {
-  const [selectedTopicId, setSelectedTopicId] = useState<number | null>(null);
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const selectedTopicId = searchParams.get("topic")
+    ? parseInt(searchParams.get("topic")!)
+    : null;
   const [dashboardData, setDashboardData] = useState<any | null>(null);
   const [userTimezone, setUserTimezone] = useState<string>("");
   const [showTopicForm, setShowTopicForm] = useState(false);
@@ -112,12 +117,20 @@ const Dashboard = () => {
     setShowTopicForm(true);
   };
 
+  const handleSelectTopic = (topicId: number) => {
+    navigate(`/topics?topic=${topicId}`);
+  };
+
+  const handleBackToTopics = () => {
+    navigate("/topics");
+  };
+
   if (selectedTopicId) {
     return (
       <div>
         <div className="flex items-center gap-4 mb-6">
           <button
-            onClick={() => setSelectedTopicId(null)}
+            onClick={handleBackToTopics}
             className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2"
           >
             ← Volver a materias
@@ -295,7 +308,7 @@ const Dashboard = () => {
                     <TopicCard
                       key={topic.id}
                       topic={topic}
-                      onSelect={setSelectedTopicId}
+                      onSelect={handleSelectTopic}
                       onEdit={handleEditTopic}
                       onDelete={handleDeleteTopic}
                     />

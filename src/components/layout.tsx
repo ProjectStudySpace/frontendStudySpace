@@ -9,6 +9,8 @@ import {
   Menu,
   X,
   GraduationCap,
+  User,
+  Settings,
 } from "lucide-react";
 import { GoogleCalendarAuth } from "./googleCalendarAuth";
 import { useAuth } from "../context/AuthContext";
@@ -55,6 +57,11 @@ const Layout = () => {
     { to: "/study-sessions", icon: GraduationCap, label: "Sesiones de repaso" },
     { to: "/calendar", icon: Calendar, label: "Calendario" },
     { to: "/progress", icon: TrendingUp, label: "Progreso" },
+  ];
+
+  const userLinks = [
+    { to: "/profile", icon: User, label: "Perfil" },
+    { to: "/settings", icon: Settings, label: "Configuración" },
   ];
 
   return (
@@ -157,6 +164,26 @@ const Layout = () => {
                   </Link>
                 );
               })}
+              
+              {/* Separador visual */}
+              <div className="h-px bg-gray-200 my-2 mx-4"></div>
+              
+              {/* Secciones de usuario */}
+              {userLinks.map((link) => {
+                const Icon = link.icon;
+                return (
+                  <Link
+                    key={link.label}
+                    to={link.to}
+                    className="flex items-center gap-3 p-4 rounded-xl transition-all duration-200 text-gray-700 font-medium hover:bg-indigo-50 hover:text-indigo-600 active:scale-95"
+                    onClick={handleLinkClick}
+                    title={link.label}
+                  >
+                    <Icon size={22} />
+                    <span>{link.label}</span>
+                  </Link>
+                );
+              })}
             </div>
           </nav>
 
@@ -208,6 +235,24 @@ const Layout = () => {
                 </Link>
               );
             })}
+            
+            {/* Separador visual */}
+            <div className="h-px bg-gray-200 mx-2 my-1"></div>
+            
+            {/* Secciones de usuario */}
+            {userLinks.map((link) => {
+              const Icon = link.icon;
+              return (
+                <Link
+                  key={link.label}
+                  to={link.to}
+                  className="flex items-center justify-center p-3 py-2.5 rounded-lg text-gray-600 font-medium hover:bg-gray-100 hover:text-indigo-600 transition-colors flex-shrink-0"
+                  title={link.label}
+                >
+                  <Icon size={24} />
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Logout button at bottom */}
@@ -242,7 +287,6 @@ const Layout = () => {
           {/* Welcome message mobile */}
           <div className="lg:hidden mb-6 bg-white rounded-xl shadow-sm p-4">
             <h2 className="text-sm font-bold text-gray-900">
-              {/* <h2 className="text-sm font-bold text-gray-900"> */}
               ¡Bienvenido de vuelta! 👋
             </h2>
             <p className="text-sm text-gray-600 mt-1">
