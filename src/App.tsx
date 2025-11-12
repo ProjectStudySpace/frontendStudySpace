@@ -40,14 +40,14 @@ const AppRoutes: React.FC = () => {
       <Route path="/" element={<Landing />} />
       <Route
         path="/login"
-        element={isAuthenticated ? <Navigate to="/topics" /> : <Login />}  // Corregido cambio de URL
+        element={isAuthenticated ? <Navigate to="/topics" /> : <Login />} // Corregido cambio de URL
       />
       <Route
         path="/register"
-        element={isAuthenticated ? <Navigate to="/topics" /> : <Register />}  // Corregido cambio de URL
+        element={isAuthenticated ? <Navigate to="/topics" /> : <Register />} // Corregido cambio de URL
       />
-      
-      {/* Rutas protegidas */}  {/* ELIMINADO !!!! study-sections por duplicado (el usado: /study-sessions) */}
+      {/* Rutas protegidas */}{" "}
+      {/* ELIMINADO !!!! study-sections por duplicado (el usado: /study-sessions) */}
       {isAuthenticated && (
         <Route element={<Layout />}>
           <Route path="/topics" element={<Temas />} />
@@ -56,7 +56,6 @@ const AppRoutes: React.FC = () => {
           <Route path="/progress" element={<ProgressPage />} />
         </Route>
       )}
-
       {/* Redirigir a login si no está autenticado */}
       {!isAuthenticated && (
         <Route path="*" element={<Navigate to="/login" replace />} />

@@ -34,7 +34,7 @@ export const useCalendarSessions = () => {
       let hasMore = true;
 
       while (hasMore) {
-        const { data } = await api.get(`/reviews/calendar-sessions`, {
+        const { data } = await api.get(`/reviews/upcoming`, {
           params: { days, page, limit: 100 },
         });
 
