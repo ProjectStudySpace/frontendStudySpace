@@ -4,7 +4,8 @@ import ReviewSessionList from "./reviewSessionList";
 import StudySession from "./studySession";
 import ProgressSection from "./progressSection";
 import CalendarWidget from "./calendarWidget";
-import { BookOpen, Clock, TrendingUp, Play } from "lucide-react";
+import { CreateContentSelector } from "./createContentSelector";
+import { BookOpen, Clock, TrendingUp, Play, Plus } from "lucide-react";
 
 const SpacedRepetitionDashboard: React.FC = () => {
   const {
@@ -24,6 +25,7 @@ const SpacedRepetitionDashboard: React.FC = () => {
 
   const [currentSession, setCurrentSession] = useState<number>(0);
   const [showStudySession, setShowStudySession] = useState(false);
+  const [showContentSelector, setShowContentSelector] = useState(false);
 
   const handleSessionsUpdate = useCallback(() => {
     fetchAllReviews();
@@ -76,6 +78,22 @@ const SpacedRepetitionDashboard: React.FC = () => {
   const handleExitStudySession = () => {
     setShowStudySession(false);
     setCurrentSession(0);
+  };
+
+  const handleNewContent = () => {
+    setShowContentSelector(true);
+  };
+
+  const handleSelectCard = () => {
+    setShowContentSelector(false);
+    // Navegar a la página de temas para crear tarjeta
+    window.location.href = '/topics';
+  };
+
+  const handleSelectNote = () => {
+    setShowContentSelector(false);
+    // Navegar a la página de temas para crear nota
+    window.location.href = '/topics';
   };
 
   if (loading) {
@@ -137,20 +155,30 @@ const SpacedRepetitionDashboard: React.FC = () => {
             </p>
           </div>
 
-          {pendingReviews.length > 0 && (
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <button
-              onClick={startStudySession}
-              className="flex items-center gap-2 px-4 sm:px-6 py-3 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl w-full sm:w-auto justify-center"
+              onClick={handleNewContent}
+              className="flex items-center justify-center gap-2 px-4 py-3 bg-white hover:bg-gray-50 text-indigo-600 rounded-xl font-semibold border-2 border-indigo-200 hover:border-indigo-300 transition-all shadow-sm hover:shadow"
             >
-              <Play size={20} />
-              <span className="sm:hidden">
-                Iniciar ({pendingReviews.length})
-              </span>
-              <span className="hidden sm:inline">
-                Iniciar repaso ({pendingReviews.length})
-              </span>
+              <Plus size={20} />
+              <span>Nuevo contenido</span>
             </button>
-          )}
+            
+            {pendingReviews.length > 0 && (
+              <button
+                onClick={startStudySession}
+                className="flex items-center gap-2 px-4 sm:px-6 py-3 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl justify-center"
+              >
+                <Play size={20} />
+                <span className="sm:hidden">
+                  Iniciar ({pendingReviews.length})
+                </span>
+                <span className="hidden sm:inline">
+                  Iniciar repaso ({pendingReviews.length})
+                </span>
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
@@ -228,6 +256,15 @@ const SpacedRepetitionDashboard: React.FC = () => {
         pendingPagination={pendingPagination}
         onPendingPageChange={handlePendingPageChange}
       />
+
+      {/* Selector de contenido */}
+      {showContentSelector && (
+        <CreateContentSelector
+          onSelectCard={handleSelectCard}
+          onSelectNote={handleSelectNote}
+          onClose={() => setShowContentSelector(false)}
+        />
+      )}
     </div>
   );
 };

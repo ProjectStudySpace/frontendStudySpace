@@ -12,7 +12,6 @@ import {
   User,
   Settings,
 } from "lucide-react";
-import { GoogleCalendarAuth } from "./googleCalendarAuth";
 import { useAuth } from "../context/AuthContext";
 import { useEffect, useState } from "react";
 
@@ -292,15 +291,6 @@ const Layout = () => {
             <p className="text-sm text-gray-600 mt-1">
               {user?.email || "Estudiante"}
             </p>
-          </div>
-
-          {/* Google Calendar Auth - Aparece en todas las páginas */}
-          <div className="mb-6">
-            <GoogleCalendarAuth
-              onAuthComplete={() => {
-                console.log("Google Calendar conectado exitosamente");
-              }}
-            />
           </div>
 
           {/* Aquí se renderizan las páginas */}
