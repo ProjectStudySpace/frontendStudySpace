@@ -110,7 +110,7 @@ const SpacedRepetitionDashboard: React.FC = () => {
         <p className="text-red-800">Error: {error}</p>
         <button
           onClick={() => window.location.reload()}
-          className="mt-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+          className="mt-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg font-medium transition-colors border border-red-300"
         >
           Reintentar
         </button>
