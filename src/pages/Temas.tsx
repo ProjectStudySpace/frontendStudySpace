@@ -4,12 +4,14 @@ import { BookOpen, FileText, TrendingUp, Flame } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { TopicsManager } from "../components/topicsManager";
 import { CardsManager } from "../components/cardsManager";
+import { NotesManager } from "../components/notesManager";
 import { useStreak } from "../../hooks/useStreaks";
 import { getStoredUserTimezone, formatDateForUser } from "../utils/dateUtils";
 import { TopicCard } from "../components/topicCard";
 import { useTopics } from "../../hooks/useTopics";
 import { Topic, CreateTopicData } from "../types/topics";
 import { TopicForm } from "../components/topicForm";
+import { GoogleCalendarAuth } from "../components/googleCalendarAuth";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -136,16 +138,45 @@ const Dashboard = () => {
             ← Volver a materias
           </button>
           <h1 className="text-2xl font-bold text-gray-900">
-            Gestión de tarjetas
+            Contenido de estudio
           </h1>
         </div>
-        <CardsManager topicId={selectedTopicId} />
+
+        {/* Sección de Tarjetas */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-1 h-8 bg-gradient-to-b from-indigo-500 to-purple-600 rounded-full"></div>
+            <h2 className="text-2xl font-bold text-gray-900">Tarjetas de Estudio</h2>
+          </div>
+          <CardsManager topicId={selectedTopicId} />
+        </div>
+
+        {/* Separador visual */}
+        <div className="my-8 border-t border-gray-200"></div>
+
+        {/* Sección de Notas */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-green-500 rounded-full"></div>
+            <h2 className="text-2xl font-bold text-gray-900">Notas de Estudio</h2>
+          </div>
+          <NotesManager topicId={selectedTopicId} />
+        </div>
       </div>
     );
   }
 
   return (
     <div>
+      {/* Google Calendar Auth */}
+      <div className="mb-6">
+        <GoogleCalendarAuth
+          onAuthComplete={() => {
+            console.log("Google Calendar conectado exitosamente");
+          }}
+        />
+      </div>
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">

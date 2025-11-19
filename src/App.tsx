@@ -15,6 +15,8 @@ import Register from "./pages/Register";
 import StudySessions from "./pages/StudySessions";
 import CalendarPage from "./pages/CalendarPage";
 import ProgressPage from "./pages/ProgressPage";
+import Perfil from "./pages/Perfil";
+import Settings from "./pages/Settings";
 import Layout from "./components/layout";
 
 const theme = createTheme({
@@ -54,6 +56,8 @@ const AppRoutes: React.FC = () => {
           <Route path="/study-sessions" element={<StudySessions />} />
           <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/progress" element={<ProgressPage />} />
+          <Route path="/profile" element={<Perfil />} />
+          <Route path="/settings" element={<Settings />} />
         </Route>
       )}
       {/* Redirigir a login si no está autenticado */}

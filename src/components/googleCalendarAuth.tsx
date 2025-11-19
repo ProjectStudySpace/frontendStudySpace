@@ -180,7 +180,7 @@ export const GoogleCalendarAuth: React.FC<GoogleCalendarAuthProps> = ({
             </p>
             <button
               onClick={handleDisconnectGoogle}
-              className="mt-3 bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
+              className="mt-3 bg-red-100 hover:bg-red-200 text-red-600 font-medium py-2 px-4 rounded-lg transition-colors text-sm border border-red-300"
             >
               Desconectar Google Calendar
             </button>
