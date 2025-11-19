@@ -227,8 +227,9 @@ export const useReviews = () => {
   };
 
   const upcoming7DaysCount = useMemo(() => {
-    return Array.isArray(upcomingReviews) ? upcomingReviews.length : 0;
-  }, [upcomingReviews]);
+    // Usar el total real de la paginación, no solo los elementos de la página actual
+    return upcomingPagination.totalItems || 0;
+  }, [upcomingPagination.totalItems]);
 
   const totalUpcomingCount = useMemo(() => {
     if (!allUpcomingReviews || typeof allUpcomingReviews !== "object") return 0;
@@ -246,12 +247,18 @@ export const useReviews = () => {
     }
   }, [fetchAllReviews]);
 
+  // Contador total de pendientes (no paginado)
+  const totalPendingCount = useMemo(() => {
+    return pendingPagination.totalItems || 0;
+  }, [pendingPagination.totalItems]);
+
   return {
     pendingReviews,
     upcomingReviews,
     allUpcomingReviews,
     upcomingPagination,
     pendingPagination,
+    totalPendingCount, // Total real de pendientes
     upcoming7DaysCount,
     totalUpcomingCount,
     loading,

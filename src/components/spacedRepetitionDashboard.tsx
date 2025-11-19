@@ -10,6 +10,7 @@ import { BookOpen, Clock, TrendingUp, Play, Plus } from "lucide-react";
 const SpacedRepetitionDashboard: React.FC = () => {
   const {
     pendingReviews,
+    totalPendingCount,
     upcoming7DaysCount,
     totalUpcomingCount,
     upcomingPagination,
@@ -87,13 +88,13 @@ const SpacedRepetitionDashboard: React.FC = () => {
   const handleSelectCard = () => {
     setShowContentSelector(false);
     // Navegar a la página de temas para crear tarjeta
-    window.location.href = '/topics';
+    window.location.href = "/topics";
   };
 
   const handleSelectNote = () => {
     setShowContentSelector(false);
     // Navegar a la página de temas para crear nota
-    window.location.href = '/topics';
+    window.location.href = "/topics";
   };
 
   if (loading) {
@@ -163,18 +164,15 @@ const SpacedRepetitionDashboard: React.FC = () => {
               <Plus size={20} />
               <span>Nuevo contenido</span>
             </button>
-            
-            {pendingReviews.length > 0 && (
+            {totalPendingCount > 0 && (
               <button
                 onClick={startStudySession}
                 className="flex items-center gap-2 px-4 sm:px-6 py-3 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl justify-center"
               >
                 <Play size={20} />
-                <span className="sm:hidden">
-                  Iniciar ({pendingReviews.length})
-                </span>
+                <span className="sm:hidden">Iniciar ({totalPendingCount})</span>
                 <span className="hidden sm:inline">
-                  Iniciar repaso ({pendingReviews.length})
+                  Iniciar repaso ({totalPendingCount})
                 </span>
               </button>
             )}
@@ -192,7 +190,7 @@ const SpacedRepetitionDashboard: React.FC = () => {
                   Pendientes hoy
                 </p>
                 <p className="text-2xl sm:text-3xl font-bold text-gray-900">
-                  {pendingReviews.length}
+                  {totalPendingCount}
                 </p>
               </div>
             </div>
@@ -227,7 +225,7 @@ const SpacedRepetitionDashboard: React.FC = () => {
                   Próximos 30 días
                 </p>
                 <p className="text-2xl sm:text-3xl font-bold text-gray-900">
-                  {pendingReviews.length + totalUpcomingCount}
+                  {totalPendingCount + totalUpcomingCount}
                 </p>
               </div>
             </div>
