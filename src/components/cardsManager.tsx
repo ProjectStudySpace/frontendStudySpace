@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardsManagerProps } from "../types/cards";
 import { useCards } from "../../hooks/useCards";
 import { CardList } from "./cardList";
 import { CardForm } from "./cardForm";
 
-export const CardsManager: React.FC<CardsManagerProps> = ({ topicId }) => {
-  const [showForm, setShowForm] = useState(false);
+export const CardsManager: React.FC<CardsManagerProps> = ({ topicId, openFormInitially = false }) => {
+  const [showForm, setShowForm] = useState(openFormInitially);
   const [editingCard, setEditingCard] = useState<Card | undefined>();
   const [searchTerm, setSearchTerm] = useState("");
   const {
@@ -28,6 +28,13 @@ export const CardsManager: React.FC<CardsManagerProps> = ({ topicId }) => {
       );
     }
   }, [topicId]);
+
+  // Open form when openFormInitially changes to true
+  useEffect(() => {
+    if (openFormInitially) {
+      setShowForm(true);
+    }
+  }, [openFormInitially]);
 
   // Filtrar tarjetas localmente (como en Temas.tsx)
   const filteredCards = cards.filter(

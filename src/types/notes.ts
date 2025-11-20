@@ -65,4 +65,5 @@ export interface Note {
   
   export interface NotesManagerProps {
     topicId: number;
+    openFormInitially?: boolean;
   }

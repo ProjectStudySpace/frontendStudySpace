@@ -4,8 +4,7 @@ import ReviewSessionList from "./reviewSessionList";
 import StudySession from "./studySession";
 import ProgressSection from "./progressSection";
 import CalendarWidget from "./calendarWidget";
-import { CreateContentSelector } from "./createContentSelector";
-import { BookOpen, Clock, TrendingUp, Play, Plus } from "lucide-react";
+import { BookOpen, Clock, TrendingUp, Play } from "lucide-react";
 
 const SpacedRepetitionDashboard: React.FC = () => {
   const {
@@ -26,7 +25,6 @@ const SpacedRepetitionDashboard: React.FC = () => {
 
   const [currentSession, setCurrentSession] = useState<number>(0);
   const [showStudySession, setShowStudySession] = useState(false);
-  const [showContentSelector, setShowContentSelector] = useState(false);
 
   const handleSessionsUpdate = useCallback(() => {
     fetchAllReviews();
@@ -79,22 +77,6 @@ const SpacedRepetitionDashboard: React.FC = () => {
   const handleExitStudySession = () => {
     setShowStudySession(false);
     setCurrentSession(0);
-  };
-
-  const handleNewContent = () => {
-    setShowContentSelector(true);
-  };
-
-  const handleSelectCard = () => {
-    setShowContentSelector(false);
-    // Navegar a la página de temas para crear tarjeta
-    window.location.href = "/topics";
-  };
-
-  const handleSelectNote = () => {
-    setShowContentSelector(false);
-    // Navegar a la página de temas para crear nota
-    window.location.href = "/topics";
   };
 
   if (loading) {
@@ -157,13 +139,6 @@ const SpacedRepetitionDashboard: React.FC = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <button
-              onClick={handleNewContent}
-              className="flex items-center justify-center gap-2 px-4 py-3 bg-white hover:bg-gray-50 text-indigo-600 rounded-xl font-semibold border-2 border-indigo-200 hover:border-indigo-300 transition-all shadow-sm hover:shadow"
-            >
-              <Plus size={20} />
-              <span>Nuevo contenido</span>
-            </button>
             {totalPendingCount > 0 && (
               <button
                 onClick={startStudySession}
@@ -254,15 +229,6 @@ const SpacedRepetitionDashboard: React.FC = () => {
         pendingPagination={pendingPagination}
         onPendingPageChange={handlePendingPageChange}
       />
-
-      {/* Selector de contenido */}
-      {showContentSelector && (
-        <CreateContentSelector
-          onSelectCard={handleSelectCard}
-          onSelectNote={handleSelectNote}
-          onClose={() => setShowContentSelector(false)}
-        />
-      )}
     </div>
   );
 };

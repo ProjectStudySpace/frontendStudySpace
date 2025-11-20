@@ -5,8 +5,8 @@ import { NoteList } from "./noteList";
 import { NoteForm } from "./noteForm";
 import { Search } from "lucide-react";
 
-export const NotesManager: React.FC<NotesManagerProps> = ({ topicId }) => {
-  const [showForm, setShowForm] = useState(false);
+export const NotesManager: React.FC<NotesManagerProps> = ({ topicId, openFormInitially = false }) => {
+  const [showForm, setShowForm] = useState(openFormInitially);
   const [editingNote, setEditingNote] = useState<Note | undefined>();
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedTerm, setDebouncedTerm] = useState("");
@@ -68,6 +68,13 @@ export const NotesManager: React.FC<NotesManagerProps> = ({ topicId }) => {
         });
     }
   }, [topicId]);
+
+  // Open form when openFormInitially changes to true
+  useEffect(() => {
+    if (openFormInitially) {
+      setShowForm(true);
+    }
+  }, [openFormInitially]);
 
   // Debounce del término de búsqueda
   useEffect(() => {

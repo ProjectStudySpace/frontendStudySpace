@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { BookOpen, FileText, TrendingUp, Flame } from "lucide-react";
+import { BookOpen, FileText, TrendingUp, Flame, Plus, ChevronDown } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { TopicsManager } from "../components/topicsManager";
 import { CardsManager } from "../components/cardsManager";
@@ -26,6 +26,10 @@ const Dashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [refreshTopics, setRefreshTopics] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [showContentDropdown, setShowContentDropdown] = useState(false);
+  const [showCardForm, setShowCardForm] = useState(false);
+  const [showNoteForm, setShowNoteForm] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const pageSize = 5;
 
   const { getDashboard } = useAuth();
@@ -54,6 +58,24 @@ const Dashboard = () => {
     fetchDashboard();
     fetchUserTopics(currentPage, pageSize);
   }, [refreshTopics, currentPage]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowContentDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Reset form flags when topic changes
+  useEffect(() => {
+    setShowCardForm(false);
+    setShowNoteForm(false);
+  }, [selectedTopicId]);
 
   //funcion para calcular el progreso promedio
   const calculateProgress = () => {
@@ -142,13 +164,98 @@ const Dashboard = () => {
           </h1>
         </div>
 
+        {/* Dropdown para nuevo contenido */}
+        <div className="flex justify-center mb-6">
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setShowContentDropdown(!showContentDropdown)}
+              className="flex items-center justify-center gap-2 px-4 py-3 bg-white hover:bg-gray-50 text-indigo-600 rounded-xl font-semibold border-2 border-indigo-200 hover:border-indigo-300 transition-all shadow-sm hover:shadow"
+            >
+              <Plus size={20} />
+              <span>Nuevo contenido</span>
+              <ChevronDown size={20} className={`transition-transform ${showContentDropdown ? 'rotate-180' : ''}`} />
+            </button>
+
+            {/* Dropdown menu */}
+            {showContentDropdown && (
+              <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 w-96 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden">
+                {/* Tarjeta de Estudio */}
+                <button
+                  onClick={() => {
+                    setShowContentDropdown(false);
+                    setShowCardForm(true);
+                  }}
+                  className="w-full group relative overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+                  <div className="relative p-4 border-b border-gray-200 group-hover:border-indigo-200 transition-all duration-200 hover:bg-gray-50">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100 group-hover:from-indigo-500 group-hover:to-purple-600 flex items-center justify-center transition-all duration-300 shadow-sm flex-shrink-0">
+                        <FileText
+                          size={24}
+                          className="text-indigo-600 group-hover:text-white transition-colors"
+                        />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <h4 className="text-base font-bold text-gray-900 group-hover:text-indigo-600 transition-colors mb-1">
+                          Tarjeta de Estudio
+                        </h4>
+                        <p className="text-xs text-gray-600 leading-relaxed">
+                          Formato pregunta-respuesta ideal para <strong>repaso activo</strong> y memorización.
+                        </p>
+                        <div className="mt-2 flex items-center gap-2 text-xs text-indigo-600 font-medium">
+                          <span className="bg-indigo-50 px-2 py-0.5 rounded">Repaso rápido</span>
+                          <span className="bg-indigo-50 px-2 py-0.5 rounded">Con imágenes</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </button>
+
+                {/* Nota/Apunte */}
+                <button
+                  onClick={() => {
+                    setShowContentDropdown(false);
+                    setShowNoteForm(true);
+                  }}
+                  className="w-full group relative overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-green-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+                  <div className="relative p-4 group-hover:bg-gray-50 transition-all duration-200">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-green-100 group-hover:from-blue-500 group-hover:to-green-500 flex items-center justify-center transition-all duration-300 shadow-sm flex-shrink-0">
+                        <BookOpen
+                          size={24}
+                          className="text-blue-600 group-hover:text-white transition-colors"
+                        />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <h4 className="text-base font-bold text-gray-900 group-hover:text-blue-600 transition-colors mb-1">
+                          Nota de Estudio
+                        </h4>
+                        <p className="text-xs text-gray-600 leading-relaxed">
+                          Formato de <strong>libro abierto</strong> con dos páginas para contenido extenso.
+                        </p>
+                        <div className="mt-2 flex items-center gap-2 text-xs text-blue-600 font-medium">
+                          <span className="bg-blue-50 px-2 py-0.5 rounded">Contenido extenso</span>
+                          <span className="bg-blue-50 px-2 py-0.5 rounded">2 páginas</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Sección de Tarjetas */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-1 h-8 bg-gradient-to-b from-indigo-500 to-purple-600 rounded-full"></div>
             <h2 className="text-2xl font-bold text-gray-900">Tarjetas de Estudio</h2>
           </div>
-          <CardsManager topicId={selectedTopicId} />
+          <CardsManager topicId={selectedTopicId} openFormInitially={showCardForm} />
         </div>
 
         {/* Separador visual */}
@@ -160,7 +267,7 @@ const Dashboard = () => {
             <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-green-500 rounded-full"></div>
             <h2 className="text-2xl font-bold text-gray-900">Notas de Estudio</h2>
           </div>
-          <NotesManager topicId={selectedTopicId} />
+          <NotesManager topicId={selectedTopicId} openFormInitially={showNoteForm} />
         </div>
       </div>
     );
