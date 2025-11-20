@@ -165,7 +165,7 @@ const Dashboard = () => {
             onClick={handleBackToTopics}
             className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2"
           >
-            ← Volver a materias
+            ← Volver
           </button>
         </div>
 
