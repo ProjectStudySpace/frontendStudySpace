@@ -25,7 +25,7 @@ export const useNotes = () => {
     return token;
   };
 
-  const fetchNotesByTopic = async (topicId: number): Promise<Note[]> => {
+  const fetchNotesByTopic = async (topicId: number, page: number = 1, pageSize: number = 5): Promise<Note[]> => {
     if (!user) throw new Error("Usuario no autenticado");
 
     setLoading(true);
@@ -53,15 +53,16 @@ export const useNotes = () => {
       }));
 
       setAllNotes(notesWithTopic);
-      const pageSize = 5;
       const totalPages = Math.ceil(notesWithTopic.length / pageSize);
+      const start = (page - 1) * pageSize;
+      const end = start + pageSize;
       setPagination({
-        currentPage: 1,
+        currentPage: page,
         totalPages,
         totalItems: notesWithTopic.length,
         pageSize,
       });
-      setNotes(notesWithTopic.slice(0, pageSize));
+      setNotes(notesWithTopic.slice(start, end));
       return notesWithTopic;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");
@@ -126,7 +127,7 @@ export const useNotes = () => {
       const token = getToken();
 
       const formData = new FormData();
-      formData.append("title", noteData.title);
+      formData.append("title", noteData.title || "");
       formData.append("leftContent", noteData.leftContent);
       formData.append("rightContent", noteData.rightContent);
       formData.append("topicId", noteData.topicId.toString());
@@ -153,8 +154,7 @@ export const useNotes = () => {
       setNotes((prev) => [...prev, newNote.note]);
 
       const newTotal = allNotes.length + 1;
-      const pageSize = 5;
-      const newTotalPages = Math.ceil(newTotal / pageSize);
+      const newTotalPages = Math.ceil(newTotal / pagination.pageSize);
       setPagination((prev) => ({
         ...prev,
         totalItems: newTotal,
@@ -237,8 +237,7 @@ export const useNotes = () => {
       setAllNotes(updatedAllNotes);
       
       const newTotal = updatedAllNotes.length;
-      const pageSize = 5;
-      const newTotalPages = Math.max(1, Math.ceil(newTotal / pageSize));
+      const newTotalPages = Math.max(1, Math.ceil(newTotal / pagination.pageSize));
       
       setPagination((prev) => {
         const currentPage = prev.currentPage > newTotalPages ? newTotalPages : prev.currentPage;
@@ -251,8 +250,8 @@ export const useNotes = () => {
       });
 
       // Actualizar la página actual con los datos correctos
-      const start = (Math.min(pagination.currentPage, newTotalPages) - 1) * pageSize;
-      const end = start + pageSize;
+      const start = (Math.min(pagination.currentPage, newTotalPages) - 1) * pagination.pageSize;
+      const end = start + pagination.pageSize;
       setNotes(updatedAllNotes.slice(start, end));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");
@@ -262,12 +261,17 @@ export const useNotes = () => {
     }
   };
 
-  const changePage = (page: number) => {
-    const pageSize = 5;
-    const start = (page - 1) * pageSize;
-    const end = start + pageSize;
+  const changePage = (page: number, pageSize?: number) => {
+    const currentPageSize = pageSize || pagination.pageSize;
+    const start = (page - 1) * currentPageSize;
+    const end = start + currentPageSize;
     setNotes(allNotes.slice(start, end));
-    setPagination((prev) => ({ ...prev, currentPage: page }));
+    setPagination((prev) => ({
+      ...prev,
+      currentPage: page,
+      pageSize: currentPageSize,
+      totalPages: Math.ceil(allNotes.length / currentPageSize)
+    }));
   };
 
   const clearNotes = () => {

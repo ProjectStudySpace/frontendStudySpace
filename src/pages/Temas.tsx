@@ -12,6 +12,7 @@ import { useTopics } from "../../hooks/useTopics";
 import { Topic, CreateTopicData } from "../types/topics";
 import { TopicForm } from "../components/topicForm";
 import { GoogleCalendarAuth } from "../components/googleCalendarAuth";
+import { useDynamicPagination } from "../../hooks/useDynamicPagination";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -30,7 +31,13 @@ const Dashboard = () => {
   const [showCardForm, setShowCardForm] = useState(false);
   const [showNoteForm, setShowNoteForm] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const pageSize = 5;
+  
+  // Dynamic pagination for topics
+  const { pageSize } = useDynamicPagination({
+    cols: { mobile: 1, md: 2, lg: 3, xl: 4 },
+    mobileLimit: 5, // 4 topics + 1 button
+    rows: 2,
+  });
 
   const { getDashboard } = useAuth();
   const { streakData, loading: streakLoading } = useStreak();
@@ -152,20 +159,25 @@ const Dashboard = () => {
   if (selectedTopicId) {
     return (
       <div>
-        <div className="flex items-center gap-4 mb-6">
+        {/* Botón volver a materias */}
+        <div className="mb-6 md:mb-8">
           <button
             onClick={handleBackToTopics}
             className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2"
           >
             ← Volver a materias
           </button>
-          <h1 className="text-2xl font-bold text-gray-900">
+        </div>
+
+        {/* Título centrado */}
+        <div className="text-center mb-6 md:mb-10">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
             Contenido de estudio
           </h1>
         </div>
 
         {/* Dropdown para nuevo contenido */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-8 md:mb-12">
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setShowContentDropdown(!showContentDropdown)}
@@ -250,8 +262,8 @@ const Dashboard = () => {
         </div>
 
         {/* Sección de Tarjetas */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
+        <div className="mb-8 md:mb-10">
+          <div className="flex items-center gap-3 mb-4 md:mb-6">
             <div className="w-1 h-8 bg-gradient-to-b from-indigo-500 to-purple-600 rounded-full"></div>
             <h2 className="text-2xl font-bold text-gray-900">Tarjetas de Estudio</h2>
           </div>
@@ -264,7 +276,7 @@ const Dashboard = () => {
         {/* Sección de Notas */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-green-500 rounded-full"></div>
+            <div className="w-1 h-8 bg-gradient-to-b from-indigo-500 to-purple-600 rounded-full"></div>
             <h2 className="text-2xl font-bold text-gray-900">Notas de Estudio</h2>
           </div>
           <NotesManager topicId={selectedTopicId} openFormInitially={showNoteForm} />

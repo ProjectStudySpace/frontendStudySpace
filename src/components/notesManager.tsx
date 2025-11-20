@@ -4,6 +4,7 @@ import { useNotes } from "../../hooks/useNotes";
 import { NoteList } from "./noteList";
 import { NoteForm } from "./noteForm";
 import { Search } from "lucide-react";
+import { useDynamicPagination } from "../../hooks/useDynamicPagination";
 
 export const NotesManager: React.FC<NotesManagerProps> = ({ topicId, openFormInitially = false }) => {
   const [showForm, setShowForm] = useState(openFormInitially);
@@ -12,6 +13,13 @@ export const NotesManager: React.FC<NotesManagerProps> = ({ topicId, openFormIni
   const [debouncedTerm, setDebouncedTerm] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
+  
+  // Dynamic pagination for notes
+  const { pageSize: dynamicPageSize } = useDynamicPagination({
+    cols: { mobile: 1, md: 1, lg: 1, xl: 1 },
+    mobileLimit: 4, // 3 notes + 1 button
+    rows: 2,
+  });
   
   const {
     notes,
@@ -53,7 +61,7 @@ export const NotesManager: React.FC<NotesManagerProps> = ({ topicId, openFormIni
       setInitialLoadDone(false);
       setLocalError(null);
       
-      fetchNotesByTopic(topicId)
+      fetchNotesByTopic(topicId, 1, dynamicPageSize)
         .then(() => {
           setInitialLoadDone(true);
           setLocalError(null); // Limpiar error en carga exitosa
@@ -67,7 +75,7 @@ export const NotesManager: React.FC<NotesManagerProps> = ({ topicId, openFormIni
           }
         });
     }
-  }, [topicId]);
+  }, [topicId, dynamicPageSize]);
 
   // Open form when openFormInitially changes to true
   useEffect(() => {
@@ -94,7 +102,7 @@ export const NotesManager: React.FC<NotesManagerProps> = ({ topicId, openFormIni
       // Sin búsqueda, recargar solo si ya habíamos buscado antes
       if (isSearching) {
         setIsSearching(false);
-        fetchNotesByTopic(topicId).catch((error) =>
+        fetchNotesByTopic(topicId, 1, dynamicPageSize).catch((error) =>
           console.error("Error fetching notes:", error)
         );
       }
@@ -109,7 +117,11 @@ export const NotesManager: React.FC<NotesManagerProps> = ({ topicId, openFormIni
   }, [debouncedTerm, topicId, initialLoadDone, isSearching]);
 
   const handlePageChange = (page: number) => {
-    loadNotes(page, debouncedTerm);
+    if (debouncedTerm.trim()) {
+      loadNotes(page, debouncedTerm);
+    } else {
+      changePage(page, dynamicPageSize);
+    }
   };
 
   const handleCreateNote = () => {
@@ -145,7 +157,7 @@ export const NotesManager: React.FC<NotesManagerProps> = ({ topicId, openFormIni
       if (debouncedTerm.trim()) {
         await loadNotes(pagination.currentPage, debouncedTerm);
       } else {
-        await fetchNotesByTopic(topicId);
+        await fetchNotesByTopic(topicId, pagination.currentPage, dynamicPageSize);
       }
     } catch (error) {
       console.error("Error al guardar nota:", error);
@@ -190,7 +202,7 @@ export const NotesManager: React.FC<NotesManagerProps> = ({ topicId, openFormIni
         <button
           onClick={() => {
             setLocalError(null);
-            fetchNotesByTopic(topicId)
+            fetchNotesByTopic(topicId, 1, dynamicPageSize)
               .then(() => setLocalError(null))
               .catch((err) => setLocalError(err.message));
           }}

@@ -41,7 +41,7 @@ export const useCards = () => {
     return token;
   };
 
-  const fetchCardsByTopic = async (topicId: number): Promise<Card[]> => {
+  const fetchCardsByTopic = async (topicId: number, page: number = 1, pageSize: number = 5): Promise<Card[]> => {
     if (!user) throw new Error("Usuario no autenticado");
 
     setLoading(true);
@@ -64,15 +64,16 @@ export const useCards = () => {
       }));
 
       setAllCards(cardsWithTopic);
-      const pageSize = 5;
       const totalPages = Math.ceil(cardsWithTopic.length / pageSize);
+      const start = (page - 1) * pageSize;
+      const end = start + pageSize;
       setPagination({
-        currentPage: 1,
+        currentPage: page,
         totalPages,
         totalItems: cardsWithTopic.length,
         pageSize,
       });
-      setCards(cardsWithTopic.slice(0, pageSize));
+      setCards(cardsWithTopic.slice(start, end));
       return cardsWithTopic;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");
@@ -147,8 +148,7 @@ export const useCards = () => {
       setCards((prev) => [...prev, newCard.card]);
 
       const newTotal = allCards.length + 1;
-      const pageSize = 5;
-      const newTotalPages = Math.ceil(newTotal / pageSize);
+      const newTotalPages = Math.ceil(newTotal / pagination.pageSize);
       setPagination((prev) => ({
         ...prev,
         totalItems: newTotal,
@@ -212,8 +212,7 @@ export const useCards = () => {
       setCards((prev) => prev.filter((card) => card.id !== id));
       // Update pagination
       const newTotal = allCards.length - 1;
-      const pageSize = 5;
-      const newTotalPages = Math.ceil(newTotal / pageSize);
+      const newTotalPages = Math.ceil(newTotal / pagination.pageSize);
       setPagination((prev) => {
         const newPag = {
           ...prev,
@@ -222,7 +221,7 @@ export const useCards = () => {
         };
         // If current page is now empty and not first, go to previous
         if (prev.currentPage > 1 && prev.currentPage > newTotalPages) {
-          setTimeout(() => changePage(newTotalPages), 0); // Delay to after state update
+          setTimeout(() => changePage(newTotalPages, prev.pageSize), 0); // Delay to after state update
         }
         return newPag;
       });
@@ -234,12 +233,17 @@ export const useCards = () => {
     }
   };
 
-  const changePage = (page: number) => {
-    const pageSize = 5;
-    const start = (page - 1) * pageSize;
-    const end = start + pageSize;
+  const changePage = (page: number, pageSize?: number) => {
+    const currentPageSize = pageSize || pagination.pageSize;
+    const start = (page - 1) * currentPageSize;
+    const end = start + currentPageSize;
     setCards(allCards.slice(start, end));
-    setPagination((prev) => ({ ...prev, currentPage: page }));
+    setPagination((prev) => ({
+      ...prev,
+      currentPage: page,
+      pageSize: currentPageSize,
+      totalPages: Math.ceil(allCards.length / currentPageSize)
+    }));
   };
 
   const clearCards = () => {
