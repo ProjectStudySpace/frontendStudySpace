@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { NoteFormProps } from "../types/notes";
 import { ImagePreview } from "./imagePreview";
 import { Image as ImageIcon, BookOpen, X } from "lucide-react";
@@ -9,17 +10,22 @@ export const NoteForm: React.FC<NoteFormProps> = ({
   initialData,
   isEditing = false,
 }) => {
+  const { t } = useTranslation();
   const [title, setTitle] = useState(initialData?.title || "");
-  const [leftContent, setLeftContent] = useState(initialData?.leftContent || "");
-  const [rightContent, setRightContent] = useState(initialData?.rightContent || "");
+  const [leftContent, setLeftContent] = useState(
+    initialData?.leftContent || ""
+  );
+  const [rightContent, setRightContent] = useState(
+    initialData?.rightContent || ""
+  );
   const [leftImage, setLeftImage] = useState<File | undefined>();
   const [rightImage, setRightImage] = useState<File | undefined>();
-  const [existingLeftImageUrl, setExistingLeftImageUrl] = useState<string | undefined>(
-    initialData?.leftImageUrl
-  );
-  const [existingRightImageUrl, setExistingRightImageUrl] = useState<string | undefined>(
-    initialData?.rightImageUrl
-  );
+  const [existingLeftImageUrl, setExistingLeftImageUrl] = useState<
+    string | undefined
+  >(initialData?.leftImageUrl);
+  const [existingRightImageUrl, setExistingRightImageUrl] = useState<
+    string | undefined
+  >(initialData?.rightImageUrl);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const leftImageInputRef = useRef<HTMLInputElement>(null);
@@ -39,11 +45,11 @@ export const NoteForm: React.FC<NoteFormProps> = ({
     const file = e.target.files?.[0];
     if (file) {
       if (!file.type.startsWith("image/")) {
-        alert("Por favor selecciona un archivo de imagen válido");
+        alert(t("forms.invalidImage"));
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
-        alert("La imagen no puede superar los 5MB");
+        alert(t("forms.imageTooLarge"));
         return;
       }
       setLeftImage(file);
@@ -55,11 +61,11 @@ export const NoteForm: React.FC<NoteFormProps> = ({
     const file = e.target.files?.[0];
     if (file) {
       if (!file.type.startsWith("image/")) {
-        alert("Por favor selecciona un archivo de imagen válido");
+        alert(t("forms.invalidImage"));
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
-        alert("La imagen no puede superar los 5MB");
+        alert(t("forms.imageTooLarge"));
         return;
       }
       setRightImage(file);
@@ -85,9 +91,9 @@ export const NoteForm: React.FC<NoteFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!leftContent.trim() && !rightContent.trim()) {
-      alert("Al menos una página debe tener contenido");
+      alert(t("forms.atLeastOnePage"));
       return;
     }
 
@@ -113,7 +119,7 @@ export const NoteForm: React.FC<NoteFormProps> = ({
       }
     } catch (error) {
       console.error("Error al guardar nota:", error);
-      alert("Error al guardar la nota. Por favor, inténtalo de nuevo.");
+      alert(t("forms.errorSaving"));
     } finally {
       setIsSubmitting(false);
     }
@@ -132,11 +138,9 @@ export const NoteForm: React.FC<NoteFormProps> = ({
           </div>
           <div>
             <h2 className="text-xl font-bold text-gray-900">
-              {isEditing ? "Editar Nota" : "Nueva Nota"}
+              {isEditing ? t("notes.edit") : t("notes.new")}
             </h2>
-            <p className="text-sm text-gray-500">
-              Formato de libro abierto con dos páginas
-            </p>
+            <p className="text-sm text-gray-500">{t("forms.bookFormat")}</p>
           </div>
         </div>
         <button
@@ -144,7 +148,7 @@ export const NoteForm: React.FC<NoteFormProps> = ({
           onClick={onCancel}
           disabled={isSubmitting}
           className="text-gray-400 hover:text-gray-600 transition-colors disabled:cursor-not-allowed"
-          aria-label="Cerrar"
+          aria-label={t("studySession.close")}
         >
           <X size={24} />
         </button>
@@ -156,7 +160,10 @@ export const NoteForm: React.FC<NoteFormProps> = ({
           htmlFor="title"
           className="block text-sm font-semibold text-gray-700 mb-2"
         >
-          Título <span className="text-gray-400 font-normal">(opcional)</span>
+          {t("forms.titleLabel")}{" "}
+          <span className="text-gray-400 font-normal">
+            {t("forms.titleOptional")}
+          </span>
         </label>
         <input
           id="title"
@@ -165,11 +172,11 @@ export const NoteForm: React.FC<NoteFormProps> = ({
           onChange={(e) => setTitle(e.target.value)}
           disabled={isSubmitting}
           className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:text-gray-500 text-base"
-          placeholder="Ej: Introducción a las Integrales (opcional)"
+          placeholder={t("forms.titlePlaceholder")}
           maxLength={200}
         />
         <p className="mt-1 text-xs text-gray-500">
-          {title.length}/200 caracteres
+          {title.length}/200 {t("forms.characters")}
         </p>
       </div>
 
@@ -183,10 +190,10 @@ export const NoteForm: React.FC<NoteFormProps> = ({
               htmlFor="leftContent"
               className="block text-sm font-semibold text-blue-700"
             >
-              Página Izquierda
+              {t("forms.leftPage")}
             </label>
           </div>
-          
+
           <textarea
             id="leftContent"
             value={leftContent}
@@ -194,7 +201,7 @@ export const NoteForm: React.FC<NoteFormProps> = ({
             rows={14}
             disabled={isSubmitting}
             className="w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 resize-none text-sm scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
-            placeholder="Escribe aquí el contenido de la página izquierda...&#10;&#10;Puedes escribir varias líneas y todo el texto que necesites."
+            placeholder={t("forms.leftPagePlaceholder")}
           />
 
           {/* Imagen página izquierda - opcional */}
@@ -207,8 +214,8 @@ export const NoteForm: React.FC<NoteFormProps> = ({
             >
               <ImageIcon size={16} />
               {leftImage || existingLeftImageUrl
-                ? "Cambiar imagen"
-                : "Agregar imagen"}
+                ? t("forms.changeImage")
+                : t("forms.addImage")}
             </button>
             <input
               ref={leftImageInputRef}
@@ -218,7 +225,9 @@ export const NoteForm: React.FC<NoteFormProps> = ({
               disabled={isSubmitting}
               className="hidden"
             />
-            <span className="text-xs text-gray-500">Opcional - Máx. 5MB</span>
+            <span className="text-xs text-gray-500">
+              {t("forms.optional")} - {t("forms.maxSize")}
+            </span>
           </div>
 
           {/* Preview imagen izquierda */}
@@ -228,7 +237,7 @@ export const NoteForm: React.FC<NoteFormProps> = ({
                 file={leftImage}
                 existingUrl={existingLeftImageUrl}
                 onRemove={removeLeftImage}
-                label="Imagen página izquierda"
+                label={t("forms.leftPageImage")}
               />
             </div>
           )}
@@ -242,10 +251,10 @@ export const NoteForm: React.FC<NoteFormProps> = ({
               htmlFor="rightContent"
               className="block text-sm font-semibold text-green-700"
             >
-              Página Derecha
+              {t("forms.rightPage")}
             </label>
           </div>
-          
+
           <textarea
             id="rightContent"
             value={rightContent}
@@ -253,7 +262,7 @@ export const NoteForm: React.FC<NoteFormProps> = ({
             rows={14}
             disabled={isSubmitting}
             className="w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 resize-none text-sm scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
-            placeholder="Escribe aquí el contenido de la página derecha...&#10;&#10;Puedes escribir varias líneas y todo el texto que necesites."
+            placeholder={t("forms.rightPagePlaceholder")}
           />
 
           {/* Imagen página derecha - opcional */}
@@ -266,8 +275,8 @@ export const NoteForm: React.FC<NoteFormProps> = ({
             >
               <ImageIcon size={16} />
               {rightImage || existingRightImageUrl
-                ? "Cambiar imagen"
-                : "Agregar imagen"}
+                ? t("forms.changeImage")
+                : t("forms.addImage")}
             </button>
             <input
               ref={rightImageInputRef}
@@ -277,7 +286,9 @@ export const NoteForm: React.FC<NoteFormProps> = ({
               disabled={isSubmitting}
               className="hidden"
             />
-            <span className="text-xs text-gray-500">Opcional - Máx. 5MB</span>
+            <span className="text-xs text-gray-500">
+              {t("forms.optional")} - {t("forms.maxSize")}
+            </span>
           </div>
 
           {/* Preview imagen derecha */}
@@ -287,7 +298,7 @@ export const NoteForm: React.FC<NoteFormProps> = ({
                 file={rightImage}
                 existingUrl={existingRightImageUrl}
                 onRemove={removeRightImage}
-                label="Imagen página derecha"
+                label={t("forms.rightPageImage")}
               />
             </div>
           )}
@@ -297,7 +308,7 @@ export const NoteForm: React.FC<NoteFormProps> = ({
       {/* Nota informativa */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
         <p className="text-sm text-blue-800">
-          <strong>Nota:</strong> El título y las imágenes son opcionales. Al menos una de las dos páginas debe tener contenido.
+          <strong>{t("forms.noteInfoBold")}</strong> {t("forms.noteInfo")}
         </p>
       </div>
 
@@ -309,7 +320,7 @@ export const NoteForm: React.FC<NoteFormProps> = ({
           disabled={isSubmitting}
           className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Cancelar
+          {t("common.cancel")}
         </button>
         <button
           type="submit"
@@ -319,13 +330,28 @@ export const NoteForm: React.FC<NoteFormProps> = ({
           {isSubmitting ? (
             <span className="flex items-center gap-2">
               <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
               </svg>
-              Guardando...
+              {t("forms.saving")}
             </span>
           ) : (
-            <span>{isEditing ? "Actualizar" : "Crear"} Nota</span>
+            <span>
+              {isEditing ? t("forms.update") : t("forms.create")}{" "}
+              {t("forms.note")}
+            </span>
           )}
         </button>
       </div>

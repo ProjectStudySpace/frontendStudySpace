@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { useReviews } from "../../hooks/useReviews";
 import ReviewSessionList from "./reviewSessionList";
 import StudySession from "./studySession";
@@ -7,6 +8,7 @@ import CalendarWidget from "./calendarWidget";
 import { BookOpen, Clock, TrendingUp, Play } from "lucide-react";
 
 const SpacedRepetitionDashboard: React.FC = () => {
+  const { t } = useTranslation();
   const {
     pendingReviews,
     totalPendingCount,
@@ -95,7 +97,7 @@ const SpacedRepetitionDashboard: React.FC = () => {
           onClick={() => window.location.reload()}
           className="mt-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg font-medium transition-colors border border-red-300"
         >
-          Reintentar
+          {t("reviews.retry")}
         </button>
       </div>
     );
@@ -131,10 +133,10 @@ const SpacedRepetitionDashboard: React.FC = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div className="flex-1">
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
-              Sesiones de repaso
+              {t("reviews.title")}
             </h1>
             <p className="text-gray-600 text-sm sm:text-base">
-              Sistema de repaso espaciado para optimizar tu aprendizaje
+              {t("reviews.subtitle")}
             </p>
           </div>
 
@@ -145,9 +147,11 @@ const SpacedRepetitionDashboard: React.FC = () => {
                 className="flex items-center gap-2 px-4 sm:px-6 py-3 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl justify-center"
               >
                 <Play size={20} />
-                <span className="sm:hidden">Iniciar ({totalPendingCount})</span>
+                <span className="sm:hidden">
+                  {t("reviews.startReviewShort")} ({totalPendingCount})
+                </span>
                 <span className="hidden sm:inline">
-                  Iniciar repaso ({totalPendingCount})
+                  {t("reviews.startReview")} ({totalPendingCount})
                 </span>
               </button>
             )}
@@ -162,7 +166,7 @@ const SpacedRepetitionDashboard: React.FC = () => {
               </div>
               <div>
                 <p className="text-gray-600 text-xs sm:text-sm mb-1">
-                  Pendientes hoy
+                  {t("reviews.pendingToday")}
                 </p>
                 <p className="text-2xl sm:text-3xl font-bold text-gray-900">
                   {totalPendingCount}
@@ -178,7 +182,7 @@ const SpacedRepetitionDashboard: React.FC = () => {
               </div>
               <div>
                 <p className="text-gray-600 text-xs sm:text-sm mb-1">
-                  Próximos 7 días
+                  {t("reviews.next7Days")}
                 </p>
                 <p className="text-2xl sm:text-3xl font-bold text-gray-900">
                   {upcoming7DaysCount}
@@ -197,7 +201,7 @@ const SpacedRepetitionDashboard: React.FC = () => {
               </div>
               <div>
                 <p className="text-gray-600 text-xs sm:text-sm mb-1">
-                  Próximos 30 días
+                  {t("reviews.next30Days")}
                 </p>
                 <p className="text-2xl sm:text-3xl font-bold text-gray-900">
                   {totalPendingCount + totalUpcomingCount}
@@ -214,7 +218,7 @@ const SpacedRepetitionDashboard: React.FC = () => {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Calendario de sesiones de repaso programadas
+              {t("sessions.calendar")}
             </h2>
           </div>
         </div>

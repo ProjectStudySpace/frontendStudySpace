@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { CardFormProps } from "../types/cards";
 import { ImagePreview } from "./imagePreview";
 import { Image as ImageIcon } from "lucide-react";
@@ -9,6 +10,7 @@ export const CardForm: React.FC<CardFormProps> = ({
   initialData,
   isEditing = false,
 }) => {
+  const { t } = useTranslation();
   const [question, setQuestion] = useState(initialData?.question || "");
   const [answer, setAnswer] = useState(initialData?.answer || "");
   const [questionImage, setQuestionImage] = useState<File | undefined>();
@@ -40,12 +42,12 @@ export const CardForm: React.FC<CardFormProps> = ({
     if (file) {
       // Validar tipo de archivo
       if (!file.type.startsWith("image/")) {
-        alert("Por favor selecciona un archivo de imagen válido");
+        alert(t("forms.invalidImage"));
         return;
       }
       // Validar tamaño (máximo 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        alert("La imagen no puede superar los 5MB");
+        alert(t("forms.imageTooLarge"));
         return;
       }
       setQuestionImage(file);
@@ -57,11 +59,11 @@ export const CardForm: React.FC<CardFormProps> = ({
     const file = e.target.files?.[0];
     if (file) {
       if (!file.type.startsWith("image/")) {
-        alert("Por favor selecciona un archivo de imagen válido");
+        alert(t("forms.invalidImage"));
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
-        alert("La imagen no puede superar los 5MB");
+        alert(t("forms.imageTooLarge"));
         return;
       }
       setAnswerImage(file);
@@ -127,7 +129,7 @@ export const CardForm: React.FC<CardFormProps> = ({
           htmlFor="question"
           className="block text-sm font-medium text-gray-700 mb-2"
         >
-          Pregunta:
+          {t("forms.questionLabel")}
         </label>
         <textarea
           id="question"
@@ -137,7 +139,7 @@ export const CardForm: React.FC<CardFormProps> = ({
           required
           disabled={isSubmitting}
           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100"
-          placeholder="Escribe tu pregunta aquí..."
+          placeholder={t("forms.questionPlaceholder")}
         />
 
         {/* Botón para agregar imagen a pregunta */}
@@ -149,8 +151,8 @@ export const CardForm: React.FC<CardFormProps> = ({
           >
             <ImageIcon size={16} />
             {questionImage || existingQuestionImageUrl
-              ? "Cambiar imagen"
-              : "Agregar imagen"}
+              ? t("forms.changeImage")
+              : t("forms.addImage")}
           </button>
           <input
             ref={questionImageInputRef}
@@ -159,7 +161,9 @@ export const CardForm: React.FC<CardFormProps> = ({
             onChange={handleQuestionImageChange}
             className="hidden"
           />
-          <span className="text-xs text-gray-500">Opcional - Máximo 5MB</span>
+          <span className="text-xs text-gray-500">
+            {t("forms.optional")} - {t("forms.maxSize")}
+          </span>
         </div>
 
         {/* Preview de imagen de pregunta */}
@@ -169,7 +173,7 @@ export const CardForm: React.FC<CardFormProps> = ({
               file={questionImage}
               existingUrl={existingQuestionImageUrl}
               onRemove={removeQuestionImage}
-              label="Imagen de pregunta"
+              label={t("forms.questionImage")}
             />
           </div>
         )}
@@ -181,7 +185,7 @@ export const CardForm: React.FC<CardFormProps> = ({
           htmlFor="answer"
           className="block text-sm font-medium text-gray-700 mb-2"
         >
-          Respuesta:
+          {t("forms.answerLabel")}
         </label>
         <textarea
           id="answer"
@@ -191,7 +195,7 @@ export const CardForm: React.FC<CardFormProps> = ({
           required
           disabled={isSubmitting}
           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100"
-          placeholder="Escribe tu respuesta aquí..."
+          placeholder={t("forms.answerPlaceholder")}
         />
 
         {/* Botón para agregar imagen a respuesta */}
@@ -203,8 +207,8 @@ export const CardForm: React.FC<CardFormProps> = ({
           >
             <ImageIcon size={16} />
             {answerImage || existingAnswerImageUrl
-              ? "Cambiar imagen"
-              : "Agregar imagen"}
+              ? t("forms.changeImage")
+              : t("forms.addImage")}
           </button>
           <input
             ref={answerImageInputRef}
@@ -213,7 +217,9 @@ export const CardForm: React.FC<CardFormProps> = ({
             onChange={handleAnswerImageChange}
             className="hidden"
           />
-          <span className="text-xs text-gray-500">Opcional - Máximo 5MB</span>
+          <span className="text-xs text-gray-500">
+            {t("forms.optional")} - {t("forms.maxSize")}
+          </span>
         </div>
 
         {/* Preview de imagen de respuesta */}
@@ -223,7 +229,7 @@ export const CardForm: React.FC<CardFormProps> = ({
               file={answerImage}
               existingUrl={existingAnswerImageUrl}
               onRemove={removeAnswerImage}
-              label="Imagen de respuesta"
+              label={t("forms.answerImage")}
             />
           </div>
         )}
@@ -236,8 +242,12 @@ export const CardForm: React.FC<CardFormProps> = ({
           disabled={isSubmitting}
           className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded-md font-medium transition-colors disabled:bg-purple-300 disabled:cursor-not-allowed"
         >
-          {isSubmitting ? "Guardando..." : isEditing ? "Actualizar" : "Crear"}{" "}
-          Tarjeta
+          {isSubmitting
+            ? t("forms.saving")
+            : isEditing
+            ? t("forms.update")
+            : t("forms.create")}{" "}
+          {t("forms.card")}
         </button>
         <button
           type="button"
@@ -245,7 +255,7 @@ export const CardForm: React.FC<CardFormProps> = ({
           disabled={isSubmitting}
           className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-6 py-2 rounded-md font-medium transition-colors disabled:cursor-not-allowed"
         >
-          Cancelar
+          {t("common.cancel")}
         </button>
       </div>
     </form>

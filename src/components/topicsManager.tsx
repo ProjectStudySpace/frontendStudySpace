@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Topic, CreateTopicData, UpdateTopicData, TopicsManagerProps } from "../types/topics";
+import { useTranslation } from "react-i18next";
+import {
+  Topic,
+  CreateTopicData,
+  UpdateTopicData,
+  TopicsManagerProps,
+} from "../types/topics";
 import { useTopics } from "../../hooks/useTopics";
 import { TopicList } from "./topicList";
 import { TopicForm } from "./topicForm";
@@ -8,7 +14,7 @@ export const TopicsManager: React.FC<TopicsManagerProps> = ({
   onSelectTopic,
   onTopicsChange,
   selectedTopicId,
-  initialTopic = null
+  initialTopic = null,
 }) => {
   const [showForm, setShowForm] = useState(false);
   const [editingTopic, setEditingTopic] = useState<Topic | undefined>();
@@ -18,6 +24,7 @@ export const TopicsManager: React.FC<TopicsManagerProps> = ({
   >("all");
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
+  const { t } = useTranslation();
 
   const {
     topics,
@@ -105,98 +112,114 @@ export const TopicsManager: React.FC<TopicsManagerProps> = ({
   };
 
   // Filtrar topics según búsqueda, dificultad y tema seleccionado
-// Filtrar topics según búsqueda, dificultad y tema seleccionado
-const filteredTopics = topics
-  .filter(t =>
-    t.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-    (activeFilter === 'all' || t.color === difficultyToColorMap[activeFilter])
-  )
-  .filter(t => !selectedTopicId || t.id === selectedTopicId);
+  // Filtrar topics según búsqueda, dificultad y tema seleccionado
+  const filteredTopics = topics
+    .filter(
+      (t) =>
+        t.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+        (activeFilter === "all" ||
+          t.color === difficultyToColorMap[activeFilter])
+    )
+    .filter((t) => !selectedTopicId || t.id === selectedTopicId);
 
-return (
-  <div className="space-y-4">
-    {/* Header */}
-    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4 bg-gradient-to-r from-purple-500 to-indigo-500 p-4 rounded-lg shadow-lg">
-      <div className="flex items-center gap-4 flex-wrap">
-        <h2 className="text-xl font-bold text-white">Materias de Estudio</h2>
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4 bg-gradient-to-r from-purple-500 to-indigo-500 p-4 rounded-lg shadow-lg">
+        <div className="flex items-center gap-4 flex-wrap">
+          <h2 className="text-xl font-bold text-white">
+            {t("components.topicsManager.studySubjects")}
+          </h2>
 
-        {/* Mostrar filtros solo si no hay tema seleccionado */}
-        {!selectedTopicId && (
-          <div className="flex gap-2 flex-wrap">
-            {['all', 'easy', 'medium', 'hard'].map(level => {
-              const colors = { all: 'bg-indigo-500', easy: 'bg-green-500', medium: 'bg-yellow-500', hard: 'bg-red-500' };
-              return (
-                <button
-                  key={level}
-                  onClick={() => setActiveFilter(level as any)}
-                  className={`px-4 py-2 rounded font-medium text-white transition-colors ${activeFilter === level ? colors[level as keyof typeof colors] : 'bg-gray-200 text-gray-700'}`}
-                >
-                  {level === 'all' ? 'Todos' : level.charAt(0).toUpperCase() + level.slice(1)}
-                </button>
-              );
-            })}
-          </div>
-        )}
+          {/* Mostrar filtros solo si no hay tema seleccionado */}
+          {!selectedTopicId && (
+            <div className="flex gap-2 flex-wrap">
+              {["all", "easy", "medium", "hard"].map((level) => {
+                const colors = {
+                  all: "bg-indigo-500",
+                  easy: "bg-green-500",
+                  medium: "bg-yellow-500",
+                  hard: "bg-red-500",
+                };
+                return (
+                  <button
+                    key={level}
+                    onClick={() => setActiveFilter(level as any)}
+                    className={`px-4 py-2 rounded font-medium text-white transition-colors ${
+                      activeFilter === level
+                        ? colors[level as keyof typeof colors]
+                        : "bg-gray-200 text-gray-700"
+                    }`}
+                  >
+                    {level === "all"
+                      ? t("components.topicsManager.all")
+                      : level.charAt(0).toUpperCase() + level.slice(1)}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div className="flex gap-2">
+          {/* Botón Nueva Materia solo si no hay tema seleccionado */}
+          {!selectedTopicId && !showForm && (
+            <button
+              onClick={handleCreateTopic}
+              className="bg-white hover:bg-gray-100 text-purple-600 font-medium py-2 px-4 rounded-lg transition-colors shadow-md hover:shadow-lg"
+            >
+              {t("components.topicsManager.newSubject")}
+            </button>
+          )}
+
+          {/* Botón Ver todos los temas solo si hay tema seleccionado */}
+          {selectedTopicId && (
+            <button
+              onClick={() => onSelectTopic?.(null)}
+              className="bg-white hover:bg-gray-100 text-purple-600 font-medium py-2 px-4 rounded-lg transition-colors shadow-md hover:shadow-lg"
+            >
+              {t("components.topicsManager.viewAllTopics")}
+            </button>
+          )}
+        </div>
       </div>
 
-      <div className="flex gap-2">
-        {/* Botón Nueva Materia solo si no hay tema seleccionado */}
-        {!selectedTopicId && !showForm && (
-          <button
-            onClick={handleCreateTopic}
-            className="bg-white hover:bg-gray-100 text-purple-600 font-medium py-2 px-4 rounded-lg transition-colors shadow-md hover:shadow-lg"
-          >
-            + Nueva Materia
-          </button>
-        )}
+      {/* Barra de búsqueda solo si no hay tema seleccionado */}
+      {!selectedTopicId && (
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder={t("components.topicsManager.searchSubjects")}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
+      )}
 
-        {/* Botón Ver todos los temas solo si hay tema seleccionado */}
-        {selectedTopicId && (
-          <button
-            onClick={() => onSelectTopic?.(null)}
-            className="bg-white hover:bg-gray-100 text-purple-600 font-medium py-2 px-4 rounded-lg transition-colors shadow-md hover:shadow-lg"
-          >
-            Ver todos los temas
-          </button>
-        )}
-      </div>
-    </div>
-
-    {/* Barra de búsqueda solo si no hay tema seleccionado */}
-    {!selectedTopicId && (
-      <div className="mb-4">
-        <input
-          type="text"
-          placeholder="Buscar materias..."
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      {/* Formulario o lista */}
+      {showForm ? (
+        <TopicForm
+          onSubmit={handleSubmit}
+          onCancel={handleCancel}
+          initialData={editingTopic}
+          isEditing={!!editingTopic}
         />
-      </div>
-    )}
-
-    {/* Formulario o lista */}
-    {showForm ? (
-      <TopicForm
-        onSubmit={handleSubmit}
-        onCancel={handleCancel}
-        initialData={editingTopic}
-        isEditing={!!editingTopic}
-      />
-    ) : (
-      <TopicList
-        topics={filteredTopics}
-        onEdit={handleEditTopic}
-        onDelete={handleDeleteTopic}
-        onViewCards={onSelectTopic ? handleViewCards : undefined}
-        pagination={pagination}
-        onPageChange={(page: number) => {
-          setCurrentPage(page);
-          fetchUserTopics(page, pageSize).catch(error => console.error('Error fetching topics:', error));
-        }}
-      />
-    )}
-  </div>
-);
-
+      ) : (
+        <TopicList
+          topics={filteredTopics}
+          onEdit={handleEditTopic}
+          onDelete={handleDeleteTopic}
+          onViewCards={onSelectTopic ? handleViewCards : undefined}
+          pagination={pagination}
+          onPageChange={(page: number) => {
+            setCurrentPage(page);
+            fetchUserTopics(page, pageSize).catch((error) =>
+              console.error("Error fetching topics:", error)
+            );
+          }}
+        />
+      )}
+    </div>
+  );
 };

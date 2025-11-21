@@ -8,6 +8,7 @@ import {
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import "./i18n/config"; // ⭐ Importar configuración de i18n
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Temas from "./pages/Temas";

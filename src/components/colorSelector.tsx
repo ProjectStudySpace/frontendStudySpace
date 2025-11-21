@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { PastelColor } from "../types/colors";
 
 interface ColorSelectorProps {
@@ -16,10 +17,11 @@ export const ColorSelector: React.FC<ColorSelectorProps> = ({
   onToggle,
   onClose,
 }) => {
+  const { t } = useTranslation();
   return (
     <div className="relative">
       <label className="block text-sm font-medium text-gray-700 mb-2">
-        Color del tema
+        {t("components.colorSelector.themeColor")}
       </label>
 
       {/* Botón para mostrar/ocultar selector */}
@@ -66,67 +68,67 @@ export const ColorSelector: React.FC<ColorSelectorProps> = ({
               {[
                 {
                   id: "dark-blue",
-                  name: "Azul oscuro",
+                  name: t("components.colorSelector.colors.darkBlue"),
                   value: "#93C5FD",
                   textColor: "#1E3A8A",
                 },
                 {
                   id: "light-blue",
-                  name: "Azul claro",
+                  name: t("components.colorSelector.colors.lightBlue"),
                   value: "#BFDBFE",
                   textColor: "#1E40AF",
                 },
                 {
                   id: "dark-green",
-                  name: "Verde oscuro",
+                  name: t("components.colorSelector.colors.darkGreen"),
                   value: "#86EFAC",
                   textColor: "#166534",
                 },
                 {
                   id: "light-green",
-                  name: "Verde claro",
+                  name: t("components.colorSelector.colors.lightGreen"),
                   value: "#BBF7D0",
                   textColor: "#15803D",
                 },
                 {
                   id: "dark-purple",
-                  name: "Morado oscuro",
+                  name: t("components.colorSelector.colors.darkPurple"),
                   value: "#D8B4FE",
                   textColor: "#7E22CE",
                 },
                 {
                   id: "light-purple",
-                  name: "Morado claro",
+                  name: t("components.colorSelector.colors.lightPurple"),
                   value: "#E9D5FF",
                   textColor: "#9333EA",
                 },
                 {
                   id: "yellow",
-                  name: "Amarillo",
+                  name: t("components.colorSelector.colors.yellow"),
                   value: "#FDE68A",
                   textColor: "#92400E",
                 },
                 {
                   id: "orange",
-                  name: "Naranja",
+                  name: t("components.colorSelector.colors.orange"),
                   value: "#FDBA74",
                   textColor: "#9A3412",
                 },
                 {
                   id: "turquoise",
-                  name: "Turquesa",
+                  name: t("components.colorSelector.colors.turquoise"),
                   value: "#99F6E4",
                   textColor: "#0F766E",
                 },
                 {
                   id: "gray",
-                  name: "Gris",
+                  name: t("components.colorSelector.colors.gray"),
                   value: "#D1D5DB",
                   textColor: "#374151",
                 },
                 {
                   id: "brown",
-                  name: "Marrón",
+                  name: t("components.colorSelector.colors.brown"),
                   value: "#FED7AA",
                   textColor: "#92400E",
                 },

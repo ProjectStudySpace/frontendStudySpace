@@ -1,5 +1,6 @@
 import React from "react";
 import { Topic, TopicCardProps } from "../types/topics";
+import { useTranslation } from "react-i18next";
 
 export const TopicCard: React.FC<TopicCardProps> = ({
   topic,
@@ -7,6 +8,7 @@ export const TopicCard: React.FC<TopicCardProps> = ({
   onEdit,
   onDelete,
 }) => {
+  const { t } = useTranslation();
   return (
     <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-200 flex flex-col min-h-[200px]">
       {/* Encabezado con color */}
@@ -42,19 +44,19 @@ export const TopicCard: React.FC<TopicCardProps> = ({
             onClick={() => onSelect(topic.id)}
             className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-all"
           >
-            Ver Tarjetas
+            {t("topics.viewCards")}
           </button>
           <button
             onClick={() => onEdit(topic)}
             className="bg-transparent border border-[#D1D5DB] text-[#4B5563] hover:bg-[#F3F4F6] px-3 py-2 rounded-lg text-sm font-medium transition-colors"
           >
-            Editar
+            {t("common.edit")}
           </button>
           <button
             onClick={() => onDelete(topic.id)}
             className="bg-transparent text-[#6B7280] hover:text-[#DC2626] hover:bg-[#FEE2E2] px-3 py-2 rounded-lg text-sm font-medium transition-colors"
           >
-            Eliminar
+            {t("common.delete")}
           </button>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { NoteItemProps } from "../types/notes";
 import { getLighterColor } from "../types/colors";
 import { ImageModal } from "./ImageModal";
@@ -9,14 +10,18 @@ export const NoteItem: React.FC<NoteItemProps> = ({
   onEdit,
   onDelete,
 }) => {
+  const { t } = useTranslation();
   const [isDeleting, setIsDeleting] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<{ url: string; alt?: string } | null>(null);
+  const [selectedImage, setSelectedImage] = useState<{
+    url: string;
+    alt?: string;
+  } | null>(null);
 
   const topicColor = note.topic?.color || "#93C5FD";
   const lighterColor = getLighterColor(topicColor);
 
   const handleDelete = async () => {
-    if (window.confirm("¿Estás seguro de que quieres eliminar esta nota?")) {
+    if (window.confirm(t("reviews.deleteNoteConfirm"))) {
       setIsDeleting(true);
       try {
         await onDelete(note.id);
@@ -45,7 +50,7 @@ export const NoteItem: React.FC<NoteItemProps> = ({
           <div className="flex items-center justify-center gap-2">
             <BookOpen size={16} className="text-gray-700" />
             <h4 className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
-              {note.topic?.name || "Sin tema"}
+              {note.topic?.name || t("content.noTopic")}
             </h4>
           </div>
         </div>
@@ -66,17 +71,19 @@ export const NoteItem: React.FC<NoteItemProps> = ({
             <div className="mb-3 flex items-center gap-2">
               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
               <span className="text-xs font-semibold text-blue-700 uppercase tracking-wide">
-                Página izquierda
+                {t("content.leftPage")}
               </span>
             </div>
-            
+
             <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
               {note.leftContent ? (
                 <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">
                   {note.leftContent}
                 </p>
               ) : (
-                <p className="text-sm text-gray-400 italic">Sin contenido en esta página</p>
+                <p className="text-sm text-gray-400 italic">
+                  {t("content.noContent")}
+                </p>
               )}
             </div>
 
@@ -87,7 +94,12 @@ export const NoteItem: React.FC<NoteItemProps> = ({
                   src={note.leftImageUrl}
                   alt="Imagen página izquierda"
                   className="max-w-full max-h-40 object-contain rounded-lg border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity shadow-sm"
-                  onClick={() => handleImageClick(note.leftImageUrl!, "Imagen página izquierda")}
+                  onClick={() =>
+                    handleImageClick(
+                      note.leftImageUrl!,
+                      "Imagen página izquierda"
+                    )
+                  }
                 />
               </div>
             )}
@@ -98,17 +110,19 @@ export const NoteItem: React.FC<NoteItemProps> = ({
             <div className="mb-3 flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               <span className="text-xs font-semibold text-green-700 uppercase tracking-wide">
-                Página derecha
+                {t("content.rightPage")}
               </span>
             </div>
-            
+
             <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
               {note.rightContent ? (
                 <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">
                   {note.rightContent}
                 </p>
               ) : (
-                <p className="text-sm text-gray-400 italic">Sin contenido en esta página</p>
+                <p className="text-sm text-gray-400 italic">
+                  {t("content.noContent")}
+                </p>
               )}
             </div>
 
@@ -119,7 +133,12 @@ export const NoteItem: React.FC<NoteItemProps> = ({
                   src={note.rightImageUrl}
                   alt="Imagen página derecha"
                   className="max-w-full max-h-40 object-contain rounded-lg border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity shadow-sm"
-                  onClick={() => handleImageClick(note.rightImageUrl!, "Imagen página derecha")}
+                  onClick={() =>
+                    handleImageClick(
+                      note.rightImageUrl!,
+                      "Imagen página derecha"
+                    )
+                  }
                 />
               </div>
             )}
@@ -132,14 +151,14 @@ export const NoteItem: React.FC<NoteItemProps> = ({
             onClick={() => onEdit(note)}
             className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
           >
-            Editar
+            {t("common.edit")}
           </button>
           <button
             onClick={handleDelete}
             disabled={isDeleting}
             className="bg-red-100 hover:bg-red-200 text-red-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
           >
-            {isDeleting ? "Eliminando..." : "Eliminar"}
+            {isDeleting ? t("notes.deleting") : t("common.delete")}
           </button>
         </div>
       </div>

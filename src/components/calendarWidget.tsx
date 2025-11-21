@@ -1,9 +1,11 @@
 import React, { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCalendarSessions } from "../../hooks/useCalendarSessions";
 import { CalendarWidgetProps } from "../types/calendarWidget";
 
 const CalendarWidget: React.FC<CalendarWidgetProps> = ({ className = "" }) => {
+  const { t } = useTranslation();
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const { sessions, loading } = useCalendarSessions();
 
@@ -47,9 +49,13 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ className = "" }) => {
     // Días del mes actual
     for (let day = 1; day <= lastDay.getDate(); day++) {
       const date = new Date(year, month, day);
-      
+
       // Normalizar fecha a medianoche en zona horaria local
-      const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      const dateOnly = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate()
+      );
 
       const hasSession = sessions.some((session) => {
         // Parsear la fecha de la sesión
@@ -60,7 +66,7 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ className = "" }) => {
           sessionDate.getMonth(),
           sessionDate.getDate()
         );
-        
+
         // Comparar fechas normalizadas
         return dateOnly.getTime() === sessionDateOnly.getTime();
       });
@@ -91,21 +97,29 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ className = "" }) => {
   }, [currentDate, sessions]);
 
   const monthNames = [
-    "Enero",
-    "Febrero",
-    "Marzo",
-    "Abril",
-    "Mayo",
-    "Junio",
-    "Julio",
-    "Agosto",
-    "Septiembre",
-    "Octubre",
-    "Noviembre",
-    "Diciembre",
+    t("calendarWidget.months.january"),
+    t("calendarWidget.months.february"),
+    t("calendarWidget.months.march"),
+    t("calendarWidget.months.april"),
+    t("calendarWidget.months.may"),
+    t("calendarWidget.months.june"),
+    t("calendarWidget.months.july"),
+    t("calendarWidget.months.august"),
+    t("calendarWidget.months.september"),
+    t("calendarWidget.months.october"),
+    t("calendarWidget.months.november"),
+    t("calendarWidget.months.december"),
   ];
 
-  const dayNames = ["L", "M", "X", "J", "V", "S", "D"];
+  const dayNames = [
+    t("calendarWidget.days.monday"),
+    t("calendarWidget.days.tuesday"),
+    t("calendarWidget.days.wednesday"),
+    t("calendarWidget.days.thursday"),
+    t("calendarWidget.days.friday"),
+    t("calendarWidget.days.saturday"),
+    t("calendarWidget.days.sunday"),
+  ];
 
   if (loading) {
     return (
@@ -126,7 +140,9 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ className = "" }) => {
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Calendar size={16} className="text-blue-600" />
-          <span className="text-sm font-medium text-gray-900">Calendario</span>
+          <span className="text-sm font-medium text-gray-900">
+            {t("calendarWidget.title")}
+          </span>
         </div>
         <div className="flex gap-1">
           <button
@@ -192,7 +208,9 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ className = "" }) => {
       <div className="flex items-center justify-center gap-2 mt-2 pt-2 border-t border-gray-100">
         <div className="flex items-center gap-1">
           <div className="w-1 h-1 bg-orange-500 rounded-full"></div>
-          <span className="text-xs text-gray-500">Sesión</span>
+          <span className="text-xs text-gray-500">
+            {t("calendarWidget.session")}
+          </span>
         </div>
       </div>
     </div>
