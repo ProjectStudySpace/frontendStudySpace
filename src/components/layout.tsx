@@ -14,10 +14,13 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { LanguageSelector } from "./LanguageSelector";
 
 const Layout = () => {
   const { logout, user, getDashboard } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [dashboardData, setDashboardData] = useState<any | null>(null);
 
@@ -52,15 +55,19 @@ const Layout = () => {
   };
 
   const navLinks = [
-    { to: "/topics", icon: BookOpen, label: "Mis temas" },
-    { to: "/study-sessions", icon: GraduationCap, label: "Sesiones de repaso" },
-    { to: "/calendar", icon: Calendar, label: "Calendario" },
-    { to: "/progress", icon: TrendingUp, label: "Progreso" },
+    { to: "/topics", icon: BookOpen, label: t("nav.topics") },
+    {
+      to: "/study-sessions",
+      icon: GraduationCap,
+      label: t("nav.studySessions"),
+    },
+    { to: "/calendar", icon: Calendar, label: t("nav.calendar") },
+    { to: "/progress", icon: TrendingUp, label: t("nav.progress") },
   ];
 
   const userLinks = [
-    { to: "/profile", icon: User, label: "Perfil" },
-    { to: "/settings", icon: Settings, label: "Configuración" },
+    { to: "/profile", icon: User, label: t("nav.profile") },
+    { to: "/settings", icon: Settings, label: t("nav.settings") },
   ];
 
   return (
@@ -85,10 +92,13 @@ const Layout = () => {
               </h1>
             </Link>
           </div>
-          <button className="relative p-2 text-gray-600 rounded-xl transition-colors hover:bg-gray-100">
-            <Bell size={20} />
-            <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></div>
-          </button>
+          <div className="flex items-center gap-2">
+            <LanguageSelector />
+            <button className="relative p-2 text-gray-600 rounded-xl transition-colors hover:bg-gray-100">
+              <Bell size={20} />
+              <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></div>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -137,9 +147,11 @@ const Layout = () => {
                 {user?.email?.[0]?.toUpperCase() || "E"}
               </div>
               <div>
-                <p className="font-semibold text-gray-900">¡Hola! 👋</p>
+                <p className="font-semibold text-gray-900">
+                  {t("auth.welcomeBack")}
+                </p>
                 <p className="text-sm text-gray-600 truncate max-w-[200px]">
-                  {user?.email || "Estudiante"}
+                  {user?.email || t("landing.hero.activeStudents")}
                 </p>
               </div>
             </div>
@@ -163,10 +175,10 @@ const Layout = () => {
                   </Link>
                 );
               })}
-              
+
               {/* Separador visual */}
               <div className="h-px bg-gray-200 my-2 mx-4"></div>
-              
+
               {/* Secciones de usuario */}
               {userLinks.map((link) => {
                 const Icon = link.icon;
@@ -190,18 +202,17 @@ const Layout = () => {
           <div className="p-4 border-t border-gray-200 space-y-3">
             <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-4">
               <p className="text-sm font-semibold text-gray-900 mb-1">
-                🔥 Racha de {dashboardData?.stats?.currentStreak || 0} días
+                🔥 {t("stats.currentStreak")}:{" "}
+                {dashboardData?.stats?.currentStreak || 0} {t("stats.days")}
               </p>
-              <p className="text-xs text-gray-600">
-                ¡Sigue así para mantener tu progreso!
-              </p>
+              <p className="text-xs text-gray-600">{t("stats.keepGoing")}</p>
             </div>
             <button
               onClick={handleLogout}
               className="w-full flex items-center justify-center gap-3 p-3 rounded-xl text-red-600 font-medium hover:bg-red-50 transition-colors active:scale-95"
             >
               <LogOut size={20} />
-              Cerrar sesión
+              {t("nav.logout")}
             </button>
           </div>
         </div>
@@ -234,10 +245,10 @@ const Layout = () => {
                 </Link>
               );
             })}
-            
+
             {/* Separador visual */}
             <div className="h-px bg-gray-200 mx-2 my-1"></div>
-            
+
             {/* Secciones de usuario */}
             {userLinks.map((link) => {
               const Icon = link.icon;
@@ -271,12 +282,15 @@ const Layout = () => {
       <header className="hidden lg:block bg-white shadow-sm fixed top-0 left-16 right-0 z-20">
         <div className="p-4 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-gray-900 gap-3 flex items-center">
-            ¡Bienvenido de vuelta! 👋
+            {t("auth.welcomeBack")}
           </h2>
-          <button className="relative p-2 text-gray-600 rounded-xl hover:bg-gray-100 transition-colors">
-            <Bell size={24} />
-            <div className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>
-          </button>
+          <div className="flex items-center gap-4">
+            <LanguageSelector />
+            <button className="relative p-2 text-gray-600 rounded-xl hover:bg-gray-100 transition-colors">
+              <Bell size={24} />
+              <div className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -286,7 +300,7 @@ const Layout = () => {
           {/* Welcome message mobile */}
           <div className="lg:hidden mb-6 bg-white rounded-xl shadow-sm p-4">
             <h2 className="text-sm font-bold text-gray-900">
-              ¡Bienvenido de vuelta! 👋
+              {t("auth.welcomeBack")}
             </h2>
             <p className="text-sm text-gray-600 mt-1">
               {user?.email || "Estudiante"}

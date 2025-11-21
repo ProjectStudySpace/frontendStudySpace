@@ -1,0 +1,305 @@
+{
+  "nav": {
+    "topics": "Mis temas",
+    "studySessions": "Sesiones de repaso",
+    "calendar": "Calendario",
+    "progress": "Progreso",
+    "profile": "Perfil",
+    "settings": "Configuración",
+    "logout": "Cerrar sesión"
+  },
+  "auth": {
+    "welcome": "Bienvenido, por favor inicia sesión",
+    "welcomeBack": "¡Bienvenido de vuelta! 👋",
+    "createAccount": "Crear Cuenta",
+    "email": "Email",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar contraseña",
+    "fullName": "Nombre completo",
+    "login": "Iniciar Sesión",
+    "register": "Crear Cuenta",
+    "noAccount": "¿No tienes cuenta?",
+    "hasAccount": "¿Ya tienes cuenta?",
+    "registerHere": "Regístrate aquí",
+    "loginHere": "Inicia sesión",
+    "testCredentials": "correo: test@test.com / Contraseña: 123 para probar",
+    "invalidCredentials": "Credenciales inválidas",
+    "passwordMismatch": "Las contraseñas no coinciden",
+    "passwordMinLength": "La contraseña debe tener al menos 6 caracteres",
+    "accountCreated": "Cuenta creada exitosamente. Redirigiendo al login...",
+    "accountCreationError": "Error al crear la cuenta. El email ya puede estar registrado.",
+    "accessAccount": "Accede a tu cuenta para continuar",
+    "registerToAccess": "Regístrate para acceder a tu cuenta"
+  },
+  "topics": {
+    "title": "Tus materias de estudio",
+    "subtitle": "Gestiona tus materias y accede a sus tarjetas de estudio",
+    "create": "Nueva materia",
+    "edit": "Editar Materia",
+    "new": "Nueva Materia",
+    "delete": "Eliminar",
+    "viewCards": "Ver Tarjetas",
+    "name": "Nombre de la materia",
+    "description": "Descripción",
+    "color": "Color del tema",
+    "noTopics": "No hay materias creadas",
+    "noTopicsSubtitle": "Crea tu primera materia para comenzar a organizar tu estudio",
+    "createFirst": "Crea la primera materia",
+    "searchPlaceholder": "Buscar materias por nombre o descripción...",
+    "deleteConfirm": "¿Estás seguro de que quieres eliminar esta materia?",
+    "studyContent": "Contenido de estudio",
+    "backToTopics": "Volver"
+  },
+  "cards": {
+    "title": "Tarjetas de Estudio",
+    "create": "Nueva Tarjeta",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "deleting": "Eliminando...",
+    "question": "Pregunta",
+    "answer": "Respuesta",
+    "addImage": "Agregar imagen",
+    "viewAnswer": "Ver respuesta",
+    "studyCard": "Tarjeta de Estudio",
+    "studyCardDescription": "Formato pregunta-respuesta ideal para repaso activo y memorización.",
+    "quickReview": "Repaso rápido",
+    "withImages": "Con imágenes"
+  },
+  "notes": {
+    "title": "Notas de Estudio",
+    "create": "Nueva Nota",
+    "edit": "Editar Nota",
+    "new": "Nueva Nota",
+    "delete": "Eliminar",
+    "deleting": "Eliminando...",
+    "studyNote": "Nota de Estudio",
+    "studyNoteDescription": "Formato de libro abierto con dos páginas para contenido extenso.",
+    "extensiveContent": "Contenido extenso",
+    "twoPages": "2 páginas"
+  },
+  "stats": {
+    "activeTopics": "Materias activas",
+    "totalCards": "Tarjetas totales",
+    "currentStreak": "Racha actual",
+    "longestStreak": "Récord",
+    "days": "días",
+    "averageProgress": "Progreso promedio",
+    "streakReset": "Reiniciada por inactividad",
+    "keepGoing": "¡Sigue así para mantener tu progreso!"
+  },
+  "sessions": {
+    "title": "Sesiones de repaso",
+    "subtitle": "Revisa tus tarjetas programadas",
+    "calendar": "Calendario de sesiones de repaso programadas",
+    "pending": "Pendientes",
+    "completed": "Completadas",
+    "upcoming": "Próximas"
+  },
+  "calendar": {
+    "title": "Calendario de Estudio",
+    "subtitle": "Visualiza tus sesiones programadas",
+    "widget": "Calendario"
+  },
+  "progress": {
+    "title": "Mi Progreso",
+    "subtitle": "Seguimiento de tu aprendizaje",
+    "learning": "Progreso de Aprendizaje"
+  },
+  "profile": {
+    "title": "Perfil",
+    "loading": "Cargando perfil...",
+    "user": "Usuario",
+    "memberSince": "Miembro desde",
+    "statistics": "Estadísticas",
+    "moreStatsSoon": "Más estadísticas próximamente...",
+    "googleCalendar": "Conexión con Google Calendar",
+    "connectCalendar": "Conectar MemoPal con Google Calendar",
+    "noCalendarConnected": "No hay ninguna cuenta de Google Calendar conectada",
+    "disconnectCalendar": "Desconectar Google Calendar",
+    "disconnectCalendarMessage": "¿Estás seguro de que quieres desconectar tu cuenta de Google Calendar? Las sesiones programadas dejarán de sincronizarse automáticamente.",
+    "disconnectSuccess": "Google Calendar desconectado exitosamente",
+    "disconnectError": "Error al desconectar Google Calendar. Por favor, intenta de nuevo.",
+    "deleteAccount": "Eliminar cuenta de usuario",
+    "deleteAccountTitle": "Eliminar usuario y datos asociados",
+    "deleteConfirmMessage": "⚠️ Esta acción es irreversible y eliminará todos tus datos permanentemente, incluyendo materias, tarjetas, notas y sesiones de estudio. Por favor, confirma tu contraseña para continuar.",
+    "deleteSuccess": "Cuenta eliminada exitosamente",
+    "deleteError": "Error al eliminar la cuenta. Verifica tu contraseña."
+  },
+  "settings": {
+    "title": "Configuración",
+    "startGuide": "Mostrar guía de inicio",
+    "startGuideLabel": "Activar guía de inicio",
+    "startGuideDescription": "Muestra una guía interactiva al iniciar la aplicación para nuevos usuarios",
+    "darkMode": "Activar modo oscuro",
+    "darkModeLabel": "Modo oscuro",
+    "darkModeDescription": "Cambia la apariencia de la aplicación a un tema oscuro para reducir la fatiga visual",
+    "blockApps": "Bloquear aplicaciones externas",
+    "blockAppsLabel": "Bloquear el uso de otras aplicaciones",
+    "blockAppsDescription": "Bloquea la apertura de otras aplicaciones durante las sesiones de estudio para evitar distracciones"
+  },
+  "content": {
+    "newContent": "Nuevo contenido"
+  },
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "loading": "Cargando...",
+    "loadingTopics": "Cargando materias...",
+    "error": "Error",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "page": "Página",
+    "of": "de",
+    "search": "Buscar",
+    "deleteImage": "Eliminar imagen"
+  },
+  "landing": {
+    "hero": {
+      "badge": "Sistema de repaso espaciado inteligente",
+      "title": "Aprende más rápido.",
+      "titleHighlight": "Recuerda por más tiempo.",
+      "subtitle": "MemoPal utiliza algoritmos de repetición espaciada para ayudarte a memorizar cualquier cosa de forma eficiente. Desde idiomas hasta medicina, estudia inteligentemente y alcanza tus metas.",
+      "cta": "Comenzar gratis",
+      "ctaSecondary": "Ver características",
+      "rating": "Calificación 5.0 de usuarios",
+      "activeStudents": "Estudiantes activos",
+      "goToDashboard": "Ir al Dashboard"
+    },
+    "nav": {
+      "features": "Características",
+      "howItWorks": "Cómo funciona",
+      "pricing": "Precios",
+      "login": "Iniciar sesión",
+      "getStarted": "Comenzar gratis"
+    },
+    "features": {
+      "badge": "Características poderosas",
+      "title": "Todo lo que necesitas para aprender mejor",
+      "subtitle": "MemoPal combina tecnología avanzada con principios de aprendizaje probados para maximizar tu retención.",
+      "spacedRepetition": {
+        "title": "Repaso espaciado inteligente",
+        "description": "Algoritmos que programan automáticamente tus sesiones de repaso en el momento óptimo para maximizar la retención a largo plazo."
+      },
+      "calendarIntegration": {
+        "title": "Integración con Google Calendar",
+        "description": "Sincroniza tus sesiones de estudio con tu calendario y recibe recordatorios automáticos para nunca perder una sesión."
+      },
+      "progressTracking": {
+        "title": "Seguimiento de progreso",
+        "description": "Visualiza tu evolución con métricas detalladas, rachas de estudio y análisis de rendimiento en tiempo real."
+      },
+      "streakSystem": {
+        "title": "Sistema de rachas",
+        "description": "Mantén tu motivación alta con un sistema de rachas diarias que te incentiva a estudiar constantemente."
+      },
+      "topicOrganization": {
+        "title": "Organización por temas",
+        "description": "Crea y gestiona tarjetas organizadas por materias con colores personalizados para una mejor organización visual."
+      },
+      "selfAssessment": {
+        "title": "Autoevaluación",
+        "description": "Califica la dificultad de cada tarjeta y MemoPal ajustará automáticamente los intervalos de repaso."
+      }
+    },
+    "howItWorks": {
+      "title": "Comienza en minutos",
+      "subtitle": "Solo tres pasos simples para empezar a mejorar tu aprendizaje",
+      "step1": {
+        "title": "Crea tus tarjetas",
+        "description": "Agrega preguntas y respuestas sobre cualquier tema que quieras aprender. Organízalas por materias con colores personalizados."
+      },
+      "step2": {
+        "title": "Estudia regularmente",
+        "description": "MemoPal programa automáticamente tus sesiones de repaso. Solo sigue el plan y califica qué tan bien recordaste cada tarjeta."
+      },
+      "step3": {
+        "title": "Ve tu progreso",
+        "description": "Observa cómo mejora tu retención con el tiempo. Mantén rachas diarias y alcanza tus metas de aprendizaje."
+      }
+    },
+    "pricing": {
+      "title": "Comienza gratis, crece cuando quieras",
+      "subtitle": "Elige el plan perfecto para tus necesidades de aprendizaje",
+      "free": {
+        "name": "Gratis",
+        "description": "Perfecto para empezar",
+        "price": "$0",
+        "perMonth": "/mes",
+        "features": {
+          "cards": "Hasta 50 tarjetas",
+          "topics": "3 materias",
+          "basicSpaced": "Repaso espaciado básico",
+          "mobileAccess": "Acceso móvil",
+          "basicStats": "Estadísticas básicas"
+        },
+        "cta": "Comenzar gratis"
+      },
+      "pro": {
+        "name": "Pro",
+        "description": "Para estudiantes serios",
+        "price": "$9",
+        "perMonth": "/mes",
+        "features": {
+          "unlimitedCards": "Tarjetas ilimitadas",
+          "unlimitedTopics": "Materias ilimitadas",
+          "advancedSpaced": "Repaso espaciado avanzado",
+          "calendarIntegration": "Integración Google Calendar",
+          "advancedStats": "Estadísticas avanzadas",
+          "prioritySupport": "Soporte prioritario",
+          "noAds": "Sin anuncios"
+        },
+        "cta": "Comenzar prueba"
+      },
+      "team": {
+        "name": "Equipo",
+        "description": "Para grupos de estudio",
+        "price": "$29",
+        "perMonth": "/mes",
+        "features": {
+          "allPro": "Todo en Pro",
+          "members": "Hasta 10 miembros",
+          "sharedCards": "Tarjetas compartidas",
+          "collaborativeBoards": "Tableros colaborativos",
+          "teamManagement": "Gestión de equipo",
+          "groupAnalytics": "Análisis de grupo"
+        },
+        "cta": "Contactar ventas"
+      }
+    },
+    "cta": {
+      "title": "¿Listo para aprender de forma más inteligente?",
+      "subtitle": "Únete a miles de estudiantes que ya están mejorando su memoria con MemoPal",
+      "button": "Comenzar gratis ahora"
+    },
+    "footer": {
+      "tagline": "La forma más inteligente de memorizar y retener información.",
+      "product": "Producto",
+      "resources": "Recursos",
+      "legal": "Legal",
+      "features": "Características",
+      "pricing": "Precios",
+      "roadmap": "Roadmap",
+      "blog": "Blog",
+      "guides": "Guías",
+      "support": "Soporte",
+      "privacy": "Privacidad",
+      "terms": "Términos",
+      "copyright": "© 2024 MemoPal. Todos los derechos reservados."
+    },
+    "mockUI": {
+      "studySession": "Sesión de estudio",
+      "pendingCards": "tarjetas pendientes",
+      "active": "Activo",
+      "question": "¿Cuál es la capital de Francia?",
+      "answer": "París",
+      "easy": "Fácil",
+      "medium": "Medio",
+      "hard": "Difícil",
+      "currentStreak": "Racha actual",
+      "progress": "Progreso"
+    }
+  }
+}
