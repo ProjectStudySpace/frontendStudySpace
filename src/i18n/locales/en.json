@@ -470,7 +470,20 @@
     },
     "createContentSelector": {
       "whatToCreate": "What do you want to create?",
-      "chooseContentType": "Choose the type of content for your study"
+      "chooseContentType": "Choose the type of content for your study",
+      "studyCard": {
+        "title": "Study Card",
+        "description": "Question-answer format ideal for active review and memorization. Perfect for concepts, definitions and exam questions.",
+        "quickReview": "Quick review",
+        "withImages": "With images"
+      },
+      "studyNote": {
+        "title": "Study Note",
+        "description": "Open book format with two pages for extensive content. Ideal for detailed notes, summaries and complete theory.",
+        "extensiveContent": "Extensive content",
+        "twoPages": "2 pages",
+        "withImages": "With images"
+      }
     },
     "difficultySelector": {
       "howWellRemembered": "How well did you remember it?"

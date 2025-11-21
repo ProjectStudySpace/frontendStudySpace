@@ -52,19 +52,23 @@ export const CreateContentSelector: React.FC<CreateContentSelectorProps> = ({
                 </div>
                 <div className="flex-1 text-left">
                   <h4 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors mb-2">
-                    Tarjeta de Estudio
+                    {t("components.createContentSelector.studyCard.title")}
                   </h4>
                   <p className="text-sm text-gray-600 leading-relaxed">
-                    Formato pregunta-respuesta ideal para{" "}
-                    <strong>repaso activo</strong> y memorización. Perfecta para
-                    conceptos, definiciones y preguntas de examen.
+                    {t(
+                      "components.createContentSelector.studyCard.description"
+                    )}
                   </p>
                   <div className="mt-3 flex items-center gap-2 text-xs text-indigo-600 font-medium">
                     <span className="bg-indigo-50 px-2 py-1 rounded">
-                      Repaso rápido
+                      {t(
+                        "components.createContentSelector.studyCard.quickReview"
+                      )}
                     </span>
                     <span className="bg-indigo-50 px-2 py-1 rounded">
-                      Con imágenes
+                      {t(
+                        "components.createContentSelector.studyCard.withImages"
+                      )}
                     </span>
                   </div>
                 </div>
@@ -88,22 +92,26 @@ export const CreateContentSelector: React.FC<CreateContentSelectorProps> = ({
                 </div>
                 <div className="flex-1 text-left">
                   <h4 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors mb-2">
-                    Nota de Estudio
+                    {t("components.createContentSelector.studyNote.title")}
                   </h4>
                   <p className="text-sm text-gray-600 leading-relaxed">
-                    Formato de <strong>libro abierto</strong> con dos páginas
-                    para contenido extenso. Ideal para apuntes detallados,
-                    resúmenes y teoría completa.
+                    {t(
+                      "components.createContentSelector.studyNote.description"
+                    )}
                   </p>
                   <div className="mt-3 flex items-center gap-2 text-xs text-blue-600 font-medium">
                     <span className="bg-blue-50 px-2 py-1 rounded">
-                      Contenido extenso
+                      {t(
+                        "components.createContentSelector.studyNote.extensiveContent"
+                      )}
                     </span>
                     <span className="bg-blue-50 px-2 py-1 rounded">
-                      2 páginas
+                      {t("components.createContentSelector.studyNote.twoPages")}
                     </span>
                     <span className="bg-blue-50 px-2 py-1 rounded">
-                      Con imágenes
+                      {t(
+                        "components.createContentSelector.studyNote.withImages"
+                      )}
                     </span>
                   </div>
                 </div>

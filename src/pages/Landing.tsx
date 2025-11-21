@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
+import { LanguageSelector } from "../components/LanguageSelector";
 
 const Landing: React.FC = () => {
   const navigate = useNavigate();
@@ -87,6 +88,7 @@ const Landing: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-4">
+              <LanguageSelector />
               {!isAuthenticated && (
                 <button
                   onClick={handleLogin}
