@@ -65,6 +65,7 @@ export interface CardListProps {
 
 export interface CardsManagerProps {
   topicId: number;
+  openFormInitially?: boolean;
 }
 
 // Actualizar CreateCardData para incluir FormData
