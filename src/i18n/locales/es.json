@@ -93,7 +93,12 @@
     "calendar": "Calendario de sesiones de repaso programadas",
     "pending": "Pendientes",
     "completed": "Completadas",
-    "upcoming": "Próximas"
+    "upcoming": "Próximas",
+    "pendingToday": "Pendientes para Hoy",
+    "upcomingSessions": "Próximas Sesiones",
+    "completedSessions": "Sesiones Completadas",
+    "noSessions": "No hay sesiones de estudio programadas.",
+    "createCards": "Crea algunas tarjetas para comenzar."
   },
   "calendar": {
     "title": "Calendario de Estudio",
@@ -138,7 +143,139 @@
     "blockAppsDescription": "Bloquea la apertura de otras aplicaciones durante las sesiones de estudio para evitar distracciones"
   },
   "content": {
-    "newContent": "Nuevo contenido"
+    "newContent": "Nuevo contenido",
+    "noContent": "Sin contenido en esta página",
+    "leftPage": "Página izquierda",
+    "rightPage": "Página derecha",
+    "noTopic": "Sin tema"
+  },
+  "reviews": {
+    "title": "Sesiones de repaso",
+    "subtitle": "Sistema de repaso espaciado para optimizar tu aprendizaje",
+    "startReview": "Iniciar repaso",
+    "startReviewShort": "Iniciar",
+    "pendingToday": "Pendientes hoy",
+    "next7Days": "Próximos 7 días",
+    "next30Days": "Próximos 30 días",
+    "status": {
+      "pending": "Pendiente",
+      "upcoming": "Programada",
+      "completed": "Completada",
+      "unknown": "Desconocido"
+    },
+    "reschedule": "Reprogramar",
+    "rescheduling": "Reprogramando...",
+    "rescheduleSession": "Reprogramar sesión",
+    "selectDate": "Seleccionar fecha",
+    "selectTime": "Seleccionar hora",
+    "selectDatePlaceholder": "Selecciona una fecha",
+    "viewDetails": "Ver detalles",
+    "sessionDetails": "Detalles de la Sesión",
+    "topic": "Tema",
+    "scheduledDate": "Fecha programada",
+    "time": "Hora",
+    "currentInterval": "Intervalo actual",
+    "question": "Pregunta",
+    "completed": "Completada",
+    "difficulty": "Dificultad",
+    "interval": "Intervalo",
+    "retry": "Reintentar",
+    "close": "Cerrar",
+    "hide": "Ocultar",
+    "viewAnswer": "Ver respuesta",
+    "deleteConfirm": "¿Estás seguro de que quieres eliminar esta tarjeta?",
+    "deleteNoteConfirm": "¿Estás seguro de que quieres eliminar esta nota?"
+  },
+  "difficulty": {
+    "easy": "Fácil",
+    "medium": "Medio",
+    "hard": "Difícil"
+  },
+  "progressStats": {
+    "totalTopics": "Total de Temas",
+    "totalCards": "Total de Cartas",
+    "pendingReviews": "Revisiones Pendientes",
+    "completedToday": "Completadas Hoy",
+    "currentStreak": "Racha Actual",
+    "longestStreak": "Racha Más Larga",
+    "errorLoading": "Error loading progress",
+    "noData": "No progress data available"
+  },
+  "forms": {
+    "questionLabel": "Pregunta:",
+    "answerLabel": "Respuesta:",
+    "questionPlaceholder": "Escribe tu pregunta aquí...",
+    "answerPlaceholder": "Escribe tu respuesta aquí...",
+    "addImage": "Agregar imagen",
+    "changeImage": "Cambiar imagen",
+    "optional": "Opcional",
+    "maxSize": "Máximo 5MB",
+    "saving": "Guardando...",
+    "update": "Actualizar",
+    "create": "Crear",
+    "card": "Tarjeta",
+    "note": "Nota",
+    "topic": "Materia",
+    "topicName": "Nombre de la materia",
+    "description": "Descripción",
+    "selectColor": "Elige un color para esta materia",
+    "titleLabel": "Título",
+    "titleOptional": "(opcional)",
+    "titlePlaceholder": "Ej: Introducción a las Integrales (opcional)",
+    "characters": "caracteres",
+    "leftPage": "Página Izquierda",
+    "rightPage": "Página Derecha",
+    "leftPagePlaceholder": "Escribe aquí el contenido de la página izquierda...\n\nPuedes escribir varias líneas y todo el texto que necesites.",
+    "rightPagePlaceholder": "Escribe aquí el contenido de la página derecha...\n\nPuedes escribir varias líneas y todo el texto que necesites.",
+    "noteInfo": "El título y las imágenes son opcionales. Al menos una de las dos páginas debe tener contenido.",
+    "noteInfoBold": "Nota:",
+    "atLeastOnePage": "Al menos una página debe tener contenido",
+    "invalidImage": "Por favor selecciona un archivo de imagen válido",
+    "imageTooLarge": "La imagen no puede superar los 5MB",
+    "errorSaving": "Error al guardar la nota. Por favor, inténtalo de nuevo.",
+    "questionImage": "Imagen de pregunta",
+    "answerImage": "Imagen de respuesta",
+    "leftPageImage": "Imagen página izquierda",
+    "rightPageImage": "Imagen página derecha",
+    "bookFormat": "Formato de libro abierto con dos páginas"
+  },
+  "studySession": {
+    "title": "Sesión de Estudio",
+    "card": "Tarjeta",
+    "of": "de",
+    "question": "Pregunta",
+    "answer": "Respuesta",
+    "viewAnswer": "Ver Respuesta",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "close": "Cerrar"
+  },
+  "calendarWidget": {
+    "title": "Calendario",
+    "session": "Sesión",
+    "months": {
+      "january": "Enero",
+      "february": "Febrero",
+      "march": "Marzo",
+      "april": "Abril",
+      "may": "Mayo",
+      "june": "Junio",
+      "july": "Julio",
+      "august": "Agosto",
+      "september": "Septiembre",
+      "october": "Octubre",
+      "november": "Noviembre",
+      "december": "Diciembre"
+    },
+    "days": {
+      "monday": "L",
+      "tuesday": "M",
+      "wednesday": "X",
+      "thursday": "J",
+      "friday": "V",
+      "saturday": "S",
+      "sunday": "D"
+    }
   },
   "common": {
     "save": "Guardar",
@@ -154,7 +291,8 @@
     "page": "Página",
     "of": "de",
     "search": "Buscar",
-    "deleteImage": "Eliminar imagen"
+    "deleteImage": "Eliminar imagen",
+    "inTotal": "en total"
   },
   "landing": {
     "hero": {
@@ -300,6 +438,87 @@
       "hard": "Difícil",
       "currentStreak": "Racha actual",
       "progress": "Progreso"
+    }
+  },
+  "components": {
+    "cardList": {
+      "noCards": "No hay tarjetas creadas en este tema.",
+      "createFirstCard": "Crear primera tarjeta",
+      "topicCards": "Tarjetas del tema",
+      "newCard": "Nueva tarjeta"
+    },
+    "colorSelector": {
+      "themeColor": "Color del tema",
+      "colors": {
+        "darkBlue": "Azul oscuro",
+        "lightBlue": "Azul claro",
+        "darkGreen": "Verde oscuro",
+        "lightGreen": "Verde claro",
+        "darkPurple": "Morado oscuro",
+        "lightPurple": "Morado claro",
+        "yellow": "Amarillo",
+        "orange": "Naranja",
+        "turquoise": "Turquesa",
+        "gray": "Gris",
+        "brown": "Marrón"
+      }
+    },
+    "confirmationModal": {
+      "passwordRequired": "La contraseña es requerida",
+      "confirmPassword": "Confirma tu contraseña",
+      "processing": "Procesando..."
+    },
+    "createContentSelector": {
+      "whatToCreate": "¿Qué quieres crear?",
+      "chooseContentType": "Elige el tipo de contenido para tu estudio"
+    },
+    "difficultySelector": {
+      "howWellRemembered": "¿Qué tan bien lo recordaste?"
+    },
+    "googleCalendarAuth": {
+      "verifyingConnection": "Verificando conexión con Google Calendar...",
+      "connected": "✅ Google Calendar conectado",
+      "autoSyncMessage": "Tus sesiones de estudio se sincronizarán automáticamente con tu calendario.",
+      "disconnectCalendar": "Desconectar Google Calendar",
+      "syncCompleted": "📅 Sincronización completada",
+      "syncMessage": "sesiones programadas fueron sincronizadas con tu calendario.",
+      "connectTitle": "📅 Conecta tu Google Calendar",
+      "connectDescription": "Sincroniza tus sesiones de estudio programadas directamente en tu calendario de Google. Recibirás recordatorios automáticos y podrás gestionar tu tiempo de estudio más eficientemente.",
+      "autoSync": "Sincronización automática de sesiones",
+      "studyReminders": "Recordatorios de estudio",
+      "integratedTimeManagement": "Gestión integrada de tiempo",
+      "pendingSessionsSync": "Las sesiones pendientes se sincronizarán automáticamente",
+      "connectWithGoogle": "Conectar con Google",
+      "connectionError": "Error al conectar con Google Calendar. Por favor, intenta de nuevo."
+    },
+    "noteList": {
+      "noNotes": "No hay notas en este tema",
+      "createFirstNoteDescription": "Crea tu primera nota para comenzar a estudiar con el formato de libro abierto",
+      "createFirstNote": "Crear primera nota",
+      "topicNotes": "Notas del tema",
+      "note": "nota",
+      "notes": "notas",
+      "newNote": "Nueva nota",
+      "createNewNote": "Crear nueva nota",
+      "openBookFormat": "Formato de libro abierto"
+    },
+    "notesManager": {
+      "searchPlaceholder": "Buscar en notas por título o contenido...",
+      "minCharacters": "Escribe al menos 2 caracteres para buscar",
+      "searching": "Buscando",
+      "errorLoading": "Error al cargar notas",
+      "retry": "Reintentar"
+    },
+    "topicList": {
+      "noTopics": "No hay materias creadas. Crea tu primera materia para comenzar.",
+      "yourSubjects": "Tus Materias"
+    },
+    "topicsManager": {
+      "studySubjects": "Materias de Estudio",
+      "all": "Todos",
+      "newSubject": "+ Nueva Materia",
+      "viewAllTopics": "Ver todos los temas",
+      "searchSubjects": "Buscar materias..."
     }
   }
 }

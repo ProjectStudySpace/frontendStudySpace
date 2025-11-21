@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { ReviewSession, ReviewSessionListProps } from "../types/reviews";
 import ReviewSessionCard from "./reviewSessionCard";
 import { BookOpen } from "lucide-react";
@@ -11,6 +12,7 @@ const ReviewSessionList: React.FC<ReviewSessionListProps> = ({
   pendingPagination,
   onPendingPageChange,
 }) => {
+  const { t } = useTranslation();
   const groupedSessions = {
     pending: sessions.filter((s) => s.type === "pending"),
     upcoming: sessions.filter((s) => s.type === "upcoming"),
@@ -24,7 +26,7 @@ const ReviewSessionList: React.FC<ReviewSessionListProps> = ({
           <div className="flex items-center gap-3 mb-4">
             <div className="w-2 h-6 bg-red-500 rounded-full"></div>
             <h2 className="text-xl font-semibold text-gray-900">
-              Pendientes para Hoy (
+              {t("sessions.pendingToday")} (
               {pendingPagination
                 ? pendingPagination.totalItems
                 : groupedSessions.pending.length}
@@ -51,11 +53,11 @@ const ReviewSessionList: React.FC<ReviewSessionListProps> = ({
                   disabled={pendingPagination.currentPage <= 1}
                   className="px-4 py-2 bg-indigo-500 text-white rounded-lg disabled:bg-gray-300 hover:bg-indigo-600 transition-colors disabled:cursor-not-allowed"
                 >
-                  Anterior
+                  {t("common.previous")}
                 </button>
                 <span className="text-gray-600">
-                  Página {pendingPagination.currentPage} de{" "}
-                  {pendingPagination.totalPages}
+                  {t("common.page")} {pendingPagination.currentPage}{" "}
+                  {t("common.of")} {pendingPagination.totalPages}
                 </span>
                 <button
                   onClick={() =>
@@ -67,7 +69,7 @@ const ReviewSessionList: React.FC<ReviewSessionListProps> = ({
                   }
                   className="px-4 py-2 bg-indigo-500 text-white rounded-lg disabled:bg-gray-300 hover:bg-indigo-600 transition-colors disabled:cursor-not-allowed"
                 >
-                  Siguiente
+                  {t("common.next")}
                 </button>
               </div>
             )}
@@ -79,7 +81,7 @@ const ReviewSessionList: React.FC<ReviewSessionListProps> = ({
           <div className="flex items-center gap-3 mb-4">
             <div className="w-2 h-6 bg-orange-500 rounded-full"></div>
             <h2 className="text-xl font-semibold text-gray-900">
-              Próximas Sesiones (
+              {t("sessions.upcomingSessions")} (
               {upcomingPagination
                 ? upcomingPagination.totalItems
                 : groupedSessions.upcoming.length}
@@ -106,11 +108,11 @@ const ReviewSessionList: React.FC<ReviewSessionListProps> = ({
                   disabled={upcomingPagination.currentPage <= 1}
                   className="px-4 py-2 bg-indigo-500 text-white rounded-lg disabled:bg-gray-300 hover:bg-indigo-600 transition-colors disabled:cursor-not-allowed"
                 >
-                  Anterior
+                  {t("common.previous")}
                 </button>
                 <span className="text-gray-600">
-                  Página {upcomingPagination.currentPage} de{" "}
-                  {upcomingPagination.totalPages}
+                  {t("common.page")} {upcomingPagination.currentPage}{" "}
+                  {t("common.of")} {upcomingPagination.totalPages}
                 </span>
                 <button
                   onClick={() =>
@@ -122,7 +124,7 @@ const ReviewSessionList: React.FC<ReviewSessionListProps> = ({
                   }
                   className="px-4 py-2 bg-indigo-500 text-white rounded-lg disabled:bg-gray-300 hover:bg-indigo-600 transition-colors disabled:cursor-not-allowed"
                 >
-                  Siguiente
+                  {t("common.next")}
                 </button>
               </div>
             )}
@@ -134,7 +136,8 @@ const ReviewSessionList: React.FC<ReviewSessionListProps> = ({
           <div className="flex items-center gap-3 mb-4">
             <div className="w-2 h-6 bg-green-500 rounded-full"></div>
             <h2 className="text-xl font-semibold text-gray-900">
-              Sesiones Completadas ({groupedSessions.completed.length})
+              {t("sessions.completedSessions")} (
+              {groupedSessions.completed.length})
             </h2>
           </div>
           <div className="grid gap-4">
@@ -151,9 +154,9 @@ const ReviewSessionList: React.FC<ReviewSessionListProps> = ({
             <BookOpen size={24} className="text-gray-400" />
           </div>
           <p className="text-gray-500 text-lg mb-2">
-            No hay sesiones de estudio programadas.
+            {t("sessions.noSessions")}
           </p>
-          <p className="text-gray-400">Crea algunas tarjetas para comenzar.</p>
+          <p className="text-gray-400">{t("sessions.createCards")}</p>
         </div>
       )}
     </div>

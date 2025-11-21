@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { X, AlertTriangle } from "lucide-react";
 
 interface ConfirmationModalProps {
@@ -26,6 +27,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   isDangerous = false,
   isLoading = false,
 }) => {
+  const { t } = useTranslation();
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
@@ -33,7 +35,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
   const handleConfirm = () => {
     if (requirePassword && !password) {
-      setError("La contraseña es requerida");
+      setError(t("components.confirmationModal.passwordRequired"));
       return;
     }
     setError("");
@@ -79,7 +81,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
               htmlFor="password-confirmation"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
-              Confirma tu contraseña
+              {t("components.confirmationModal.confirmPassword")}
             </label>
             <input
               id="password-confirmation"
@@ -91,7 +93,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
               }}
               disabled={isLoading}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-              placeholder="Ingresa tu contraseña"
+              placeholder={t("components.confirmationModal.confirmPassword")}
               autoFocus
             />
             {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
@@ -119,7 +121,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             {isLoading ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                Procesando...
+                {t("components.confirmationModal.processing")}
               </>
             ) : (
               confirmText

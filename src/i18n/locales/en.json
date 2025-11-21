@@ -93,7 +93,12 @@
     "calendar": "Calendar of scheduled review sessions",
     "pending": "Pending",
     "completed": "Completed",
-    "upcoming": "Upcoming"
+    "upcoming": "Upcoming",
+    "pendingToday": "Pending for Today",
+    "upcomingSessions": "Upcoming Sessions",
+    "completedSessions": "Completed Sessions",
+    "noSessions": "No study sessions scheduled.",
+    "createCards": "Create some cards to get started."
   },
   "calendar": {
     "title": "Study Calendar",
@@ -138,7 +143,139 @@
     "blockAppsDescription": "Blocks opening of other applications during study sessions to avoid distractions"
   },
   "content": {
-    "newContent": "New Content"
+    "newContent": "New Content",
+    "noContent": "No content on this page",
+    "leftPage": "Left page",
+    "rightPage": "Right page",
+    "noTopic": "No topic"
+  },
+  "reviews": {
+    "title": "Study Sessions",
+    "subtitle": "Spaced repetition system to optimize your learning",
+    "startReview": "Start Review",
+    "startReviewShort": "Start",
+    "pendingToday": "Pending Today",
+    "next7Days": "Next 7 Days",
+    "next30Days": "Next 30 Days",
+    "status": {
+      "pending": "Pending",
+      "upcoming": "Scheduled",
+      "completed": "Completed",
+      "unknown": "Unknown"
+    },
+    "reschedule": "Reschedule",
+    "rescheduling": "Rescheduling...",
+    "rescheduleSession": "Reschedule Session",
+    "selectDate": "Select Date",
+    "selectTime": "Select Time",
+    "selectDatePlaceholder": "Select a date",
+    "viewDetails": "View Details",
+    "sessionDetails": "Session Details",
+    "topic": "Topic",
+    "scheduledDate": "Scheduled Date",
+    "time": "Time",
+    "currentInterval": "Current Interval",
+    "question": "Question",
+    "completed": "Completed",
+    "difficulty": "Difficulty",
+    "interval": "Interval",
+    "retry": "Retry",
+    "close": "Close",
+    "hide": "Hide",
+    "viewAnswer": "View Answer",
+    "deleteConfirm": "Are you sure you want to delete this card?",
+    "deleteNoteConfirm": "Are you sure you want to delete this note?"
+  },
+  "difficulty": {
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard"
+  },
+  "progressStats": {
+    "totalTopics": "Total Topics",
+    "totalCards": "Total Cards",
+    "pendingReviews": "Pending Reviews",
+    "completedToday": "Completed Today",
+    "currentStreak": "Current Streak",
+    "longestStreak": "Longest Streak",
+    "errorLoading": "Error loading progress",
+    "noData": "No progress data available"
+  },
+  "forms": {
+    "questionLabel": "Question:",
+    "answerLabel": "Answer:",
+    "questionPlaceholder": "Write your question here...",
+    "answerPlaceholder": "Write your answer here...",
+    "addImage": "Add image",
+    "changeImage": "Change image",
+    "optional": "Optional",
+    "maxSize": "Maximum 5MB",
+    "saving": "Saving...",
+    "update": "Update",
+    "create": "Create",
+    "card": "Card",
+    "note": "Note",
+    "topic": "Subject",
+    "topicName": "Subject name",
+    "description": "Description",
+    "selectColor": "Choose a color for this subject",
+    "titleLabel": "Title",
+    "titleOptional": "(optional)",
+    "titlePlaceholder": "E.g: Introduction to Integrals (optional)",
+    "characters": "characters",
+    "leftPage": "Left Page",
+    "rightPage": "Right Page",
+    "leftPagePlaceholder": "Write the content for the left page here...\n\nYou can write multiple lines and all the text you need.",
+    "rightPagePlaceholder": "Write the content for the right page here...\n\nYou can write multiple lines and all the text you need.",
+    "noteInfo": "Title and images are optional. At least one of the two pages must have content.",
+    "noteInfoBold": "Note:",
+    "atLeastOnePage": "At least one page must have content",
+    "invalidImage": "Please select a valid image file",
+    "imageTooLarge": "Image cannot exceed 5MB",
+    "errorSaving": "Error saving note. Please try again.",
+    "questionImage": "Question image",
+    "answerImage": "Answer image",
+    "leftPageImage": "Left page image",
+    "rightPageImage": "Right page image",
+    "bookFormat": "Open book format with two pages"
+  },
+  "studySession": {
+    "title": "Study Session",
+    "card": "Card",
+    "of": "of",
+    "question": "Question",
+    "answer": "Answer",
+    "viewAnswer": "View Answer",
+    "previous": "Previous",
+    "next": "Next",
+    "close": "Close"
+  },
+  "calendarWidget": {
+    "title": "Calendar",
+    "session": "Session",
+    "months": {
+      "january": "January",
+      "february": "February",
+      "march": "March",
+      "april": "April",
+      "may": "May",
+      "june": "June",
+      "july": "July",
+      "august": "August",
+      "september": "September",
+      "october": "October",
+      "november": "November",
+      "december": "December"
+    },
+    "days": {
+      "monday": "M",
+      "tuesday": "T",
+      "wednesday": "W",
+      "thursday": "T",
+      "friday": "F",
+      "saturday": "S",
+      "sunday": "S"
+    }
   },
   "common": {
     "save": "Save",
@@ -154,7 +291,8 @@
     "page": "Page",
     "of": "of",
     "search": "Search",
-    "deleteImage": "Delete image"
+    "deleteImage": "Delete image",
+    "inTotal": "in total"
   },
   "landing": {
     "hero": {
@@ -300,6 +438,87 @@
       "hard": "Hard",
       "currentStreak": "Current streak",
       "progress": "Progress"
+    }
+  },
+  "components": {
+    "cardList": {
+      "noCards": "No cards created in this topic.",
+      "createFirstCard": "Create first card",
+      "topicCards": "Topic cards",
+      "newCard": "New card"
+    },
+    "colorSelector": {
+      "themeColor": "Theme color",
+      "colors": {
+        "darkBlue": "Dark blue",
+        "lightBlue": "Light blue",
+        "darkGreen": "Dark green",
+        "lightGreen": "Light green",
+        "darkPurple": "Dark purple",
+        "lightPurple": "Light purple",
+        "yellow": "Yellow",
+        "orange": "Orange",
+        "turquoise": "Turquoise",
+        "gray": "Gray",
+        "brown": "Brown"
+      }
+    },
+    "confirmationModal": {
+      "passwordRequired": "Password is required",
+      "confirmPassword": "Confirm your password",
+      "processing": "Processing..."
+    },
+    "createContentSelector": {
+      "whatToCreate": "What do you want to create?",
+      "chooseContentType": "Choose the type of content for your study"
+    },
+    "difficultySelector": {
+      "howWellRemembered": "How well did you remember it?"
+    },
+    "googleCalendarAuth": {
+      "verifyingConnection": "Verifying connection with Google Calendar...",
+      "connected": "✅ Google Calendar connected",
+      "autoSyncMessage": "Your study sessions will be automatically synced with your calendar.",
+      "disconnectCalendar": "Disconnect Google Calendar",
+      "syncCompleted": "📅 Synchronization completed",
+      "syncMessage": "scheduled sessions were synced with your calendar.",
+      "connectTitle": "📅 Connect your Google Calendar",
+      "connectDescription": "Sync your scheduled study sessions directly in your Google Calendar. You will receive automatic reminders and can manage your study time more efficiently.",
+      "autoSync": "Automatic session synchronization",
+      "studyReminders": "Study reminders",
+      "integratedTimeManagement": "Integrated time management",
+      "pendingSessionsSync": "Pending sessions will be automatically synced",
+      "connectWithGoogle": "Connect with Google",
+      "connectionError": "Error connecting to Google Calendar. Please try again."
+    },
+    "noteList": {
+      "noNotes": "No notes in this topic",
+      "createFirstNoteDescription": "Create your first note to start studying with the open book format",
+      "createFirstNote": "Create first note",
+      "topicNotes": "Topic notes",
+      "note": "note",
+      "notes": "notes",
+      "newNote": "New note",
+      "createNewNote": "Create new note",
+      "openBookFormat": "Open book format"
+    },
+    "notesManager": {
+      "searchPlaceholder": "Search in notes by title or content...",
+      "minCharacters": "Type at least 2 characters to search",
+      "searching": "Searching",
+      "errorLoading": "Error loading notes",
+      "retry": "Retry"
+    },
+    "topicList": {
+      "noTopics": "No subjects created. Create your first subject to start.",
+      "yourSubjects": "Your Subjects"
+    },
+    "topicsManager": {
+      "studySubjects": "Study Subjects",
+      "all": "All",
+      "newSubject": "+ New Subject",
+      "viewAllTopics": "View all topics",
+      "searchSubjects": "Search subjects..."
     }
   }
 }

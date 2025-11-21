@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { API_URL } from "../config";
@@ -26,6 +27,7 @@ api.interceptors.request.use((config) => {
 export const GoogleCalendarAuth: React.FC<GoogleCalendarAuthProps> = ({
   onAuthComplete,
 }) => {
+  const { t } = useTranslation();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [syncInfo, setSyncInfo] = useState<GoogleCalendarSyncInfo | null>(null);
@@ -64,9 +66,7 @@ export const GoogleCalendarAuth: React.FC<GoogleCalendarAuthProps> = ({
       window.history.replaceState({}, "", window.location.pathname);
       onAuthComplete?.();
     } else if (googleAuth === "error") {
-      alert(
-        "Error al conectar con Google Calendar. Por favor, intenta de nuevo."
-      );
+      alert(t("components.googleCalendarAuth.connectionError"));
       window.history.replaceState({}, "", window.location.pathname);
     }
   }, [onAuthComplete]);
@@ -102,9 +102,7 @@ export const GoogleCalendarAuth: React.FC<GoogleCalendarAuthProps> = ({
     console.log("Token en localStorage:", token ? "SÍ EXISTE" : "NO EXISTE");
 
     if (!token) {
-      alert(
-        "No se encontró el token de autenticación. Por favor, inicia sesión nuevamente."
-      );
+      alert(t("auth.invalidCredentials"));
       return;
     }
     // Guardar el token en sessionStorage para que persista durante la redirección
@@ -125,13 +123,11 @@ export const GoogleCalendarAuth: React.FC<GoogleCalendarAuthProps> = ({
       if (data) {
         setIsAuthenticated(false);
         setSyncInfo(null);
-        alert("Google Calendar desconectado exitosamente");
+        alert(t("profile.disconnectSuccess"));
       }
     } catch (error) {
       console.error("Error desconectando Google Calendar:", error);
-      alert(
-        "Error al desconectar Google Calendar. Por favor, intenta de nuevo."
-      );
+      alert(t("profile.disconnectError"));
     } finally {
       setIsLoading(false);
     }
@@ -143,7 +139,7 @@ export const GoogleCalendarAuth: React.FC<GoogleCalendarAuthProps> = ({
         <div className="flex items-center justify-center py-4">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
           <span className="ml-3 text-gray-600">
-            Verificando conexión con Google Calendar...
+            {t("components.googleCalendarAuth.verifyingConnection")}
           </span>
         </div>
       </div>
@@ -172,17 +168,16 @@ export const GoogleCalendarAuth: React.FC<GoogleCalendarAuthProps> = ({
           </div>
           <div className="flex-1">
             <h3 className="text-sm font-medium text-green-800 mb-1">
-              ✅ Google Calendar conectado
+              {t("components.googleCalendarAuth.connected")}
             </h3>
             <p className="text-sm text-green-700">
-              Tus sesiones de estudio se sincronizarán automáticamente con tu
-              calendario.
+              {t("components.googleCalendarAuth.autoSyncMessage")}
             </p>
             <button
               onClick={handleDisconnectGoogle}
               className="mt-3 bg-red-100 hover:bg-red-200 text-red-600 font-medium py-2 px-4 rounded-lg transition-colors text-sm border border-red-300"
             >
-              Desconectar Google Calendar
+              {t("components.googleCalendarAuth.disconnectCalendar")}
             </button>
           </div>
         </div>
@@ -208,11 +203,11 @@ export const GoogleCalendarAuth: React.FC<GoogleCalendarAuthProps> = ({
               </div>
               <div className="flex-1">
                 <h4 className="text-sm font-medium text-blue-800 mb-1">
-                  📅 Sincronización completada
+                  {t("components.googleCalendarAuth.syncCompleted")}
                 </h4>
                 <p className="text-sm text-blue-700">
-                  {syncInfo.synced} de {syncInfo.total} sesiones programadas
-                  fueron sincronizadas con tu calendario.
+                  {syncInfo.synced} {t("common.of")} {syncInfo.total}{" "}
+                  {t("components.googleCalendarAuth.syncMessage")}
                 </p>
                 {syncInfo.message && (
                   <p className="text-xs text-blue-600 mt-1">
@@ -241,28 +236,27 @@ export const GoogleCalendarAuth: React.FC<GoogleCalendarAuthProps> = ({
         </div>
         <div className="flex-1">
           <h3 className="text-lg font-bold text-gray-900 mb-2">
-            📅 Conecta tu Google Calendar
+            {t("components.googleCalendarAuth.connectTitle")}
           </h3>
           <p className="text-sm text-gray-600 mb-4">
-            Sincroniza tus sesiones de estudio programadas directamente en tu
-            calendario de Google. Recibirás recordatorios automáticos y podrás
-            gestionar tu tiempo de estudio más eficientemente.
+            {t("components.googleCalendarAuth.connectDescription")}
           </p>
           <ul className="text-sm text-gray-600 mb-4 space-y-1">
             <li className="flex items-center gap-2">
-              <span className="text-green-500">✓</span> Sincronización
-              automática de sesiones
+              <span className="text-green-500">✓</span>{" "}
+              {t("components.googleCalendarAuth.autoSync")}
             </li>
             <li className="flex items-center gap-2">
-              <span className="text-green-500">✓</span> Recordatorios de estudio
+              <span className="text-green-500">✓</span>{" "}
+              {t("components.googleCalendarAuth.studyReminders")}
             </li>
             <li className="flex items-center gap-2">
-              <span className="text-green-500">✓</span> Gestión integrada de
-              tiempo
+              <span className="text-green-500">✓</span>{" "}
+              {t("components.googleCalendarAuth.integratedTimeManagement")}
             </li>
             <li className="flex items-center gap-2">
-              <span className="text-blue-500">ℹ️</span> Las sesiones pendientes
-              se sincronizarán automáticamente
+              <span className="text-blue-500">ℹ️</span>{" "}
+              {t("components.googleCalendarAuth.pendingSessionsSync")}
             </li>
           </ul>
           <button
@@ -272,7 +266,7 @@ export const GoogleCalendarAuth: React.FC<GoogleCalendarAuthProps> = ({
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" />
             </svg>
-            Conectar con Google
+            {t("components.googleCalendarAuth.connectWithGoogle")}
           </button>
         </div>
       </div>

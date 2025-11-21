@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ReviewSession, ReviewSessionCardProps } from "../types/reviews";
 import { Calendar, Clock, BookOpen, Edit, Info } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useReviews } from "../../hooks/useReviews";
 import { formatDateForUser, formatTimeOnlyForUser } from "../utils/dateUtils";
 import DatePicker from "react-datepicker";
@@ -10,6 +11,7 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({
   session,
   onSessionUpdated,
 }) => {
+  const { t } = useTranslation();
   const { rescheduleReview, userTimezone } = useReviews();
   const [currentSession, setCurrentSession] = useState(session);
   const [showReschedule, setShowReschedule] = useState(false);
@@ -60,7 +62,7 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({
           bgColor: "bg-red-50",
           borderColor: "border-red-200",
           textColor: "text-red-700",
-          label: "Pendiente",
+          label: t("reviews.status.pending"),
         };
       case "upcoming":
         return {
@@ -68,7 +70,7 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({
           bgColor: "bg-orange-50",
           borderColor: "border-orange-200",
           textColor: "text-orange-700",
-          label: "Programada",
+          label: t("reviews.status.upcoming"),
         };
       case "completed":
         return {
@@ -76,7 +78,7 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({
           bgColor: "bg-green-50",
           borderColor: "border-green-200",
           textColor: "text-green-700",
-          label: "Completada",
+          label: t("reviews.status.completed"),
         };
       default:
         return {
@@ -84,7 +86,7 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({
           bgColor: "bg-gray-50",
           borderColor: "border-gray-200",
           textColor: "text-gray-700",
-          label: "Desconocido",
+          label: t("reviews.status.unknown"),
         };
     }
   };
@@ -120,11 +122,11 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({
 
     switch (rating) {
       case 1:
-        return "Fácil";
+        return t("difficulty.easy");
       case 2:
-        return "Medio";
+        return t("difficulty.medium");
       case 3:
-        return "Difícil";
+        return t("difficulty.hard");
       default:
         return "";
     }
@@ -214,7 +216,7 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({
           <div className="flex items-center gap-1">
             <Clock size={16} />
             <span>
-              Completada:{" "}
+              {t("reviews.completed")}:{" "}
               {userTimezone
                 ? formatDateForUser(currentSession.completedAt, userTimezone)
                 : new Date(currentSession.completedAt).toLocaleDateString()}
@@ -227,7 +229,7 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({
         currentSession.difficultyRating && (
           <div className="flex items-center gap-2 mb-3">
             <span className="text-sm font-medium text-gray-700">
-              Dificultad:
+              {t("reviews.difficulty")}:
             </span>
             <span
               className={`px-2 py-1 rounded-full text-xs font-medium bg-${getDifficultyColor(
@@ -244,7 +246,10 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({
       {currentSession.intervalDays && (
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <BookOpen size={16} />
-          <span>Intervalo: {currentSession.intervalDays} días</span>
+          <span>
+            {t("reviews.interval")}: {currentSession.intervalDays}{" "}
+            {t("stats.days")}
+          </span>
         </div>
       )}
 
@@ -255,14 +260,14 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({
             className="flex items-center justify-center gap-1 flex-1 text-xs bg-indigo-100 text-indigo-700 px-3 py-2 rounded-lg hover:bg-indigo-200 transition-colors font-medium"
           >
             <Edit size={14} />
-            Reprogramar
+            {t("reviews.reschedule")}
           </button>
           <button
             onClick={() => setShowDetails(true)}
             className="flex items-center justify-center gap-1 flex-1 text-xs bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium"
           >
             <Info size={14} />
-            Ver detalles
+            {t("reviews.viewDetails")}
           </button>
         </div>
       )}
@@ -271,13 +276,13 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl p-6 max-w-sm w-full">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Reprogramar sesión
+              {t("reviews.rescheduleSession")}
             </h3>
 
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Seleccionar fecha
+                  {t("reviews.selectDate")}
                 </label>
                 <DatePicker
                   selected={selectedDate}
@@ -285,13 +290,13 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({
                   minDate={new Date()}
                   dateFormat="dd/MM/yyyy"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholderText="Selecciona una fecha"
+                  placeholderText={t("reviews.selectDatePlaceholder")}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Seleccionar hora
+                  {t("reviews.selectTime")}
                 </label>
                 <select
                   value={selectedTime}
@@ -312,13 +317,13 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({
                   disabled={loading || !selectedDate}
                   className="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? "Reprogramando..." : "Confirmar"}
+                  {loading ? t("reviews.rescheduling") : t("common.confirm")}
                 </button>
                 <button
                   onClick={() => setShowReschedule(false)}
                   className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400"
                 >
-                  Cancelar
+                  {t("common.cancel")}
                 </button>
               </div>
             </div>
@@ -330,37 +335,41 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl p-6 max-w-md w-full">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Detalles de la Sesión
+              {t("reviews.sessionDetails")}
             </h3>
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-gray-600">Tema:</span>
+                <span className="text-gray-600">{t("reviews.topic")}:</span>
                 <span className="font-medium">
                   {currentSession.card.topic.name}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Fecha programada:</span>
+                <span className="text-gray-600">
+                  {t("reviews.scheduledDate")}:
+                </span>
                 <span className="font-medium">
                   {formatDate(currentSession.dueDate)}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Hora:</span>
+                <span className="text-gray-600">{t("reviews.time")}:</span>
                 <span className="font-medium">
                   {formatTime(currentSession.dueDate)}
                 </span>
               </div>
               {currentSession.intervalDays && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Intervalo actual:</span>
+                  <span className="text-gray-600">
+                    {t("reviews.currentInterval")}:
+                  </span>
                   <span className="font-medium">
-                    {currentSession.intervalDays} días
+                    {currentSession.intervalDays} {t("stats.days")}
                   </span>
                 </div>
               )}
               <div className="border-t pt-3 mt-3">
-                <p className="text-gray-600 mb-2">Pregunta:</p>
+                <p className="text-gray-600 mb-2">{t("reviews.question")}:</p>
                 <p className="text-gray-800 bg-gray-50 p-3 rounded-lg">
                   {currentSession.card.question}
                 </p>
@@ -370,7 +379,7 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({
               onClick={() => setShowDetails(false)}
               className="w-full mt-4 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700"
             >
-              Cerrar
+              {t("reviews.close")}
             </button>
           </div>
         </div>

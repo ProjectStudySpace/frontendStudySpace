@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ScheduledReview, StudySessionProps } from "../types/reviews";
 import DifficultySelector from "./difficultySelector";
 import { X, ChevronLeft, ChevronRight, BookOpen } from "lucide-react";
@@ -15,11 +16,15 @@ const StudySession: React.FC<StudySessionProps> = ({
   canGoNext,
   canGoPrevious,
 }) => {
+  const { t } = useTranslation();
   const [showAnswer, setShowAnswer] = useState(false);
   const [selectedDifficulty, setSelectedDifficulty] = useState<
     1 | 2 | 3 | null
   >(null);
-  const [selectedImage, setSelectedImage] = useState<{ url: string; alt?: string } | null>(null);
+  const [selectedImage, setSelectedImage] = useState<{
+    url: string;
+    alt?: string;
+  } | null>(null);
 
   const questionImages =
     review.card.images?.filter((img) => img.imageType === "question") || [];
@@ -68,24 +73,29 @@ const StudySession: React.FC<StudySessionProps> = ({
               <button
                 onClick={onExit}
                 className="absolute top-4 right-4 text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-colors"
-                aria-label="Cerrar"
+                aria-label={t("studySession.close")}
               >
                 <X size={20} className="sm:w-6 sm:h-6" />
               </button>
 
               {/* Contenido centrado */}
               <div className="text-center text-white pr-12">
-                <h2 className="text-lg sm:text-xl font-semibold mb-2">Sesión de Estudio</h2>
-                
+                <h2 className="text-lg sm:text-xl font-semibold mb-2">
+                  {t("studySession.title")}
+                </h2>
+
                 {/* Nombre de la materia destacado */}
                 <p className="text-xl sm:text-2xl font-bold mb-2">
                   {review.card.topic.name}
                 </p>
-                
+
                 {/* Contador de tarjetas */}
                 <div className="flex items-center justify-center gap-2 text-sm sm:text-base text-white text-opacity-90">
                   <BookOpen size={16} className="sm:w-5 sm:h-5" />
-                  <span>Tarjeta {currentCard} de {totalCards}</span>
+                  <span>
+                    {t("studySession.card")} {currentCard}{" "}
+                    {t("studySession.of")} {totalCards}
+                  </span>
                 </div>
               </div>
             </div>
@@ -103,12 +113,12 @@ const StudySession: React.FC<StudySessionProps> = ({
             {/* Question - Centrada */}
             <div className="bg-indigo-50 rounded-xl p-4 sm:p-6 border border-indigo-200">
               <h3 className="text-xs sm:text-sm font-semibold text-indigo-800 uppercase tracking-wide mb-3 text-center">
-                Pregunta
+                {t("studySession.question")}
               </h3>
               <p className="text-base sm:text-lg text-gray-900 whitespace-pre-wrap leading-relaxed text-center">
                 {review.card.question}
               </p>
-              
+
               {/* Imágenes de pregunta - Centradas */}
               {questionImages.length > 0 && (
                 <div className="mt-4 flex gap-2 justify-center flex-wrap">
@@ -118,7 +128,9 @@ const StudySession: React.FC<StudySessionProps> = ({
                       src={img.imageUrl}
                       alt={img.altText || "Imagen de pregunta"}
                       className="max-w-[200px] max-h-[200px] object-contain rounded-lg border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"
-                      onClick={() => handleImageClick(img.imageUrl, img.altText)}
+                      onClick={() =>
+                        handleImageClick(img.imageUrl, img.altText)
+                      }
                     />
                   ))}
                 </div>
@@ -129,12 +141,12 @@ const StudySession: React.FC<StudySessionProps> = ({
             {showAnswer ? (
               <div className="bg-green-50 rounded-xl p-4 sm:p-6 border border-green-200">
                 <h3 className="text-xs sm:text-sm font-semibold text-green-800 uppercase tracking-wide mb-3">
-                  Respuesta
+                  {t("studySession.answer")}
                 </h3>
                 <p className="text-base sm:text-lg text-gray-900 whitespace-pre-wrap leading-relaxed">
                   {review.card.answer}
                 </p>
-                
+
                 {/* Imágenes de respuesta - Centradas */}
                 {answerImages.length > 0 && (
                   <div className="mt-4 flex gap-2 justify-center flex-wrap">
@@ -144,7 +156,9 @@ const StudySession: React.FC<StudySessionProps> = ({
                         src={img.imageUrl}
                         alt={img.altText || "Imagen de respuesta"}
                         className="max-w-[200px] max-h-[200px] object-contain rounded-lg border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"
-                        onClick={() => handleImageClick(img.imageUrl, img.altText)}
+                        onClick={() =>
+                          handleImageClick(img.imageUrl, img.altText)
+                        }
                       />
                     ))}
                   </div>
@@ -156,7 +170,7 @@ const StudySession: React.FC<StudySessionProps> = ({
                   onClick={handleShowAnswer}
                   className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-all"
                 >
-                  Ver Respuesta
+                  {t("studySession.viewAnswer")}
                 </button>
               </div>
             )}
@@ -179,7 +193,9 @@ const StudySession: React.FC<StudySessionProps> = ({
                 className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-gray-100"
               >
                 <ChevronLeft size={20} />
-                <span className="hidden sm:inline">Anterior</span>
+                <span className="hidden sm:inline">
+                  {t("studySession.previous")}
+                </span>
               </button>
 
               <span className="text-sm text-gray-600">
@@ -191,7 +207,9 @@ const StudySession: React.FC<StudySessionProps> = ({
                 disabled={!canGoNext}
                 className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-gray-100"
               >
-                <span className="hidden sm:inline">Siguiente</span>
+                <span className="hidden sm:inline">
+                  {t("studySession.next")}
+                </span>
                 <ChevronRight size={20} />
               </button>
             </div>

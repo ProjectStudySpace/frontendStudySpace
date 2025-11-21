@@ -1,8 +1,10 @@
-import React from 'react';
-import { useProgress } from '../../hooks/useProgress';
-import { TrendingUp, Target, BookOpen, Clock } from 'lucide-react';
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { useProgress } from "../../hooks/useProgress";
+import { TrendingUp, Target, BookOpen, Clock } from "lucide-react";
 
 const ProgressSection: React.FC = () => {
+  const { t } = useTranslation();
   const { progressData, loading, error } = useProgress();
 
   if (loading) {
@@ -19,7 +21,7 @@ const ProgressSection: React.FC = () => {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="text-center text-red-600">
-          Error loading progress: {error}
+          {t("progressStats.errorLoading")}: {error}
         </div>
       </div>
     );
@@ -29,7 +31,7 @@ const ProgressSection: React.FC = () => {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="text-center text-gray-500">
-          No progress data available
+          {t("progressStats.noData")}
         </div>
       </div>
     );
@@ -37,7 +39,9 @@ const ProgressSection: React.FC = () => {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <h2 className="text-xl font-bold text-gray-900 mb-6">Progreso de Aprendizaje</h2>
+      <h2 className="text-xl font-bold text-gray-900 mb-6">
+        {t("progress.learning")}
+      </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl">
@@ -46,7 +50,9 @@ const ProgressSection: React.FC = () => {
               <BookOpen size={20} className="text-blue-600" />
             </div>
             <div>
-              <p className="text-gray-600 text-sm">Total de Temas</p>
+              <p className="text-gray-600 text-sm">
+                {t("progressStats.totalTopics")}
+              </p>
               <p className="text-2xl font-bold text-gray-900">
                 {progressData.totalTopics}
               </p>
@@ -60,7 +66,9 @@ const ProgressSection: React.FC = () => {
               <Target size={20} className="text-green-600" />
             </div>
             <div>
-              <p className="text-gray-600 text-sm">Total de Cartas</p>
+              <p className="text-gray-600 text-sm">
+                {t("progressStats.totalCards")}
+              </p>
               <p className="text-2xl font-bold text-gray-900">
                 {progressData.totalCards}
               </p>
@@ -74,7 +82,9 @@ const ProgressSection: React.FC = () => {
               <Clock size={20} className="text-orange-600" />
             </div>
             <div>
-              <p className="text-gray-600 text-sm">Revisiones Pendientes</p>
+              <p className="text-gray-600 text-sm">
+                {t("progressStats.pendingReviews")}
+              </p>
               <p className="text-2xl font-bold text-gray-900">
                 {progressData.pendingReviews}
               </p>
@@ -88,7 +98,9 @@ const ProgressSection: React.FC = () => {
               <TrendingUp size={20} className="text-purple-600" />
             </div>
             <div>
-              <p className="text-gray-600 text-sm">Completadas Hoy</p>
+              <p className="text-gray-600 text-sm">
+                {t("progressStats.completedToday")}
+              </p>
               <p className="text-2xl font-bold text-gray-900">
                 {progressData.completedToday}
               </p>
@@ -102,7 +114,9 @@ const ProgressSection: React.FC = () => {
               <Clock size={20} className="text-red-600" />
             </div>
             <div>
-              <p className="text-gray-600 text-sm">Racha Actual</p>
+              <p className="text-gray-600 text-sm">
+                {t("progressStats.currentStreak")}
+              </p>
               <p className="text-2xl font-bold text-gray-900">
                 {progressData.currentStreak}
               </p>
@@ -116,7 +130,9 @@ const ProgressSection: React.FC = () => {
               <Target size={20} className="text-yellow-600" />
             </div>
             <div>
-              <p className="text-gray-600 text-sm">Racha Más Larga</p>
+              <p className="text-gray-600 text-sm">
+                {t("progressStats.longestStreak")}
+              </p>
               <p className="text-2xl font-bold text-gray-900">
                 {progressData.longestStreak}
               </p>

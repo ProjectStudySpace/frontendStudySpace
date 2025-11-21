@@ -128,7 +128,7 @@ const Layout = () => {
                 <Brain size={24} className="text-white" />
               </div>
               <h1 className="text-xl font-bold bg-gradient-to-br from-indigo-500 to-purple-600 bg-clip-text text-transparent">
-                Study Space
+                MemoPal
               </h1>
             </Link>
             <button
