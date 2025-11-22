@@ -51,7 +51,12 @@ export const useCards = () => {
 
       if (!data) throw new Error("Error al obtener tarjetas");
 
-      const cardsArray: Card[] = data.cards || [];
+      const allCardsArray: Card[] = data.cards || [];
+      
+      // Filtrar solo las cards de tipo "flashcard" (tarjetas)
+      const cardsArray: Card[] = allCardsArray.filter(card =>
+        card.type && card.type.toUpperCase() === "FLASHCARD"
+      );
 
       const cardsWithTopic: Card[] = cardsArray.map((card) => ({
         ...card,
@@ -100,7 +105,11 @@ export const useCards = () => {
       });
       if (!data) throw new Error("Error al buscar tarjetas");
 
-      const cardsArray: Card[] = data.cards || [];
+      const allCardsArray: Card[] = data.cards || [];
+      // Filtrar solo las cards de tipo "flashcard" (tarjetas)
+      const cardsArray: Card[] = allCardsArray.filter(card =>
+        card.type && card.type.toUpperCase() === "FLASHCARD"
+      );
       setCards(cardsArray);
       const pag = data.pagination || {};
       setPagination({
@@ -130,6 +139,7 @@ export const useCards = () => {
       const formData = new FormData();
       formData.append("question", cardData.question);
       formData.append("answer", cardData.answer);
+      formData.append("type", (cardData.type || "flashcard").toUpperCase());
       formData.append("topicId", cardData.topicId.toString());
 
       // Agregar imágenes si existen
@@ -174,6 +184,7 @@ export const useCards = () => {
       const formData = new FormData();
       if (updates.question) formData.append("question", updates.question);
       if (updates.answer) formData.append("answer", updates.answer);
+      if (updates.type) formData.append("type", updates.type.toUpperCase());
 
       // Agregar imágenes si existen
       if (updates.questionImage) {

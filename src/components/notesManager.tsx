@@ -161,6 +161,7 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
           title: (noteData as any).title,
           leftContent: (noteData as any).leftContent || "",
           rightContent: (noteData as any).rightContent || "",
+          type: "explanation",
           topicId,
           leftImage: noteData.leftImage,
           rightImage: noteData.rightImage,

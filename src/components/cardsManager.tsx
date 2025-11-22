@@ -75,7 +75,7 @@ export const CardsManager: React.FC<CardsManagerProps> = ({ topicId, openFormIni
       if (editingCard) {
         await updateCard(editingCard.id, cardData);
       } else {
-        await addCard({ ...cardData, topicId });
+        await addCard({ ...cardData, topicId, type: "flashcard" });
       }
       setShowForm(false);
       setEditingCard(undefined);
