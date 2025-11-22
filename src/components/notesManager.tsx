@@ -23,10 +23,10 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
   const [isSearching, setIsSearching] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
 
-  // Dynamic pagination for notes
+  // Dynamic pagination for notes - 2x2 grid on large screens (3 notes + 1 button)
   const { pageSize: dynamicPageSize } = useDynamicPagination({
-    cols: { mobile: 1, md: 1, lg: 1, xl: 1 },
-    mobileLimit: 4, // 3 notes + 1 button
+    cols: { mobile: 1, md: 2, lg: 2, xl: 2 },
+    mobileLimit: 4, // 3 notes + 1 button on mobile
     rows: 2,
   });
 

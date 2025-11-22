@@ -80,8 +80,8 @@ export const NoteList: React.FC<NoteListProps> = ({
         </div>
       </div>
 
-      {/* Grid de notas */}
-      <div className="grid grid-cols-1 gap-6">
+      {/* Grid de notas - 1 columna en móvil, 2 columnas en escritorio */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {notes.map((note) => (
           <NoteItem
             key={note.id}
@@ -90,37 +90,37 @@ export const NoteList: React.FC<NoteListProps> = ({
             onDelete={onDelete}
           />
         ))}
+        
+        {/* Botón de crear nota en escritorio (integrado en el grid) */}
+        {onCreateNote && (
+          <button
+            onClick={onCreateNote}
+            className="hidden md:flex bg-gradient-to-br from-blue-50 to-green-50 hover:from-blue-100 hover:to-green-100 border-2 border-dashed border-indigo-300 hover:border-indigo-400 rounded-2xl p-8 transition-all duration-200 flex-col items-center justify-center group w-full min-h-[300px]"
+          >
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 group-hover:from-indigo-200 group-hover:to-purple-200 flex items-center justify-center mb-4 transition-all">
+              <Plus
+                size={32}
+                className="text-indigo-600 group-hover:text-indigo-700 transition-colors"
+              />
+            </div>
+            <span className="text-indigo-700 group-hover:text-indigo-800 font-semibold text-lg transition-colors">
+              {t("components.noteList.createNewNote")}
+            </span>
+            <span className="text-gray-500 text-sm mt-1">
+              {t("components.noteList.openBookFormat")}
+            </span>
+          </button>
+        )}
       </div>
 
       {/* Botón flotante para móviles */}
       {onCreateNote && (
         <button
           onClick={onCreateNote}
-          className="sm:hidden fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-full shadow-lg hover:shadow-xl flex items-center justify-center transition-all transform hover:scale-110 z-40"
+          className="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-full shadow-lg hover:shadow-xl flex items-center justify-center transition-all transform hover:scale-110 z-40"
           aria-label={t("components.noteList.newNote")}
         >
           <Plus size={24} />
-        </button>
-      )}
-
-      {/* Botón de crear nota en escritorio (al final de la lista) */}
-      {onCreateNote && (
-        <button
-          onClick={onCreateNote}
-          className="hidden sm:flex bg-gradient-to-br from-blue-50 to-green-50 hover:from-blue-100 hover:to-green-100 border-2 border-dashed border-indigo-300 hover:border-indigo-400 rounded-2xl p-8 transition-all duration-200 flex-col items-center justify-center group w-full"
-        >
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 group-hover:from-indigo-200 group-hover:to-purple-200 flex items-center justify-center mb-4 transition-all">
-            <Plus
-              size={32}
-              className="text-indigo-600 group-hover:text-indigo-700 transition-colors"
-            />
-          </div>
-          <span className="text-indigo-700 group-hover:text-indigo-800 font-semibold text-lg transition-colors">
-            {t("components.noteList.createNewNote")}
-          </span>
-          <span className="text-gray-500 text-sm mt-1">
-            {t("components.noteList.openBookFormat")}
-          </span>
         </button>
       )}
 
