@@ -20,7 +20,7 @@ export const ColorSelector: React.FC<ColorSelectorProps> = ({
   const { t } = useTranslation();
   return (
     <div className="relative">
-      <label className="block text-sm font-medium text-gray-700 mb-2">
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
         {t("components.colorSelector.themeColor")}
       </label>
 
@@ -28,10 +28,10 @@ export const ColorSelector: React.FC<ColorSelectorProps> = ({
       <button
         type="button"
         onClick={onToggle}
-        className="w-full flex items-center gap-3 p-3 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        className="w-full flex items-center gap-3 p-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
       >
         <div
-          className="w-8 h-8 rounded-full border border-gray-300"
+          className="w-8 h-8 rounded-full border border-gray-300 dark:border-gray-600"
           style={{ backgroundColor: selectedColor.value }}
         />
         <span
@@ -41,7 +41,7 @@ export const ColorSelector: React.FC<ColorSelectorProps> = ({
           {selectedColor.name}
         </span>
         <svg
-          className={`w-5 h-5 text-gray-400 transition-transform ${
+          className={`w-5 h-5 text-gray-400 dark:text-gray-500 transition-transform ${
             isOpen ? "rotate-180" : ""
           }`}
           fill="none"
@@ -63,7 +63,7 @@ export const ColorSelector: React.FC<ColorSelectorProps> = ({
           {/* Overlay para cerrar al hacer click fuera */}
           <div className="fixed inset-0 z-10" onClick={onClose} />
 
-          <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+          <div className="absolute z-20 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-auto">
             <div className="p-3 grid grid-cols-4 gap-3">
               {[
                 {
@@ -137,11 +137,11 @@ export const ColorSelector: React.FC<ColorSelectorProps> = ({
                   key={color.id}
                   type="button"
                   onClick={() => onColorSelect(color)}
-                  className="flex flex-col items-center gap-1 p-2 rounded-md hover:bg-gray-100 transition-colors"
+                  className="flex flex-col items-center gap-1 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                   title={color.name}
                 >
                   <div
-                    className="w-8 h-8 rounded-full border border-gray-300 shadow-sm"
+                    className="w-8 h-8 rounded-full border border-gray-300 dark:border-gray-600 shadow-sm"
                     style={{ backgroundColor: color.value }}
                   />
                   <span

@@ -61,10 +61,10 @@ export const TopicForm: React.FC<TopicFormProps> = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white rounded-lg shadow-lg p-6 border-2 border-purple-300 max-w-md mx-auto space-y-4"
+      className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-purple-300 dark:border-purple-700 max-w-md mx-auto space-y-4"
     >
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           {t("forms.topicName")}
         </label>
         <input
@@ -73,12 +73,12 @@ export const TopicForm: React.FC<TopicFormProps> = ({
           onChange={(e) => setName(e.target.value)}
           required
           disabled={isSubmitting}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 dark:disabled:bg-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
         />
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           {t("forms.description")}
         </label>
         <textarea
@@ -86,7 +86,7 @@ export const TopicForm: React.FC<TopicFormProps> = ({
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
           disabled={isSubmitting}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 dark:disabled:bg-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
         />
       </div>
 
@@ -99,14 +99,14 @@ export const TopicForm: React.FC<TopicFormProps> = ({
           onToggle={colorSelector.toggleColorPicker}
           onClose={colorSelector.closeColorPicker}
         />
-        <p className="text-xs text-gray-500 mt-1">{t("forms.selectColor")}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t("forms.selectColor")}</p>
       </div>
 
       <div className="flex gap-3 justify-end">
         <button
           type="submit"
           disabled={isSubmitting}
-          className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-md font-medium transition-colors disabled:bg-indigo-300"
+          className="bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white px-4 py-2 rounded-md font-medium transition-colors disabled:bg-indigo-300 dark:disabled:bg-indigo-800"
         >
           {isSubmitting
             ? t("forms.saving")
@@ -119,7 +119,7 @@ export const TopicForm: React.FC<TopicFormProps> = ({
           type="button"
           onClick={onCancel}
           disabled={isSubmitting}
-          className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md font-medium transition-colors"
+          className="bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-md font-medium transition-colors"
         >
           {t("common.cancel")}
         </button>

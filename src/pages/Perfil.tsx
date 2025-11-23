@@ -88,7 +88,7 @@ const Perfil = () => {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
-        <span className="ml-3 text-gray-600">{t("profile.loading")}</span>
+        <span className="ml-3 text-gray-600 dark:text-gray-400">{t("profile.loading")}</span>
       </div>
     );
   }
@@ -96,7 +96,7 @@ const Perfil = () => {
   return (
     <div className="max-w-4xl mx-auto">
       {/* User Info Section */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 mb-6">
         <div className="flex items-center gap-6">
           {/* Avatar - Placeholder for future implementation */}
           <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold flex-shrink-0">
@@ -107,14 +107,14 @@ const Perfil = () => {
 
           {/* User Details */}
           <div className="flex-1">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               {profileData?.user?.name || t("profile.user")}
             </h1>
-            <p className="text-gray-600 flex items-center gap-2">
+            <p className="text-gray-600 dark:text-gray-400 flex items-center gap-2">
               <User size={18} />
               {profileData?.user?.email}
             </p>
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
               {t("profile.memberSince")}{" "}
               {profileData?.user?.createdAt
                 ? new Date(profileData.user.createdAt).toLocaleDateString(
@@ -139,58 +139,58 @@ const Perfil = () => {
       </div>
 
       {/* Statistics Section */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 mb-6">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-indigo-100">
-            <TrendingUp size={20} className="text-indigo-600" />
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-indigo-100 dark:bg-indigo-900/30">
+            <TrendingUp size={20} className="text-indigo-600 dark:text-indigo-400" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             {t("profile.statistics")}
           </h2>
         </div>
 
         {/* Placeholder for future statistics */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
-            <p className="text-sm text-gray-600 mb-1">
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">
               {t("stats.activeTopics")}
             </p>
-            <p className="text-3xl font-bold text-gray-900">
+            <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
               {profileData?.stats?.totalTopics || 0}
             </p>
           </div>
 
-          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200">
-            <p className="text-sm text-gray-600 mb-1">
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 rounded-lg p-4 border border-green-200 dark:border-green-800">
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">
               {t("stats.totalCards")}
             </p>
-            <p className="text-3xl font-bold text-gray-900">
+            <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
               {profileData?.stats?.totalCards || 0}
             </p>
           </div>
 
-          <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-lg p-4 border border-orange-200">
-            <p className="text-sm text-gray-600 mb-1">
+          <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/30 dark:to-red-900/30 rounded-lg p-4 border border-orange-200 dark:border-orange-800">
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">
               {t("stats.currentStreak")}
             </p>
-            <p className="text-3xl font-bold text-gray-900">
+            <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
               {profileData?.stats?.currentStreak || 0} {t("stats.days")}
             </p>
           </div>
         </div>
 
-        <p className="text-sm text-gray-500 mt-4 italic">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-4 italic">
           {t("profile.moreStatsSoon")}
         </p>
       </div>
 
       {/* Google Calendar Connection Section */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 mb-6">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-purple-100">
-            <Calendar size={20} className="text-purple-600" />
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-purple-100 dark:bg-purple-900/30">
+            <Calendar size={20} className="text-purple-600 dark:text-purple-400" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             {t("profile.googleCalendar")}
           </h2>
         </div>
@@ -209,7 +209,7 @@ const Perfil = () => {
           />
 
           {!isCalendarConnected && (
-            <p className="text-sm text-gray-500 ml-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400 ml-4">
               {t("profile.noCalendarConnected")}
             </p>
           )}
@@ -217,12 +217,12 @@ const Perfil = () => {
       </div>
 
       {/* Delete Account Section */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-gray-100">
-            <Trash2 size={20} className="text-gray-600" />
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-gray-700">
+            <Trash2 size={20} className="text-gray-600 dark:text-gray-400" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             {t("profile.deleteAccountTitle")}
           </h2>
         </div>
@@ -231,7 +231,7 @@ const Perfil = () => {
           {/* Delete Account Button */}
           <button
             onClick={() => setShowDeleteModal(true)}
-            className="w-full px-4 py-3 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg font-medium transition-colors border border-red-300"
+            className="w-full px-4 py-3 bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-800/30 text-red-600 dark:text-red-400 rounded-lg font-medium transition-colors border border-red-300 dark:border-red-700"
           >
             {t("profile.deleteAccount")}
           </button>

@@ -121,13 +121,13 @@ export const CardForm: React.FC<CardFormProps> = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white rounded-lg shadow-sm p-6 border border-gray-200 max-w-2xl mx-auto space-y-4"
+      className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700 max-w-2xl mx-auto space-y-4"
     >
       {/* Pregunta */}
       <div className="mb-4">
         <label
           htmlFor="question"
-          className="block text-sm font-medium text-gray-700 mb-2"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
         >
           {t("forms.questionLabel")}
         </label>
@@ -138,7 +138,7 @@ export const CardForm: React.FC<CardFormProps> = ({
           rows={3}
           required
           disabled={isSubmitting}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 dark:disabled:bg-gray-600"
           placeholder={t("forms.questionPlaceholder")}
         />
 
@@ -147,7 +147,7 @@ export const CardForm: React.FC<CardFormProps> = ({
           <button
             type="button"
             onClick={() => questionImageInputRef.current?.click()}
-            className="flex items-center gap-2 px-3 py-2 text-sm bg-indigo-50 text-indigo-600 rounded-md hover:bg-indigo-100 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 text-sm bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-md hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
           >
             <ImageIcon size={16} />
             {questionImage || existingQuestionImageUrl
@@ -161,7 +161,7 @@ export const CardForm: React.FC<CardFormProps> = ({
             onChange={handleQuestionImageChange}
             className="hidden"
           />
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-gray-500 dark:text-gray-400">
             {t("forms.optional")} - {t("forms.maxSize")}
           </span>
         </div>
@@ -183,7 +183,7 @@ export const CardForm: React.FC<CardFormProps> = ({
       <div className="mb-6">
         <label
           htmlFor="answer"
-          className="block text-sm font-medium text-gray-700 mb-2"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
         >
           {t("forms.answerLabel")}
         </label>
@@ -194,7 +194,7 @@ export const CardForm: React.FC<CardFormProps> = ({
           rows={3}
           required
           disabled={isSubmitting}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 dark:disabled:bg-gray-600"
           placeholder={t("forms.answerPlaceholder")}
         />
 
@@ -203,7 +203,7 @@ export const CardForm: React.FC<CardFormProps> = ({
           <button
             type="button"
             onClick={() => answerImageInputRef.current?.click()}
-            className="flex items-center gap-2 px-3 py-2 text-sm bg-green-50 text-green-600 rounded-md hover:bg-green-100 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 text-sm bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-md hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
           >
             <ImageIcon size={16} />
             {answerImage || existingAnswerImageUrl
@@ -217,7 +217,7 @@ export const CardForm: React.FC<CardFormProps> = ({
             onChange={handleAnswerImageChange}
             className="hidden"
           />
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-gray-500 dark:text-gray-400">
             {t("forms.optional")} - {t("forms.maxSize")}
           </span>
         </div>
@@ -236,11 +236,11 @@ export const CardForm: React.FC<CardFormProps> = ({
       </div>
 
       {/* Botones de acción */}
-      <div className="flex gap-3 justify-end pt-4 border-t border-gray-200">
+      <div className="flex gap-3 justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
         <button
           type="submit"
           disabled={isSubmitting}
-          className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded-md font-medium transition-colors disabled:bg-purple-300 disabled:cursor-not-allowed"
+          className="bg-purple-500 hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-700 text-white px-6 py-2 rounded-md font-medium transition-colors disabled:bg-purple-300 dark:disabled:bg-purple-800 disabled:cursor-not-allowed"
         >
           {isSubmitting
             ? t("forms.saving")
@@ -253,7 +253,7 @@ export const CardForm: React.FC<CardFormProps> = ({
           type="button"
           onClick={onCancel}
           disabled={isSubmitting}
-          className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-6 py-2 rounded-md font-medium transition-colors disabled:cursor-not-allowed"
+          className="bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-300 px-6 py-2 rounded-md font-medium transition-colors disabled:cursor-not-allowed"
         >
           {t("common.cancel")}
         </button>

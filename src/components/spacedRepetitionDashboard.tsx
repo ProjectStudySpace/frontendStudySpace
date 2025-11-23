@@ -91,11 +91,11 @@ const SpacedRepetitionDashboard: React.FC = () => {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-        <p className="text-red-800">Error: {error}</p>
+      <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl p-4">
+        <p className="text-red-800 dark:text-red-400">Error: {error}</p>
         <button
           onClick={() => window.location.reload()}
-          className="mt-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg font-medium transition-colors border border-red-300"
+          className="mt-2 px-4 py-2 bg-red-100 hover:bg-red-200 dark:bg-red-800/50 dark:hover:bg-red-700/50 text-red-600 dark:text-red-400 rounded-lg font-medium transition-colors border border-red-300 dark:border-red-700"
         >
           {t("reviews.retry")}
         </button>
@@ -129,13 +129,13 @@ const SpacedRepetitionDashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div className="flex-1">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               {t("reviews.title")}
             </h1>
-            <p className="text-gray-600 text-sm sm:text-base">
+            <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
               {t("reviews.subtitle")}
             </p>
           </div>
@@ -159,51 +159,51 @@ const SpacedRepetitionDashboard: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
+          <div className="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-600">
             <div className="flex items-center gap-3 sm:gap-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center bg-red-100">
-                <Clock size={20} className="sm:w-6 sm:h-6 text-red-600" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center bg-red-100 dark:bg-red-900/30">
+                <Clock size={20} className="sm:w-6 sm:h-6 text-red-600 dark:text-red-400" />
               </div>
               <div>
-                <p className="text-gray-600 text-xs sm:text-sm mb-1">
+                <p className="text-gray-600 dark:text-gray-300 text-xs sm:text-sm mb-1">
                   {t("reviews.pendingToday")}
                 </p>
-                <p className="text-2xl sm:text-3xl font-bold text-gray-900">
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
                   {totalPendingCount}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
+          <div className="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-600">
             <div className="flex items-center gap-3 sm:gap-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center bg-orange-100">
-                <BookOpen size={20} className="sm:w-6 sm:h-6 text-orange-600" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center bg-orange-100 dark:bg-orange-900/30">
+                <BookOpen size={20} className="sm:w-6 sm:h-6 text-orange-600 dark:text-orange-400" />
               </div>
               <div>
-                <p className="text-gray-600 text-xs sm:text-sm mb-1">
+                <p className="text-gray-600 dark:text-gray-300 text-xs sm:text-sm mb-1">
                   {t("reviews.next7Days")}
                 </p>
-                <p className="text-2xl sm:text-3xl font-bold text-gray-900">
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
                   {upcoming7DaysCount}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
+          <div className="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-600">
             <div className="flex items-center gap-3 sm:gap-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center bg-purple-100">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center bg-purple-100 dark:bg-purple-900/30">
                 <TrendingUp
                   size={20}
-                  className="sm:w-6 sm:h-6 text-purple-600"
+                  className="sm:w-6 sm:h-6 text-purple-600 dark:text-purple-400"
                 />
               </div>
               <div>
-                <p className="text-gray-600 text-xs sm:text-sm mb-1">
+                <p className="text-gray-600 dark:text-gray-300 text-xs sm:text-sm mb-1">
                   {t("reviews.next30Days")}
                 </p>
-                <p className="text-2xl sm:text-3xl font-bold text-gray-900">
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
                   {totalPendingCount + totalUpcomingCount}
                 </p>
               </div>
@@ -214,10 +214,10 @@ const SpacedRepetitionDashboard: React.FC = () => {
 
       <ProgressSection />
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               {t("sessions.calendar")}
             </h2>
           </div>

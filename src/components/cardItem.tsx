@@ -45,7 +45,7 @@ export const CardItem: React.FC<CardItemProps> = ({
 
   return (
     <>
-      <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-200 flex flex-col min-h-[300px]">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col min-h-[300px]">
         {/* Encabezado con color del tema */}
         <div
           className="px-4 py-3"
@@ -53,7 +53,7 @@ export const CardItem: React.FC<CardItemProps> = ({
             backgroundColor: `${lighterColor}30`,
           }}
         >
-          <h4 className="text-xs font-semibold text-gray-700 text-center uppercase tracking-wide">
+          <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300 text-center uppercase tracking-wide">
             {card.topic?.name || t("content.noTopic")}
           </h4>
         </div>
@@ -62,7 +62,7 @@ export const CardItem: React.FC<CardItemProps> = ({
         <div className="p-4 flex-1 flex flex-col">
           {/* Pregunta - Centrada */}
           <div className="mb-3 text-center">
-            <h3 className="text-base font-semibold text-gray-900 mb-3">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">
               {card.question}
             </h3>
 
@@ -74,7 +74,7 @@ export const CardItem: React.FC<CardItemProps> = ({
                     key={img.id}
                     src={img.imageUrl}
                     alt={img.altText || "Imagen de pregunta"}
-                    className="w-24 h-24 object-cover rounded-md border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"
+                    className="w-24 h-24 object-cover rounded-md border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity"
                     onClick={() => handleImageClick(img.imageUrl, img.altText)}
                   />
                 ))}
@@ -94,7 +94,7 @@ export const CardItem: React.FC<CardItemProps> = ({
 
           {/* Respuesta - NO centrada */}
           {showAnswer && (
-            <div className="mb-3 p-3 rounded-lg bg-gray-50 text-gray-700 text-sm flex-1 overflow-auto">
+            <div className="mb-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm flex-1 overflow-auto">
               <p className="whitespace-pre-wrap mb-2">{card.answer}</p>
 
               {/* Imágenes de respuesta - Centradas */}
@@ -105,7 +105,7 @@ export const CardItem: React.FC<CardItemProps> = ({
                       key={img.id}
                       src={img.imageUrl}
                       alt={img.altText || "Imagen de respuesta"}
-                      className="w-24 h-24 object-cover rounded-md border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"
+                      className="w-24 h-24 object-cover rounded-md border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity"
                       onClick={() =>
                         handleImageClick(img.imageUrl, img.altText)
                       }
@@ -120,14 +120,14 @@ export const CardItem: React.FC<CardItemProps> = ({
           <div className="flex gap-2 justify-end mt-auto">
             <button
               onClick={() => onEdit(card)}
-              className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+              className="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
             >
               {t("common.edit")}
             </button>
             <button
               onClick={handleDelete}
               disabled={isDeleting}
-              className="bg-red-100 hover:bg-red-200 text-red-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+              className="bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-800/30 text-red-600 dark:text-red-400 px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:text-gray-400 dark:disabled:text-gray-500 disabled:cursor-not-allowed"
             >
               {isDeleting ? t("cards.deleting") : t("common.delete")}
             </button>
