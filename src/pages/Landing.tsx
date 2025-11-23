@@ -16,10 +16,13 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useTranslation } from "react-i18next";
+import { LanguageSelector } from "../components/LanguageSelector";
 
 const Landing: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const { t } = useTranslation();
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -68,36 +71,39 @@ const Landing: React.FC = () => {
                 href="#features"
                 className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
               >
-                Características
+                {t("landing.nav.features")}
               </a>
               <a
                 href="#how-it-works"
                 className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
               >
-                Cómo funciona
+                {t("landing.nav.howItWorks")}
               </a>
               <a
                 href="#pricing"
                 className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
               >
-                Precios
+                {t("landing.nav.pricing")}
               </a>
             </div>
 
             <div className="flex items-center gap-4">
+              <LanguageSelector />
               {!isAuthenticated && (
                 <button
                   onClick={handleLogin}
                   className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
                 >
-                  Iniciar sesión
+                  {t("landing.nav.login")}
                 </button>
               )}
               <button
                 onClick={handleGetStarted}
                 className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-6 py-2 rounded-lg font-medium transition-all transform hover:scale-105"
               >
-                {isAuthenticated ? "Ir al Dashboard" : "Comenzar gratis"}
+                {isAuthenticated
+                  ? t("landing.hero.goToDashboard")
+                  : t("landing.nav.getStarted")}
               </button>
             </div>
           </div>
@@ -113,21 +119,19 @@ const Landing: React.FC = () => {
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 border border-indigo-100">
                 <Sparkles size={16} className="text-indigo-600" />
                 <span className="text-sm font-medium text-indigo-600">
-                  Sistema de repaso espaciado inteligente
+                  {t("landing.hero.badge")}
                 </span>
               </div>
 
               <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
-                Aprende más rápido.{" "}
+                {t("landing.hero.title")}{" "}
                 <span className="bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">
-                  Recuerda por más tiempo.
+                  {t("landing.hero.titleHighlight")}
                 </span>
               </h1>
 
               <p className="text-xl text-gray-600 leading-relaxed">
-                MemoPal utiliza algoritmos de repetición espaciada para ayudarte
-                a memorizar cualquier cosa de forma eficiente. Desde idiomas
-                hasta medicina, estudia inteligentemente y alcanza tus metas.
+                {t("landing.hero.subtitle")}
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
@@ -135,7 +139,7 @@ const Landing: React.FC = () => {
                   onClick={handleGetStarted}
                   className="group bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
                 >
-                  Comenzar gratis
+                  {t("landing.hero.cta")}
                   <ArrowRight
                     size={20}
                     className="group-hover:translate-x-1 transition-transform"
@@ -149,7 +153,7 @@ const Landing: React.FC = () => {
                   }
                   className="bg-white border-2 border-gray-200 hover:border-indigo-300 text-gray-700 px-8 py-4 rounded-lg font-semibold text-lg transition-all"
                 >
-                  Ver características
+                  {t("landing.hero.ctaSecondary")}
                 </button>
               </div>
 
@@ -166,7 +170,7 @@ const Landing: React.FC = () => {
                     ))}
                   </div>
                   <p className="text-sm text-gray-600">
-                    Calificación 5.0 de usuarios
+                    {t("landing.hero.rating")}
                   </p>
                 </div>
                 <div className="h-12 w-px bg-gray-200" />
@@ -177,7 +181,9 @@ const Landing: React.FC = () => {
                       10K+
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600">Estudiantes activos</p>
+                  <p className="text-sm text-gray-600">
+                    {t("landing.hero.activeStudents")}
+                  </p>
                 </div>
               </div>
             </div>
@@ -194,29 +200,35 @@ const Landing: React.FC = () => {
                       </div>
                       <div>
                         <h3 className="font-semibold text-gray-900">
-                          Sesión de estudio
+                          {t("landing.mockUI.studySession")}
                         </h3>
                         <p className="text-sm text-gray-500">
-                          15 tarjetas pendientes
+                          15 {t("landing.mockUI.pendingCards")}
                         </p>
                       </div>
                     </div>
                     <div className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-                      Activo
+                      {t("landing.mockUI.active")}
                     </div>
                   </div>
 
                   <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-100">
                     <p className="text-sm text-gray-600 mb-2">
-                      ¿Cuál es la capital de Francia?
+                      {t("landing.mockUI.question")}
                     </p>
                     <div className="bg-white rounded-lg p-3 border border-gray-200">
-                      <p className="text-gray-900 font-medium">París</p>
+                      <p className="text-gray-900 font-medium">
+                        {t("landing.mockUI.answer")}
+                      </p>
                     </div>
                   </div>
 
                   <div className="flex gap-2">
-                    {["Fácil", "Medio", "Difícil"].map((level, i) => (
+                    {[
+                      t("landing.mockUI.easy"),
+                      t("landing.mockUI.medium"),
+                      t("landing.mockUI.hard"),
+                    ].map((level, i) => (
                       <button
                         key={level}
                         className={`flex-1 py-2 rounded-lg font-medium text-sm ${
@@ -240,8 +252,12 @@ const Landing: React.FC = () => {
                       <Zap size={20} className="text-orange-600" />
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500">Racha actual</p>
-                      <p className="font-bold text-gray-900">15 días 🔥</p>
+                      <p className="text-xs text-gray-500">
+                        {t("landing.mockUI.currentStreak")}
+                      </p>
+                      <p className="font-bold text-gray-900">
+                        15 {t("stats.days")} 🔥
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -252,7 +268,9 @@ const Landing: React.FC = () => {
                       <TrendingUp size={20} className="text-green-600" />
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500">Progreso</p>
+                      <p className="text-xs text-gray-500">
+                        {t("landing.mockUI.progress")}
+                      </p>
                       <p className="font-bold text-gray-900">87% 📈</p>
                     </div>
                   </div>
@@ -270,15 +288,14 @@ const Landing: React.FC = () => {
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-gray-200 mb-4">
               <Sparkles size={16} className="text-indigo-600" />
               <span className="text-sm font-medium text-gray-600">
-                Características poderosas
+                {t("landing.features.badge")}
               </span>
             </div>
             <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-              Todo lo que necesitas para aprender mejor
+              {t("landing.features.title")}
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              MemoPal combina tecnología avanzada con principios de aprendizaje
-              probados para maximizar tu retención.
+              {t("landing.features.subtitle")}
             </p>
           </div>
 
@@ -286,44 +303,42 @@ const Landing: React.FC = () => {
             {[
               {
                 icon: Brain,
-                title: "Repaso espaciado inteligente",
-                description:
-                  "Algoritmos que programan automáticamente tus sesiones de repaso en el momento óptimo para maximizar la retención a largo plazo.",
+                title: t("landing.features.spacedRepetition.title"),
+                description: t("landing.features.spacedRepetition.description"),
                 color: "from-indigo-500 to-purple-600",
               },
               {
                 icon: Calendar,
-                title: "Integración con Google Calendar",
-                description:
-                  "Sincroniza tus sesiones de estudio con tu calendario y recibe recordatorios automáticos para nunca perder una sesión.",
+                title: t("landing.features.calendarIntegration.title"),
+                description: t(
+                  "landing.features.calendarIntegration.description"
+                ),
                 color: "from-blue-500 to-cyan-600",
               },
               {
                 icon: TrendingUp,
-                title: "Seguimiento de progreso",
-                description:
-                  "Visualiza tu evolución con métricas detalladas, rachas de estudio y análisis de rendimiento en tiempo real.",
+                title: t("landing.features.progressTracking.title"),
+                description: t("landing.features.progressTracking.description"),
                 color: "from-green-500 to-emerald-600",
               },
               {
                 icon: Zap,
-                title: "Sistema de rachas",
-                description:
-                  "Mantén tu motivación alta con un sistema de rachas diarias que te incentiva a estudiar constantemente.",
+                title: t("landing.features.streakSystem.title"),
+                description: t("landing.features.streakSystem.description"),
                 color: "from-orange-500 to-red-600",
               },
               {
                 icon: BookOpen,
-                title: "Organización por temas",
-                description:
-                  "Crea y gestiona tarjetas organizadas por materias con colores personalizados para una mejor organización visual.",
+                title: t("landing.features.topicOrganization.title"),
+                description: t(
+                  "landing.features.topicOrganization.description"
+                ),
                 color: "from-purple-500 to-pink-600",
               },
               {
                 icon: Target,
-                title: "Autoevaluación",
-                description:
-                  "Califica la dificultad de cada tarjeta y MemoPal ajustará automáticamente los intervalos de repaso.",
+                title: t("landing.features.selfAssessment.title"),
+                description: t("landing.features.selfAssessment.description"),
                 color: "from-yellow-500 to-orange-600",
               },
             ].map((feature, index) => (
@@ -356,10 +371,10 @@ const Landing: React.FC = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-              Comienza en minutos
+              {t("landing.howItWorks.title")}
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Solo tres pasos simples para empezar a mejorar tu aprendizaje
+              {t("landing.howItWorks.subtitle")}
             </p>
           </div>
 
@@ -367,23 +382,20 @@ const Landing: React.FC = () => {
             {[
               {
                 step: "1",
-                title: "Crea tus tarjetas",
-                description:
-                  "Agrega preguntas y respuestas sobre cualquier tema que quieras aprender. Organízalas por materias con colores personalizados.",
+                title: t("landing.howItWorks.step1.title"),
+                description: t("landing.howItWorks.step1.description"),
                 icon: BookOpen,
               },
               {
                 step: "2",
-                title: "Estudia regularmente",
-                description:
-                  "MemoPal programa automáticamente tus sesiones de repaso. Solo sigue el plan y califica qué tan bien recordaste cada tarjeta.",
+                title: t("landing.howItWorks.step2.title"),
+                description: t("landing.howItWorks.step2.description"),
                 icon: Calendar,
               },
               {
                 step: "3",
-                title: "Ve tu progreso",
-                description:
-                  "Observa cómo mejora tu retención con el tiempo. Mantén rachas diarias y alcanza tus metas de aprendizaje.",
+                title: t("landing.howItWorks.step3.title"),
+                description: t("landing.howItWorks.step3.description"),
                 icon: TrendingUp,
               },
             ].map((item, index) => (
@@ -418,58 +430,58 @@ const Landing: React.FC = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-              Comienza gratis, crece cuando quieras
+              {t("landing.pricing.title")}
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Elige el plan perfecto para tus necesidades de aprendizaje
+              {t("landing.pricing.subtitle")}
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {[
               {
-                name: "Gratis",
-                price: "$0",
-                description: "Perfecto para empezar",
+                name: t("landing.pricing.free.name"),
+                price: t("landing.pricing.free.price"),
+                description: t("landing.pricing.free.description"),
                 features: [
-                  "Hasta 50 tarjetas",
-                  "3 materias",
-                  "Repaso espaciado básico",
-                  "Acceso móvil",
-                  "Estadísticas básicas",
+                  t("landing.pricing.free.features.cards"),
+                  t("landing.pricing.free.features.topics"),
+                  t("landing.pricing.free.features.basicSpaced"),
+                  t("landing.pricing.free.features.mobileAccess"),
+                  t("landing.pricing.free.features.basicStats"),
                 ],
-                cta: "Comenzar gratis",
+                cta: t("landing.pricing.free.cta"),
                 highlighted: false,
               },
               {
-                name: "Pro",
-                price: "$9",
-                description: "Para estudiantes serios",
+                name: t("landing.pricing.pro.name"),
+                price: t("landing.pricing.pro.price"),
+                description: t("landing.pricing.pro.description"),
                 features: [
-                  "Tarjetas ilimitadas",
-                  "Materias ilimitadas",
-                  "Repaso espaciado avanzado",
-                  "Integración Google Calendar",
-                  "Estadísticas avanzadas",
-                  "Soporte prioritario",
-                  "Sin anuncios",
+                  t("landing.pricing.pro.features.unlimitedCards"),
+                  t("landing.pricing.pro.features.unlimitedTopics"),
+                  t("landing.pricing.pro.features.advancedSpaced"),
+                  t("landing.pricing.pro.features.calendarIntegration"),
+                  t("landing.pricing.pro.features.advancedStats"),
+                  t("landing.pricing.pro.features.prioritySupport"),
+                  t("landing.pricing.pro.features.noAds"),
                 ],
-                cta: "Comenzar prueba",
+                cta: t("landing.pricing.pro.cta"),
                 highlighted: true,
               },
               {
-                name: "Equipo",
-                price: "$29",
-                description: "Para grupos de estudio",
+                name: t("landing.pricing.team.name"),
+                price: t("landing.pricing.team.price"),
+                description: t("landing.pricing.team.description"),
                 features: [
-                  "Todo en Pro",
-                  "Hasta 10 miembros",
-                  "Tarjetas compartidas",
-                  "Tableros colaborativos",
-                  "Gestión de equipo",
-                  "Análisis de grupo",
+                  t("landing.pricing.team.features.allPro"),
+                  t("landing.pricing.team.features.members"),
+                  t("landing.pricing.team.features.sharedCards"),
+                  t("landing.pricing.team.features.collaborativeBoards"),
+                  t("landing.pricing.team.features.teamManagement"),
+                  t("landing.pricing.team.features.groupAnalytics"),
                 ],
-                cta: "Contactar ventas",
+                cta: t("landing.pricing.team.cta"),
                 highlighted: false,
               },
             ].map((plan, index) => (
@@ -509,7 +521,7 @@ const Landing: React.FC = () => {
                         plan.highlighted ? "text-indigo-100" : "text-gray-600"
                       }`}
                     >
-                      /mes
+                      {t("landing.pricing.free.perMonth")}
                     </span>
                   </div>
                 </div>
@@ -560,24 +572,23 @@ const Landing: React.FC = () => {
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-600">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6">
-            ¿Listo para aprender de forma más inteligente?
+            {t("landing.cta.title")}
           </h2>
           <p className="text-xl text-indigo-100 mb-8">
-            Únete a miles de estudiantes que ya están mejorando su memoria con
-            MemoPal
+            {t("landing.cta.subtitle")}
           </p>
           <button
             onClick={handleGetStarted}
             className="bg-white text-indigo-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-indigo-50 transition-all transform hover:scale-105 shadow-lg inline-flex items-center gap-2"
           >
-            Comenzar gratis ahora
+            {t("landing.cta.button")}
             <ArrowRight size={20} />
           </button>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-gray-400 py-12 px-4 sm:px-6 lg:px-8">
+      <footer className="bg-gray-900 dark:bg-gray-800 text-gray-400 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
@@ -587,72 +598,76 @@ const Landing: React.FC = () => {
                 </div>
                 <span className="text-xl font-bold text-white">MemoPal</span>
               </div>
-              <p className="text-sm">
-                La forma más inteligente de memorizar y retener información.
-              </p>
+              <p className="text-sm">{t("landing.footer.tagline")}</p>
             </div>
 
             <div>
-              <h4 className="text-white font-semibold mb-4">Producto</h4>
+              <h4 className="text-white font-semibold mb-4">
+                {t("landing.footer.product")}
+              </h4>
               <ul className="space-y-2 text-sm">
                 <li>
                   <a href="#features" className="hover:text-white transition">
-                    Características
+                    {t("landing.footer.features")}
                   </a>
                 </li>
                 <li>
                   <a href="#pricing" className="hover:text-white transition">
-                    Precios
+                    {t("landing.footer.pricing")}
                   </a>
                 </li>
                 <li>
                   <a href="#" className="hover:text-white transition">
-                    Roadmap
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-white font-semibold mb-4">Recursos</h4>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <a href="#" className="hover:text-white transition">
-                    Blog
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition">
-                    Guías
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition">
-                    Soporte
+                    {t("landing.footer.roadmap")}
                   </a>
                 </li>
               </ul>
             </div>
 
             <div>
-              <h4 className="text-white font-semibold mb-4">Legal</h4>
+              <h4 className="text-white font-semibold mb-4">
+                {t("landing.footer.resources")}
+              </h4>
               <ul className="space-y-2 text-sm">
                 <li>
                   <a href="#" className="hover:text-white transition">
-                    Privacidad
+                    {t("landing.footer.blog")}
                   </a>
                 </li>
                 <li>
                   <a href="#" className="hover:text-white transition">
-                    Términos
+                    {t("landing.footer.guides")}
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition">
+                    {t("landing.footer.support")}
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-white font-semibold mb-4">
+                {t("landing.footer.legal")}
+              </h4>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <a href="#" className="hover:text-white transition">
+                    {t("landing.footer.privacy")}
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition">
+                    {t("landing.footer.terms")}
                   </a>
                 </li>
               </ul>
             </div>
           </div>
 
-          <div className="border-t border-gray-800 pt-8 text-center text-sm">
-            <p>© 2024 MemoPal. Todos los derechos reservados.</p>
+          <div className="border-t border-gray-800 dark:border-gray-700 pt-8 text-center text-sm">
+            <p>{t("landing.footer.copyright")}</p>
           </div>
         </div>
       </footer>

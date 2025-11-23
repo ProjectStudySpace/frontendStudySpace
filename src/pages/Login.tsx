@@ -3,6 +3,7 @@ import { Button, TextField, Typography, Container, Alert } from "@mui/material";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getUserTimezone } from "../utils/dateUtils";
+import { useTranslation } from "react-i18next";
 import "./Login.css";
 
 const Login: React.FC = () => {
@@ -12,6 +13,7 @@ const Login: React.FC = () => {
   const [userTimezone, setUserTimezone] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     // Capturar zona horaria del navegador al cargar el componente
@@ -25,7 +27,7 @@ const Login: React.FC = () => {
     if (success) {
       navigate("/topics");
     } else {
-      setError("Credenciales inválidas");
+      setError(t("auth.invalidCredentials"));
     }
   };
 
@@ -33,10 +35,10 @@ const Login: React.FC = () => {
     <div className="login-container">
       <div className="login-form-container">
         <Typography className="welcome-message" component="h1" gutterBottom>
-          Bienvenido, por favor inicia sesión
+          {t("auth.welcome")}
         </Typography>
         <Typography className="subtitle" gutterBottom>
-          Accede a tu cuenta para continuar
+          {t("auth.accessAccount")}
         </Typography>
         {error && (
           <Alert className="error-alert" severity="error">
@@ -46,7 +48,7 @@ const Login: React.FC = () => {
         <form onSubmit={handleSubmit} className="login-form">
           <TextField
             fullWidth
-            label="Email"
+            label={t("auth.email")}
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -54,26 +56,26 @@ const Login: React.FC = () => {
           />
           <TextField
             fullWidth
-            label="Contraseña"
+            label={t("auth.password")}
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
           <Button type="submit" fullWidth className="MuiButton-root">
-            Iniciar Sesión
+            {t("auth.login")}
           </Button>
         </form>
         <Typography className="test-credentials">
-          correo: test@test.com / Contraseña: 123 para probar
+          {t("auth.testCredentials")}
         </Typography>
         <Typography className="mt-4">
-          ¿No tienes cuenta?{" "}
+          {t("auth.noAccount")}{" "}
           <Link
             to="/register"
             className="text-blue-500 hover:text-blue-700 font-medium"
           >
-            Regístrate aquí
+            {t("auth.registerHere")}
           </Link>
         </Typography>
       </div>

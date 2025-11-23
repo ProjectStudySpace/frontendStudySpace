@@ -3,6 +3,7 @@ import { Button, TextField, Typography, Container, Alert } from "@mui/material";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getUserTimezone } from "../utils/dateUtils";
+import { useTranslation } from "react-i18next";
 import "./Register.css";
 
 const Register: React.FC = () => {
@@ -15,6 +16,7 @@ const Register: React.FC = () => {
   const [userTimezone, setUserTimezone] = useState("");
   const { register } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     // Capturar zona horaria del navegador al cargar el componente
@@ -28,21 +30,21 @@ const Register: React.FC = () => {
     setSuccess("");
 
     if (password !== confirmPassword) {
-      setError("Las contraseñas no coinciden");
+      setError(t("auth.passwordMismatch"));
       return;
     }
 
     if (password.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres");
+      setError(t("auth.passwordMinLength"));
       return;
     }
 
     const success = await register(name, email, password);
     if (success) {
-      setSuccess("Cuenta creada exitosamente. Redirigiendo al login...");
+      setSuccess(t("auth.accountCreated"));
       setTimeout(() => navigate("/login"), 2000);
     } else {
-      setError("Error al crear la cuenta. El email ya puede estar registrado.");
+      setError(t("auth.accountCreationError"));
     }
   };
 
@@ -50,10 +52,10 @@ const Register: React.FC = () => {
     <div className="register-container">
       <div className="login-form-container">
         <Typography className="welcome-message" component="h1" gutterBottom>
-          Crear Cuenta
+          {t("auth.createAccount")}
         </Typography>
         <Typography className="subtitle" gutterBottom>
-          Regístrate para acceder a tu cuenta
+          {t("auth.registerToAccess")}
         </Typography>
 
         {error && (
@@ -70,7 +72,7 @@ const Register: React.FC = () => {
         <form onSubmit={handleSubmit} className="login-form">
           <TextField
             fullWidth
-            label="Nombre completo"
+            label={t("auth.fullName")}
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
@@ -78,7 +80,7 @@ const Register: React.FC = () => {
           />
           <TextField
             fullWidth
-            label="Email"
+            label={t("auth.email")}
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -87,7 +89,7 @@ const Register: React.FC = () => {
           />
           <TextField
             fullWidth
-            label="Contraseña"
+            label={t("auth.password")}
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -96,7 +98,7 @@ const Register: React.FC = () => {
           />
           <TextField
             fullWidth
-            label="Confirmar contraseña"
+            label={t("auth.confirmPassword")}
             type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
@@ -104,17 +106,17 @@ const Register: React.FC = () => {
             variant="outlined"
           />
           <Button type="submit" fullWidth className="MuiButton-root">
-            Crear Cuenta
+            {t("auth.register")}
           </Button>
         </form>
 
         <Typography className="test-credentials">
-          ¿Ya tienes cuenta?{" "}
+          {t("auth.hasAccount")}{" "}
           <Link
             to="/login"
             className="text-blue-500 hover:text-blue-700 font-medium"
           >
-            Inicia sesión
+            {t("auth.loginHere")}
           </Link>
         </Typography>
       </div>

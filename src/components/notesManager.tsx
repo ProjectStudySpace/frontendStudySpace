@@ -1,26 +1,35 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Note, NotesManagerProps, CreateNoteData, UpdateNoteData } from "../types/notes";
+import { useTranslation } from "react-i18next";
+import {
+  Note,
+  NotesManagerProps,
+  CreateNoteData,
+  UpdateNoteData,
+} from "../types/notes";
 import { useNotes } from "../../hooks/useNotes";
 import { NoteList } from "./noteList";
 import { NoteForm } from "./noteForm";
 import { Search } from "lucide-react";
 import { useDynamicPagination } from "../../hooks/useDynamicPagination";
 
-export const NotesManager: React.FC<NotesManagerProps> = ({ topicId, openFormInitially = false }) => {
+export const NotesManager: React.FC<NotesManagerProps> = ({
+  topicId,
+  openFormInitially = false,
+}) => {
   const [showForm, setShowForm] = useState(openFormInitially);
   const [editingNote, setEditingNote] = useState<Note | undefined>();
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedTerm, setDebouncedTerm] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
-  
-  // Dynamic pagination for notes
+
+  // Dynamic pagination for notes - 2x2 grid on large screens (3 notes + 1 button)
   const { pageSize: dynamicPageSize } = useDynamicPagination({
-    cols: { mobile: 1, md: 1, lg: 1, xl: 1 },
-    mobileLimit: 4, // 3 notes + 1 button
+    cols: { mobile: 1, md: 2, lg: 2, xl: 2 },
+    mobileLimit: 4, // 3 notes + 1 button on mobile
     rows: 2,
   });
-  
+
   const {
     notes,
     loading,
@@ -34,21 +43,25 @@ export const NotesManager: React.FC<NotesManagerProps> = ({ topicId, openFormIni
     deleteNote,
     clearNotes,
   } = useNotes();
-  
+
+  const { t } = useTranslation();
   const [localError, setLocalError] = useState<string | null>(null);
 
   // Cargar notas inicial o buscar
-  const loadNotes = useCallback(async (page: number, searchQuery: string) => {
-    try {
-      if (searchQuery.trim() && searchQuery.length >= 2) {
-        await searchNotes(searchQuery, page);
-      } else if (!searchQuery.trim()) {
-        changePage(page);
+  const loadNotes = useCallback(
+    async (page: number, searchQuery: string) => {
+      try {
+        if (searchQuery.trim() && searchQuery.length >= 2) {
+          await searchNotes(searchQuery, page);
+        } else if (!searchQuery.trim()) {
+          changePage(page);
+        }
+      } catch (error) {
+        console.error("Error loading notes:", error);
       }
-    } catch (error) {
-      console.error("Error loading notes:", error);
-    }
-  }, [searchNotes, changePage]);
+    },
+    [searchNotes, changePage]
+  );
 
   // Efecto para cargar notas cuando cambia el tema
   useEffect(() => {
@@ -60,7 +73,7 @@ export const NotesManager: React.FC<NotesManagerProps> = ({ topicId, openFormIni
       setEditingNote(undefined);
       setInitialLoadDone(false);
       setLocalError(null);
-      
+
       fetchNotesByTopic(topicId, 1, dynamicPageSize)
         .then(() => {
           setInitialLoadDone(true);
@@ -70,7 +83,11 @@ export const NotesManager: React.FC<NotesManagerProps> = ({ topicId, openFormIni
           console.error("Error fetching notes:", err);
           setInitialLoadDone(true);
           // Solo establecer error si es un error real, no cuando simplemente está vacío
-          if (err && err.message && !err.message.toLowerCase().includes('no notes')) {
+          if (
+            err &&
+            err.message &&
+            !err.message.toLowerCase().includes("no notes")
+          ) {
             setLocalError(err.message);
           }
         });
@@ -95,7 +112,7 @@ export const NotesManager: React.FC<NotesManagerProps> = ({ topicId, openFormIni
   // Efecto para búsqueda (solo cuando hay un término válido)
   useEffect(() => {
     const trimmedTerm = debouncedTerm.trim();
-    
+
     if (!topicId || !initialLoadDone) return;
 
     if (trimmedTerm === "") {
@@ -144,6 +161,7 @@ export const NotesManager: React.FC<NotesManagerProps> = ({ topicId, openFormIni
           title: (noteData as any).title,
           leftContent: (noteData as any).leftContent || "",
           rightContent: (noteData as any).rightContent || "",
+          type: "explanation",
           topicId,
           leftImage: noteData.leftImage,
           rightImage: noteData.rightImage,
@@ -152,12 +170,16 @@ export const NotesManager: React.FC<NotesManagerProps> = ({ topicId, openFormIni
       }
       setShowForm(false);
       setEditingNote(undefined);
-      
+
       // Recargar las notas después de crear/editar
       if (debouncedTerm.trim()) {
         await loadNotes(pagination.currentPage, debouncedTerm);
       } else {
-        await fetchNotesByTopic(topicId, pagination.currentPage, dynamicPageSize);
+        await fetchNotesByTopic(
+          topicId,
+          pagination.currentPage,
+          dynamicPageSize
+        );
       }
     } catch (error) {
       console.error("Error al guardar nota:", error);
@@ -168,7 +190,7 @@ export const NotesManager: React.FC<NotesManagerProps> = ({ topicId, openFormIni
   const handleDeleteNote = async (noteId: number) => {
     try {
       await deleteNote(noteId);
-      
+
       // Recargar si estamos buscando
       if (debouncedTerm.trim()) {
         await loadNotes(pagination.currentPage, debouncedTerm);
@@ -197,7 +219,9 @@ export const NotesManager: React.FC<NotesManagerProps> = ({ topicId, openFormIni
   if (localError && initialLoadDone) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-        <p className="text-red-800 font-medium mb-3">Error al cargar notas</p>
+        <p className="text-red-800 font-medium mb-3">
+          {t("components.notesManager.errorLoading")}
+        </p>
         <p className="text-red-600 text-sm mb-4">{localError}</p>
         <button
           onClick={() => {
@@ -208,7 +232,7 @@ export const NotesManager: React.FC<NotesManagerProps> = ({ topicId, openFormIni
           }}
           className="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg font-medium transition-colors border border-red-300"
         >
-          Reintentar
+          {t("components.notesManager.retry")}
         </button>
       </div>
     );
@@ -218,27 +242,30 @@ export const NotesManager: React.FC<NotesManagerProps> = ({ topicId, openFormIni
     <div className="space-y-6">
       {/* Header con búsqueda */}
       {!showForm && (
-        <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-200 dark:border-gray-700">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex-1 w-full">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <Search
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500"
+                  size={20}
+                />
                 <input
                   type="text"
-                  placeholder="Buscar en notas por título o contenido..."
+                  placeholder={t("components.notesManager.searchPlaceholder")}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                 />
               </div>
               {searchTerm.length > 0 && searchTerm.length < 2 && (
-                <p className="text-xs text-gray-500 mt-1 ml-10">
-                  Escribe al menos 2 caracteres para buscar
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-10">
+                  {t("components.notesManager.minCharacters")}
                 </p>
               )}
               {isSearching && (
-                <p className="text-xs text-indigo-600 mt-1 ml-10">
-                  Buscando "{debouncedTerm}"...
+                <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-1 ml-10">
+                  {t("components.notesManager.searching")} "{debouncedTerm}"...
                 </p>
               )}
             </div>

@@ -14,7 +14,7 @@ export const ImageModal: React.FC<ImageModalProps> = ({
 }) => {
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50"
+      className="fixed inset-0 bg-black bg-opacity-75 dark:bg-gray-900/75 flex items-center justify-center p-4 z-50"
       onClick={onClose}
     >
       <div className="relative max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center">

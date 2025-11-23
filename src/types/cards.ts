@@ -12,6 +12,7 @@ export interface Card {
   id: number;
   question: string;
   answer: string;
+  type: "flashcard" | "explanation";
   topicId: number;
   topic?: {
     id: number;
@@ -73,6 +74,7 @@ export type CreateCardData = {
   topicId: number;
   question: string;
   answer: string;
+  type: "flashcard" | "explanation";
   questionImage?: File;
   answerImage?: File;
 };

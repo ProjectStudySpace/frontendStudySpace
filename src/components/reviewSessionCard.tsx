@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ReviewSession, ReviewSessionCardProps } from "../types/reviews";
 import { Calendar, Clock, BookOpen, Edit, Info } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useReviews } from "../../hooks/useReviews";
 import { formatDateForUser, formatTimeOnlyForUser } from "../utils/dateUtils";
 import DatePicker from "react-datepicker";
@@ -10,6 +11,7 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({
   session,
   onSessionUpdated,
 }) => {
+  const { t } = useTranslation();
   const { rescheduleReview, userTimezone } = useReviews();
   const [currentSession, setCurrentSession] = useState(session);
   const [showReschedule, setShowReschedule] = useState(false);
@@ -57,34 +59,34 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({
       case "pending":
         return {
           color: "red",
-          bgColor: "bg-red-50",
-          borderColor: "border-red-200",
-          textColor: "text-red-700",
-          label: "Pendiente",
+          bgColor: "bg-red-50 dark:bg-red-900/30",
+          borderColor: "border-red-200 dark:border-red-800",
+          textColor: "text-red-700 dark:text-red-400",
+          label: t("reviews.status.pending"),
         };
       case "upcoming":
         return {
           color: "orange",
-          bgColor: "bg-orange-50",
-          borderColor: "border-orange-200",
-          textColor: "text-orange-700",
-          label: "Programada",
+          bgColor: "bg-orange-50 dark:bg-orange-900/30",
+          borderColor: "border-orange-200 dark:border-orange-800",
+          textColor: "text-orange-700 dark:text-orange-400",
+          label: t("reviews.status.upcoming"),
         };
       case "completed":
         return {
           color: "green",
-          bgColor: "bg-green-50",
-          borderColor: "border-green-200",
-          textColor: "text-green-700",
-          label: "Completada",
+          bgColor: "bg-green-50 dark:bg-green-900/30",
+          borderColor: "border-green-200 dark:border-green-800",
+          textColor: "text-green-700 dark:text-green-400",
+          label: t("reviews.status.completed"),
         };
       default:
         return {
           color: "gray",
-          bgColor: "bg-gray-50",
-          borderColor: "border-gray-200",
-          textColor: "text-gray-700",
-          label: "Desconocido",
+          bgColor: "bg-gray-50 dark:bg-gray-700",
+          borderColor: "border-gray-200 dark:border-gray-600",
+          textColor: "text-gray-700 dark:text-gray-300",
+          label: t("reviews.status.unknown"),
         };
     }
   };
@@ -120,11 +122,11 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({
 
     switch (rating) {
       case 1:
-        return "Fácil";
+        return t("difficulty.easy");
       case 2:
-        return "Medio";
+        return t("difficulty.medium");
       case 3:
-        return "Difícil";
+        return t("difficulty.hard");
       default:
         return "";
     }
@@ -180,7 +182,7 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({
 
   return (
     <div
-      className={`bg-white border rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 ${status.borderColor}`}
+      className={`bg-white dark:bg-gray-800 border rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 ${status.borderColor}`}
     >
       <div className="flex justify-between items-start mb-3">
         <div className="flex-1">
@@ -195,16 +197,16 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({
             </span>
           </div>
 
-          <h3 className="font-semibold text-gray-900 text-lg mb-1">
+          <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg mb-1">
             {currentSession.card.topic.name}
           </h3>
-          <p className="text-gray-600 line-clamp-2">
+          <p className="text-gray-600 dark:text-gray-400 line-clamp-2">
             {currentSession.card.question}
           </p>
         </div>
       </div>
 
-      <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
+      <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-3">
         <div className="flex items-center gap-1">
           <Calendar size={16} />
           <span>{formatDate(currentSession.dueDate)}</span>
@@ -214,7 +216,7 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({
           <div className="flex items-center gap-1">
             <Clock size={16} />
             <span>
-              Completada:{" "}
+              {t("reviews.completed")}:{" "}
               {userTimezone
                 ? formatDateForUser(currentSession.completedAt, userTimezone)
                 : new Date(currentSession.completedAt).toLocaleDateString()}
@@ -226,15 +228,19 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({
       {currentSession.type === "completed" &&
         currentSession.difficultyRating && (
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-sm font-medium text-gray-700">
-              Dificultad:
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              {t("reviews.difficulty")}:
             </span>
             <span
               className={`px-2 py-1 rounded-full text-xs font-medium bg-${getDifficultyColor(
                 currentSession.difficultyRating
-              )}-100 text-${getDifficultyColor(
+              )}-100 dark:bg-${getDifficultyColor(
                 currentSession.difficultyRating
-              )}-700`}
+              )}-900/30 text-${getDifficultyColor(
+                currentSession.difficultyRating
+              )}-700 dark:text-${getDifficultyColor(
+                currentSession.difficultyRating
+              )}-400`}
             >
               {getDifficultyText(currentSession.difficultyRating)}
             </span>
@@ -242,61 +248,64 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({
         )}
 
       {currentSession.intervalDays && (
-        <div className="flex items-center gap-2 text-sm text-gray-600">
+        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
           <BookOpen size={16} />
-          <span>Intervalo: {currentSession.intervalDays} días</span>
+          <span>
+            {t("reviews.interval")}: {currentSession.intervalDays}{" "}
+            {t("stats.days")}
+          </span>
         </div>
       )}
 
       {currentSession.type === "upcoming" && (
-        <div className="flex gap-2 mt-3 pt-3 border-t border-gray-100">
+        <div className="flex gap-2 mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
           <button
             onClick={() => setShowReschedule(true)}
-            className="flex items-center justify-center gap-1 flex-1 text-xs bg-indigo-100 text-indigo-700 px-3 py-2 rounded-lg hover:bg-indigo-200 transition-colors font-medium"
+            className="flex items-center justify-center gap-1 flex-1 text-xs bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 px-3 py-2 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors font-medium"
           >
             <Edit size={14} />
-            Reprogramar
+            {t("reviews.reschedule")}
           </button>
           <button
             onClick={() => setShowDetails(true)}
-            className="flex items-center justify-center gap-1 flex-1 text-xs bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+            className="flex items-center justify-center gap-1 flex-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium"
           >
             <Info size={14} />
-            Ver detalles
+            {t("reviews.viewDetails")}
           </button>
         </div>
       )}
 
       {showReschedule && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl p-6 max-w-sm w-full">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Reprogramar sesión
+        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-sm w-full">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+              {t("reviews.rescheduleSession")}
             </h3>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Seleccionar fecha
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t("reviews.selectDate")}
                 </label>
                 <DatePicker
                   selected={selectedDate}
                   onChange={(date) => setSelectedDate(date)}
                   minDate={new Date()}
                   dateFormat="dd/MM/yyyy"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholderText="Selecciona una fecha"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  placeholderText={t("reviews.selectDatePlaceholder")}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Seleccionar hora
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t("reviews.selectTime")}
                 </label>
                 <select
                   value={selectedTime}
                   onChange={(e) => setSelectedTime(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 >
                   {getAvailableTimes().map((time) => (
                     <option key={time} value={time}>
@@ -312,13 +321,13 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({
                   disabled={loading || !selectedDate}
                   className="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? "Reprogramando..." : "Confirmar"}
+                  {loading ? t("reviews.rescheduling") : t("common.confirm")}
                 </button>
                 <button
                   onClick={() => setShowReschedule(false)}
-                  className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400"
+                  className="flex-1 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500"
                 >
-                  Cancelar
+                  {t("common.cancel")}
                 </button>
               </div>
             </div>
@@ -327,41 +336,45 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({
       )}
 
       {showDetails && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Detalles de la Sesión
+        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+              {t("reviews.sessionDetails")}
             </h3>
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-gray-600">Tema:</span>
-                <span className="font-medium">
+                <span className="text-gray-600 dark:text-gray-400">{t("reviews.topic")}:</span>
+                <span className="font-medium text-gray-900 dark:text-gray-100">
                   {currentSession.card.topic.name}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Fecha programada:</span>
-                <span className="font-medium">
+                <span className="text-gray-600 dark:text-gray-400">
+                  {t("reviews.scheduledDate")}:
+                </span>
+                <span className="font-medium text-gray-900 dark:text-gray-100">
                   {formatDate(currentSession.dueDate)}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Hora:</span>
-                <span className="font-medium">
+                <span className="text-gray-600 dark:text-gray-400">{t("reviews.time")}:</span>
+                <span className="font-medium text-gray-900 dark:text-gray-100">
                   {formatTime(currentSession.dueDate)}
                 </span>
               </div>
               {currentSession.intervalDays && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Intervalo actual:</span>
-                  <span className="font-medium">
-                    {currentSession.intervalDays} días
+                  <span className="text-gray-600 dark:text-gray-400">
+                    {t("reviews.currentInterval")}:
+                  </span>
+                  <span className="font-medium text-gray-900 dark:text-gray-100">
+                    {currentSession.intervalDays} {t("stats.days")}
                   </span>
                 </div>
               )}
-              <div className="border-t pt-3 mt-3">
-                <p className="text-gray-600 mb-2">Pregunta:</p>
-                <p className="text-gray-800 bg-gray-50 p-3 rounded-lg">
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
+                <p className="text-gray-600 dark:text-gray-400 mb-2">{t("reviews.question")}:</p>
+                <p className="text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
                   {currentSession.card.question}
                 </p>
               </div>
@@ -370,7 +383,7 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({
               onClick={() => setShowDetails(false)}
               className="w-full mt-4 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700"
             >
-              Cerrar
+              {t("reviews.close")}
             </button>
           </div>
         </div>

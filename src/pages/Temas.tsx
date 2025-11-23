@@ -1,11 +1,21 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { BookOpen, FileText, TrendingUp, Flame, Plus, ChevronDown } from "lucide-react";
+import {
+  BookOpen,
+  FileText,
+  TrendingUp,
+  Flame,
+  Plus,
+  ChevronDown,
+  Play,
+} from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useTranslation } from "react-i18next";
 import { TopicsManager } from "../components/topicsManager";
 import { CardsManager } from "../components/cardsManager";
 import { NotesManager } from "../components/notesManager";
 import { useStreak } from "../../hooks/useStreaks";
+import { useReviews } from "../../hooks/useReviews";
 import { getStoredUserTimezone, formatDateForUser } from "../utils/dateUtils";
 import { TopicCard } from "../components/topicCard";
 import { useTopics } from "../../hooks/useTopics";
@@ -13,9 +23,11 @@ import { Topic, CreateTopicData } from "../types/topics";
 import { TopicForm } from "../components/topicForm";
 import { GoogleCalendarAuth } from "../components/googleCalendarAuth";
 import { useDynamicPagination } from "../../hooks/useDynamicPagination";
+import StudySession from "../components/studySession";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const selectedTopicId = searchParams.get("topic")
     ? parseInt(searchParams.get("topic")!)
@@ -30,8 +42,10 @@ const Dashboard = () => {
   const [showContentDropdown, setShowContentDropdown] = useState(false);
   const [showCardForm, setShowCardForm] = useState(false);
   const [showNoteForm, setShowNoteForm] = useState(false);
+  const [showStudySession, setShowStudySession] = useState(false);
+  const [currentSession, setCurrentSession] = useState<number>(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  
+
   // Dynamic pagination for topics
   const { pageSize } = useDynamicPagination({
     cols: { mobile: 1, md: 2, lg: 3, xl: 4 },
@@ -41,6 +55,7 @@ const Dashboard = () => {
 
   const { getDashboard } = useAuth();
   const { streakData, loading: streakLoading } = useStreak();
+  const { totalPendingCount, pendingReviews, completeReview } = useReviews();
 
   useEffect(() => {
     // Obtener zona horaria del usuario
@@ -69,7 +84,10 @@ const Dashboard = () => {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setShowContentDropdown(false);
       }
     };
@@ -133,7 +151,7 @@ const Dashboard = () => {
   };
 
   const handleDeleteTopic = async (topicId: number) => {
-    if (window.confirm("¿Estás seguro de que quieres eliminar esta materia?")) {
+    if (window.confirm(t("topics.deleteConfirm"))) {
       try {
         await deleteTopic(topicId);
         setRefreshTopics((prev) => prev + 1);
@@ -156,6 +174,64 @@ const Dashboard = () => {
     navigate("/topics");
   };
 
+  const handleStartReview = () => {
+    if (pendingReviews.length > 0) {
+      setCurrentSession(0);
+      setShowStudySession(true);
+    }
+  };
+
+  const handleCompleteReview = async (difficulty: 1 | 2 | 3) => {
+    const currentReview = pendingReviews[currentSession];
+
+    try {
+      await completeReview(currentReview.id, difficulty);
+      // No avanzar automáticamente, el usuario debe usar los botones de navegación
+    } catch (error) {
+      console.error("Error completando revisión:", error);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentSession < pendingReviews.length - 1) {
+      setCurrentSession((prev) => prev + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentSession > 0) {
+      setCurrentSession((prev) => prev - 1);
+    }
+  };
+
+  const handleExitStudySession = () => {
+    setShowStudySession(false);
+    setCurrentSession(0);
+  };
+
+  // Show study session if active
+  if (
+    showStudySession &&
+    pendingReviews.length > 0 &&
+    currentSession < pendingReviews.length
+  ) {
+    const currentReview = pendingReviews[currentSession];
+
+    return (
+      <StudySession
+        review={currentReview}
+        currentCard={currentSession + 1}
+        totalCards={pendingReviews.length}
+        onComplete={handleCompleteReview}
+        onExit={handleExitStudySession}
+        onNext={handleNext}
+        onPrevious={handlePrevious}
+        canGoNext={currentSession < pendingReviews.length - 1}
+        canGoPrevious={currentSession > 0}
+      />
+    );
+  }
+
   if (selectedTopicId) {
     return (
       <div>
@@ -165,15 +241,33 @@ const Dashboard = () => {
             onClick={handleBackToTopics}
             className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2"
           >
-            ← Volver
+            ← {t("topics.backToTopics")}
           </button>
         </div>
 
-        {/* Título centrado */}
+        {/* Título centrado con botón de repaso */}
         <div className="text-center mb-6 md:mb-10">
-          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            Contenido de estudio
-          </h1>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-gray-100 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              {t("topics.studyContent")}
+            </h1>
+            
+            {/* Botón Iniciar Repaso para vista de tema */}
+            {totalPendingCount > 0 && (
+              <button
+                onClick={handleStartReview}
+                className="flex items-center gap-2 px-4 sm:px-6 py-3 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl justify-center"
+              >
+                <Play size={20} />
+                <span className="sm:hidden">
+                  {t("reviews.startReviewShort")} ({totalPendingCount})
+                </span>
+                <span className="hidden sm:inline">
+                  {t("reviews.startReview")} ({totalPendingCount})
+                </span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Dropdown para nuevo contenido */}
@@ -181,16 +275,21 @@ const Dashboard = () => {
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setShowContentDropdown(!showContentDropdown)}
-              className="flex items-center justify-center gap-2 px-4 py-3 bg-white hover:bg-gray-50 text-indigo-600 rounded-xl font-semibold border-2 border-indigo-200 hover:border-indigo-300 transition-all shadow-sm hover:shadow"
+              className="flex items-center justify-center gap-2 px-4 py-3 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-indigo-600 dark:text-indigo-400 rounded-xl font-semibold border-2 border-indigo-200 dark:border-indigo-700 hover:border-indigo-300 dark:hover:border-indigo-600 transition-all shadow-sm hover:shadow"
             >
               <Plus size={20} />
-              <span>Nuevo contenido</span>
-              <ChevronDown size={20} className={`transition-transform ${showContentDropdown ? 'rotate-180' : ''}`} />
+              <span>{t("content.newContent")}</span>
+              <ChevronDown
+                size={20}
+                className={`transition-transform ${
+                  showContentDropdown ? "rotate-180" : ""
+                }`}
+              />
             </button>
 
             {/* Dropdown menu */}
             {showContentDropdown && (
-              <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 w-96 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden">
+              <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 w-96 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
                 {/* Tarjeta de Estudio */}
                 <button
                   onClick={() => {
@@ -199,25 +298,29 @@ const Dashboard = () => {
                   }}
                   className="w-full group relative overflow-hidden"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
-                  <div className="relative p-4 border-b border-gray-200 group-hover:border-indigo-200 transition-all duration-200 hover:bg-gray-50">
+                  <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 opacity-0 group-hover:opacity-10 dark:group-hover:opacity-20 transition-opacity duration-300"></div>
+                  <div className="relative p-4 border-b border-gray-200 dark:border-gray-700 group-hover:border-indigo-200 dark:group-hover:border-indigo-700 transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-700">
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100 group-hover:from-indigo-500 group-hover:to-purple-600 flex items-center justify-center transition-all duration-300 shadow-sm flex-shrink-0">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/50 dark:to-purple-900/50 group-hover:from-indigo-500 group-hover:to-purple-600 flex items-center justify-center transition-all duration-300 shadow-sm flex-shrink-0">
                         <FileText
                           size={24}
-                          className="text-indigo-600 group-hover:text-white transition-colors"
+                          className="text-indigo-600 dark:text-indigo-400 group-hover:text-white transition-colors"
                         />
                       </div>
                       <div className="flex-1 text-left">
-                        <h4 className="text-base font-bold text-gray-900 group-hover:text-indigo-600 transition-colors mb-1">
-                          Tarjeta de Estudio
+                        <h4 className="text-base font-bold text-gray-900 dark:text-gray-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors mb-1">
+                          {t("cards.studyCard")}
                         </h4>
-                        <p className="text-xs text-gray-600 leading-relaxed">
-                          Formato pregunta-respuesta ideal para <strong>repaso activo</strong> y memorización.
+                        <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                          {t("cards.studyCardDescription")}
                         </p>
-                        <div className="mt-2 flex items-center gap-2 text-xs text-indigo-600 font-medium">
-                          <span className="bg-indigo-50 px-2 py-0.5 rounded">Repaso rápido</span>
-                          <span className="bg-indigo-50 px-2 py-0.5 rounded">Con imágenes</span>
+                        <div className="mt-2 flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400 font-medium">
+                          <span className="bg-indigo-50 dark:bg-indigo-900/50 px-2 py-0.5 rounded">
+                            {t("cards.quickReview")}
+                          </span>
+                          <span className="bg-indigo-50 dark:bg-indigo-900/50 px-2 py-0.5 rounded">
+                            {t("cards.withImages")}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -232,25 +335,29 @@ const Dashboard = () => {
                   }}
                   className="w-full group relative overflow-hidden"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-green-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
-                  <div className="relative p-4 group-hover:bg-gray-50 transition-all duration-200">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-green-500 opacity-0 group-hover:opacity-10 dark:group-hover:opacity-20 transition-opacity duration-300"></div>
+                  <div className="relative p-4 group-hover:bg-gray-50 dark:group-hover:bg-gray-700 transition-all duration-200">
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-green-100 group-hover:from-blue-500 group-hover:to-green-500 flex items-center justify-center transition-all duration-300 shadow-sm flex-shrink-0">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-green-100 dark:from-blue-900/50 dark:to-green-900/50 group-hover:from-blue-500 group-hover:to-green-500 flex items-center justify-center transition-all duration-300 shadow-sm flex-shrink-0">
                         <BookOpen
                           size={24}
-                          className="text-blue-600 group-hover:text-white transition-colors"
+                          className="text-blue-600 dark:text-blue-400 group-hover:text-white transition-colors"
                         />
                       </div>
                       <div className="flex-1 text-left">
-                        <h4 className="text-base font-bold text-gray-900 group-hover:text-blue-600 transition-colors mb-1">
-                          Nota de Estudio
+                        <h4 className="text-base font-bold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-1">
+                          {t("notes.studyNote")}
                         </h4>
-                        <p className="text-xs text-gray-600 leading-relaxed">
-                          Formato de <strong>libro abierto</strong> con dos páginas para contenido extenso.
+                        <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                          {t("notes.studyNoteDescription")}
                         </p>
-                        <div className="mt-2 flex items-center gap-2 text-xs text-blue-600 font-medium">
-                          <span className="bg-blue-50 px-2 py-0.5 rounded">Contenido extenso</span>
-                          <span className="bg-blue-50 px-2 py-0.5 rounded">2 páginas</span>
+                        <div className="mt-2 flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400 font-medium">
+                          <span className="bg-blue-50 dark:bg-blue-900/50 px-2 py-0.5 rounded">
+                            {t("notes.extensiveContent")}
+                          </span>
+                          <span className="bg-blue-50 dark:bg-blue-900/50 px-2 py-0.5 rounded">
+                            {t("notes.twoPages")}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -265,21 +372,31 @@ const Dashboard = () => {
         <div className="mb-8 md:mb-10">
           <div className="flex items-center gap-3 mb-4 md:mb-6">
             <div className="w-1 h-8 bg-gradient-to-b from-indigo-500 to-purple-600 rounded-full"></div>
-            <h2 className="text-2xl font-bold text-gray-900">Tarjetas de Estudio</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              {t("cards.title")}
+            </h2>
           </div>
-          <CardsManager topicId={selectedTopicId} openFormInitially={showCardForm} />
+          <CardsManager
+            topicId={selectedTopicId}
+            openFormInitially={showCardForm}
+          />
         </div>
 
         {/* Separador visual */}
-        <div className="my-8 border-t border-gray-200"></div>
+        <div className="my-8 border-t border-gray-200 dark:border-gray-700"></div>
 
         {/* Sección de Notas */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-1 h-8 bg-gradient-to-b from-indigo-500 to-purple-600 rounded-full"></div>
-            <h2 className="text-2xl font-bold text-gray-900">Notas de Estudio</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              {t("notes.title")}
+            </h2>
           </div>
-          <NotesManager topicId={selectedTopicId} openFormInitially={showNoteForm} />
+          <NotesManager
+            topicId={selectedTopicId}
+            openFormInitially={showNoteForm}
+          />
         </div>
       </div>
     );
@@ -298,54 +415,61 @@ const Dashboard = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-blue-100">
-              <BookOpen size={24} className="text-blue-600" />
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-blue-100 dark:bg-blue-900/30">
+              <BookOpen size={24} className="text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <p className="text-gray-600 text-sm mb-1">Materias activas</p>
-              <p className="text-3xl font-bold text-gray-900">
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">
+                {t("stats.activeTopics")}
+              </p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
                 {dashboardData?.stats?.totalTopics}
               </p>
             </div>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-green-100">
-              <FileText size={24} className="text-green-600" />
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-green-100 dark:bg-green-900/30">
+              <FileText size={24} className="text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <p className="text-gray-600 text-sm mb-1">Tarjetas totales</p>
-              <p className="text-3xl font-bold text-gray-900">
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">
+                {t("stats.totalCards")}
+              </p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
                 {dashboardData?.stats?.totalCards}
               </p>
             </div>
           </div>
         </div>
         {/* Racha */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-orange-100">
-              <Flame size={24} className="text-orange-600" />
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-orange-100 dark:bg-orange-900/30">
+              <Flame size={24} className="text-orange-600 dark:text-orange-400" />
             </div>
             <div className="flex-1">
-              <p className="text-gray-600 text-sm mb-1">Racha actual</p>
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">
+                {t("stats.currentStreak")}
+              </p>
               <div className="flex items-baseline gap-2">
-                <p className="text-3xl font-bold text-gray-900">
+                <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
                   {streakLoading ? "..." : streakData?.currentStreak || 0}
                 </p>
-                <span className="text-sm text-gray-500">días</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">{t("stats.days")}</span>
               </div>
               {streakData && streakData.longestStreak > 0 && (
-                <p className="text-xs text-gray-500 mt-1">
-                  Récord: {streakData.longestStreak} días
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {t("stats.longestStreak")}: {streakData.longestStreak}{" "}
+                  {t("stats.days")}
                 </p>
               )}
               {streakData?.wasAutoReset && (
-                <p className="text-xs text-orange-600 mt-1">
-                  Reiniciada por inactividad
+                <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
+                  {t("stats.streakReset")}
                 </p>
               )}
             </div>
@@ -353,14 +477,16 @@ const Dashboard = () => {
         </div>
 
         {/* Progreso Promedio */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-orange-100">
-              <TrendingUp size={24} className="text-orange-600" />
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-orange-100 dark:bg-orange-900/30">
+              <TrendingUp size={24} className="text-orange-600 dark:text-orange-400" />
             </div>
             <div>
-              <p className="text-gray-600 text-sm mb-1">Progreso promedio</p>
-              <p className="text-3xl font-bold text-gray-900">
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">
+                {t("stats.averageProgress")}
+              </p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
                 {calculateProgress()}%
               </p>
             </div>
@@ -368,19 +494,19 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
         {showTopicForm ? (
           <div>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold text-gray-900">
-                {editingTopic ? "Editar Materia" : "Nueva Materia"}
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                {editingTopic ? t("topics.edit") : t("topics.new")}
               </h2>
               <button
                 onClick={() => {
                   setShowTopicForm(false);
                   setEditingTopic(null);
                 }}
-                className="text-gray-500 hover:text-gray-700 text-2xl"
+                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-2xl"
               >
                 ×
               </button>
@@ -411,44 +537,56 @@ const Dashboard = () => {
         ) : (
           <>
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                  Tus materias de estudio
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                  {t("topics.title")}
                 </h2>
-                <p className="text-gray-600">
-                  Gestiona tus materias y accede a sus tarjetas de estudio
-                </p>
+                <p className="text-gray-600 dark:text-gray-400">{t("topics.subtitle")}</p>
               </div>
+              
+              {/* Botón Iniciar Repaso */}
+              {totalPendingCount > 0 && (
+                <button
+                  onClick={handleStartReview}
+                  className="flex items-center gap-2 px-4 sm:px-6 py-3 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl justify-center self-start md:self-center"
+                >
+                  <Play size={20} />
+                  <span className="sm:hidden">
+                    {t("reviews.startReviewShort")} ({totalPendingCount})
+                  </span>
+                  <span className="hidden sm:inline">
+                    {t("reviews.startReview")} ({totalPendingCount})
+                  </span>
+                </button>
+              )}
             </div>
 
             {/* Barra de búsqueda */}
             <div className="mb-6">
               <input
                 type="text"
-                placeholder="Buscar materias por nombre o descripción..."
+                placeholder={t("topics.searchPlaceholder")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
 
             {/* Lista de materias en formato tarjeta */}
             {loading ? (
-              <div className="text-center py-8 text-gray-600">
-                Cargando materias...
+              <div className="text-center py-8 text-gray-600 dark:text-gray-400">
+                {t("common.loadingTopics")}
               </div>
             ) : filteredTopics.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
-                <BookOpen size={48} className="mx-auto mb-4 text-gray-300" />
-                <p className="text-lg mb-2">No hay materias creadas</p>
-                <p className="text-sm mb-4">
-                  Crea tu primera materia para comenzar a organizar tu estudio
-                </p>
+              <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                <BookOpen size={48} className="mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+                <p className="text-lg mb-2">{t("topics.noTopics")}</p>
+                <p className="text-sm mb-4">{t("topics.noTopicsSubtitle")}</p>
                 <button
                   onClick={() => setShowTopicForm(true)}
-                  className="bg-indigo-500 hover:bg-indigo-600 text-white font-medium py-2 px-6 rounded-lg transition-colors"
+                  className="bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white font-medium py-2 px-6 rounded-lg transition-colors"
                 >
-                  Crea la primera materia
+                  {t("topics.createFirst")}
                 </button>
               </div>
             ) : (
@@ -469,15 +607,15 @@ const Dashboard = () => {
                       setEditingTopic(null);
                       setShowTopicForm(true);
                     }}
-                    className="bg-gray-50 hover:bg-gray-100 border-2 border-dashed border-gray-300 hover:border-indigo-400 rounded-2xl p-6 transition-all duration-200 flex flex-col items-center justify-center min-h-[200px] group"
+                    className="bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-indigo-400 dark:hover:border-indigo-500 rounded-2xl p-6 transition-all duration-200 flex flex-col items-center justify-center min-h-[200px] group"
                   >
-                    <div className="w-12 h-12 rounded-full bg-indigo-100 group-hover:bg-indigo-500 flex items-center justify-center mb-3 transition-colors">
-                      <span className="text-3xl text-indigo-600 group-hover:text-white transition-colors">
+                    <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-900/50 group-hover:bg-indigo-500 flex items-center justify-center mb-3 transition-colors">
+                      <span className="text-3xl text-indigo-600 dark:text-indigo-400 group-hover:text-white transition-colors">
                         +
                       </span>
                     </div>
-                    <span className="text-gray-600 group-hover:text-indigo-600 font-medium transition-colors">
-                      Nueva materia
+                    <span className="text-gray-600 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 font-medium transition-colors">
+                      {t("topics.create")}
                     </span>
                   </button>
                 </div>
@@ -490,21 +628,22 @@ const Dashboard = () => {
                         handlePageChange(pagination.currentPage - 1)
                       }
                       disabled={pagination.currentPage <= 1}
-                      className="px-4 py-2 bg-indigo-500 text-white rounded-lg disabled:bg-gray-300 hover:bg-indigo-600 transition-colors disabled:cursor-not-allowed"
+                      className="px-4 py-2 bg-indigo-500 dark:bg-indigo-600 text-white rounded-lg disabled:bg-gray-300 dark:disabled:bg-gray-600 hover:bg-indigo-600 dark:hover:bg-indigo-700 transition-colors disabled:cursor-not-allowed"
                     >
-                      Anterior
+                      {t("common.previous")}
                     </button>
-                    <span className="text-gray-600">
-                      Página {pagination.currentPage} de {pagination.totalPages}
+                    <span className="text-gray-600 dark:text-gray-400">
+                      {t("common.page")} {pagination.currentPage}{" "}
+                      {t("common.of")} {pagination.totalPages}
                     </span>
                     <button
                       onClick={() =>
                         handlePageChange(pagination.currentPage + 1)
                       }
                       disabled={pagination.currentPage >= pagination.totalPages}
-                      className="px-4 py-2 bg-indigo-500 text-white rounded-lg disabled:bg-gray-300 hover:bg-indigo-600 transition-colors disabled:cursor-not-allowed"
+                      className="px-4 py-2 bg-indigo-500 dark:bg-indigo-600 text-white rounded-lg disabled:bg-gray-300 dark:disabled:bg-gray-600 hover:bg-indigo-600 dark:hover:bg-indigo-700 transition-colors disabled:cursor-not-allowed"
                     >
-                      Siguiente
+                      {t("common.next")}
                     </button>
                   </div>
                 )}
