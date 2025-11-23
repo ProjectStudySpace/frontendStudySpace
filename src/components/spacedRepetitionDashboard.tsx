@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useReviews } from "../../hooks/useReviews";
+import { useNotification } from "../context/NotificationContext";
 import ReviewSessionList from "./reviewSessionList";
 import StudySession from "./studySession";
 import ProgressSection from "./progressSection";
@@ -25,6 +26,7 @@ const SpacedRepetitionDashboard: React.FC = () => {
     fetchPendingReviews,
   } = useReviews();
 
+  const { showSuccess, showError } = useNotification();
   const [currentSession, setCurrentSession] = useState<number>(0);
   const [showStudySession, setShowStudySession] = useState(false);
 
@@ -61,12 +63,20 @@ const SpacedRepetitionDashboard: React.FC = () => {
       // No avanzar automáticamente, el usuario debe usar los botones de navegación
     } catch (error) {
       console.error("Error completando revisión:", error);
+      showError("Error al completar revisión", "No se pudo guardar el progreso. Inténtalo de nuevo.");
     }
   };
 
   const handleNext = () => {
     if (currentSession < pendingReviews.length - 1) {
       setCurrentSession((prev) => prev + 1);
+    } else {
+      // Si llegamos al final, la sesión está completa
+      showSuccess("¡Sesión completada!", `Has terminado todas las ${pendingReviews.length} tarjetas de hoy. ¡Excelente trabajo!`);
+      setShowStudySession(false);
+      setCurrentSession(0);
+      // Recargar las revisiones para actualizar el conteo
+      fetchAllReviews();
     }
   };
 

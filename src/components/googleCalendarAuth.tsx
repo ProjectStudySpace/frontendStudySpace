@@ -1,28 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import axios from "axios";
+import { api } from "../utils/axiosConfig";
 import { useAuth } from "../context/AuthContext";
+import { useNotification } from "../context/NotificationContext";
 import { API_URL } from "../config";
 import {
   GoogleCalendarAuthProps,
   GoogleCalendarSyncInfo,
 } from "../types/googleCalendar";
-
-const API_BASE = API_URL || "http://localhost:3000/api";
-
-// Configurar instancia de axios
-const api = axios.create({
-  baseURL: API_BASE,
-});
-
-// Interceptor para agregar token automáticamente
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
 
 export const GoogleCalendarAuth: React.FC<GoogleCalendarAuthProps> = ({
   onAuthComplete,
@@ -32,6 +17,7 @@ export const GoogleCalendarAuth: React.FC<GoogleCalendarAuthProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [syncInfo, setSyncInfo] = useState<GoogleCalendarSyncInfo | null>(null);
   const { user } = useAuth();
+  const { showSuccess, showError } = useNotification();
 
   useEffect(() => {
     checkAuthStatus();
@@ -47,6 +33,7 @@ export const GoogleCalendarAuth: React.FC<GoogleCalendarAuthProps> = ({
 
     if (googleAuth === "success") {
       setIsAuthenticated(true);
+      showSuccess("¡Conectado!", "Tu cuenta de Google Calendar ha sido conectada exitosamente");
 
       // Mostrar información de sincronización si existe
       if (synced && total) {
@@ -55,6 +42,9 @@ export const GoogleCalendarAuth: React.FC<GoogleCalendarAuthProps> = ({
           total: parseInt(total),
           message: message ? decodeURIComponent(message) : "",
         });
+
+        // Mostrar notificación de sincronización
+        showSuccess("Sincronización completada", `${synced} de ${total} elementos sincronizados`);
 
         // Ocultar mensaje de sincronización después de 10 segundos
         setTimeout(() => {
@@ -66,7 +56,7 @@ export const GoogleCalendarAuth: React.FC<GoogleCalendarAuthProps> = ({
       window.history.replaceState({}, "", window.location.pathname);
       onAuthComplete?.();
     } else if (googleAuth === "error") {
-      alert(t("components.googleCalendarAuth.connectionError"));
+      showError("Error de conexión", "No se pudo conectar con Google Calendar");
       window.history.replaceState({}, "", window.location.pathname);
     }
   }, [onAuthComplete]);
@@ -94,6 +84,7 @@ export const GoogleCalendarAuth: React.FC<GoogleCalendarAuthProps> = ({
   const handleConnectGoogle = () => {
     if (!user?.id) {
       console.error("No hay usuario autenticado");
+      showError("Error de autenticación", "Debes estar logueado para conectar con Google Calendar");
       return;
     }
 
@@ -102,7 +93,7 @@ export const GoogleCalendarAuth: React.FC<GoogleCalendarAuthProps> = ({
     console.log("Token en localStorage:", token ? "SÍ EXISTE" : "NO EXISTE");
 
     if (!token) {
-      alert(t("auth.invalidCredentials"));
+      showError("Error de autenticación", "Token inválido. Por favor, inicia sesión nuevamente");
       return;
     }
     // Guardar el token en sessionStorage para que persista durante la redirección
@@ -123,11 +114,11 @@ export const GoogleCalendarAuth: React.FC<GoogleCalendarAuthProps> = ({
       if (data) {
         setIsAuthenticated(false);
         setSyncInfo(null);
-        alert(t("profile.disconnectSuccess"));
+        showSuccess("Desconectado", "Has desconectado tu cuenta de Google Calendar exitosamente");
       }
     } catch (error) {
       console.error("Error desconectando Google Calendar:", error);
-      alert(t("profile.disconnectError"));
+      showError("Error de desconexión", "No se pudo desconectar de Google Calendar");
     } finally {
       setIsLoading(false);
     }

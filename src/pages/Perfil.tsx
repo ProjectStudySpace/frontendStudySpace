@@ -24,7 +24,7 @@ api.interceptors.request.use((config) => {
 const Perfil = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { user: authUser } = useAuth();
+  const { user: authUser, logout } = useAuth();
   const { profileData, loading, deleteAccount } = useProfile();
 
   // States for Google Calendar
@@ -80,8 +80,12 @@ const Perfil = () => {
       setIsProcessing(true);
       await deleteAccount({ password });
       alert(t("profile.deleteSuccess"));
-      localStorage.removeItem("token");
-      localStorage.removeItem("userTimezone");
+      
+      // Call auth logout to properly clear the authentication state
+      // Instead of manually manipulating localStorage
+      await logout();
+      
+      // Navigate to landing page
       navigate("/");
     } catch (error: any) {
       console.error("Error deleting account:", error);

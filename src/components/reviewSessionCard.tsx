@@ -3,6 +3,7 @@ import { ReviewSession, ReviewSessionCardProps } from "../types/reviews";
 import { Calendar, Clock, BookOpen, Edit, Info } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useReviews } from "../../hooks/useReviews";
+import { useNotification } from "../context/NotificationContext";
 import { formatDateForUser, formatTimeOnlyForUser } from "../utils/dateUtils";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -13,6 +14,7 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({
 }) => {
   const { t } = useTranslation();
   const { rescheduleReview, userTimezone } = useReviews();
+  const { showSuccess, showError } = useNotification();
   const [currentSession, setCurrentSession] = useState(session);
   const [showReschedule, setShowReschedule] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -168,11 +170,15 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({
 
       setShowReschedule(false);
 
+      // Mostrar notificación de éxito
+      showSuccess("Sesión reprogramada", "La sesión de estudio ha sido reprogramada correctamente");
+
       if (onSessionUpdated) {
         onSessionUpdated();
       }
     } catch (error) {
       console.error("Error reprogramando:", error);
+      showError("Error al reprogramar", "No se pudo reprogramar la sesión. Inténtalo de nuevo.");
     } finally {
       setLoading(false);
     }

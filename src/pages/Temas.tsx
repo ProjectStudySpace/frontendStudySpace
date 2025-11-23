@@ -24,6 +24,7 @@ import { TopicForm } from "../components/topicForm";
 import { GoogleCalendarAuth } from "../components/googleCalendarAuth";
 import { useDynamicPagination } from "../../hooks/useDynamicPagination";
 import StudySession from "../components/studySession";
+import { useNotification } from "../context/NotificationContext";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -56,6 +57,7 @@ const Dashboard = () => {
   const { getDashboard } = useAuth();
   const { streakData, loading: streakLoading } = useStreak();
   const { totalPendingCount, pendingReviews, completeReview } = useReviews();
+  const { showSuccess, showError } = useNotification();
 
   useEffect(() => {
     // Obtener zona horaria del usuario
@@ -155,8 +157,10 @@ const Dashboard = () => {
       try {
         await deleteTopic(topicId);
         setRefreshTopics((prev) => prev + 1);
+        showSuccess("Tema eliminado", "El tema se ha eliminado correctamente");
       } catch (error) {
         console.error("Error al eliminar materia:", error);
+        showError("Error al eliminar", "No se pudo eliminar el tema. Inténtalo de nuevo.");
       }
     }
   };
@@ -516,14 +520,17 @@ const Dashboard = () => {
                 try {
                   if (editingTopic) {
                     await updateTopic(editingTopic.id, topicData);
+                    showSuccess("Tema actualizado", "El tema se ha actualizado correctamente");
                   } else {
                     await addTopic(topicData as CreateTopicData);
+                    showSuccess("Tema creado", "El tema se ha creado correctamente");
                   }
                   setShowTopicForm(false);
                   setEditingTopic(null);
                   setRefreshTopics((prev) => prev + 1);
                 } catch (error) {
                   console.error("Error al guardar materia:", error);
+                  showError("Error al guardar", "No se pudo guardar el tema. Inténtalo de nuevo.");
                 }
               }}
               onCancel={() => {

@@ -50,8 +50,17 @@ const Layout = () => {
   }, [isMenuOpen]);
 
   const handleLogout = async () => {
-    await logout();
-    navigate("/");
+    try {
+      await logout();
+      // Navigate after logout is complete to ensure state is updated
+      navigate("/", { replace: true });
+    } catch (error) {
+      console.error("Error during logout:", error);
+      // Still navigate even if there's an error, but clear localStorage as fallback
+      localStorage.removeItem("token");
+      localStorage.removeItem("userTimezone");
+      navigate("/", { replace: true });
+    }
   };
 
   const navLinks = [
