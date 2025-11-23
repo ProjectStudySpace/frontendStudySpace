@@ -158,7 +158,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async (): Promise<void> => {
     try {
-      await api.post("/users/logout");
+      await api.get("/users/logout");
     } catch (error) {
       // Ignorar errores del servidor (404, etc.) - el logout local es suficiente
       if (axios.isAxiosError(error) && error.response?.status === 404) {
