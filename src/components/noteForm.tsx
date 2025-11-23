@@ -100,7 +100,7 @@ export const NoteForm: React.FC<NoteFormProps> = ({
     setIsSubmitting(true);
     try {
       await onSubmit({
-        title: title.trim() || undefined,
+        title: title.trim(),
         leftContent,
         rightContent,
         leftImage,
@@ -315,14 +315,6 @@ export const NoteForm: React.FC<NoteFormProps> = ({
       {/* Botones de acción */}
       <div className="flex gap-3 justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
         <button
-          type="button"
-          onClick={onCancel}
-          disabled={isSubmitting}
-          className="px-6 py-3 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {t("common.cancel")}
-        </button>
-        <button
           type="submit"
           disabled={isSubmitting}
           className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 dark:from-indigo-600 dark:to-purple-700 dark:hover:from-indigo-700 dark:hover:to-purple-800 text-white rounded-lg font-medium transition-all disabled:from-gray-300 disabled:to-gray-300 dark:disabled:from-gray-600 dark:disabled:to-gray-600 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
@@ -350,9 +342,17 @@ export const NoteForm: React.FC<NoteFormProps> = ({
           ) : (
             <span>
               {isEditing ? t("forms.update") : t("forms.create")}{" "}
-              {t("forms.note")}
+              {isEditing ? "" : t("forms.note")}
             </span>
           )}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={isSubmitting}
+          className="px-6 py-3 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {t("common.cancel")}
         </button>
       </div>
     </form>

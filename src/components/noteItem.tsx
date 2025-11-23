@@ -18,6 +18,9 @@ export const NoteItem: React.FC<NoteItemProps> = ({
   } | null>(null);
 
   const topicColor = note.topic?.color || "#60A5FA";
+  
+  // Convertir título vacío a null para mejor manejo
+  const displayTitle = note.title && note.title.trim() ? note.title : null;
 
   const handleDelete = async () => {
     if (window.confirm(t("reviews.deleteNoteConfirm"))) {
@@ -56,11 +59,11 @@ export const NoteItem: React.FC<NoteItemProps> = ({
           </div>
         </div>
 
-        {/* Título opcional */}
-        {note.title && (
-          <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 text-center">
-              {note.title}
+        {/* Título de la nota */}
+        {displayTitle && (
+          <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700/30 dark:to-gray-600/30">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 text-center leading-tight">
+              {displayTitle}
             </h3>
           </div>
         )}
@@ -69,18 +72,15 @@ export const NoteItem: React.FC<NoteItemProps> = ({
         <div className="flex-1 flex min-h-[400px] max-h-[500px]">
           {/* Página izquierda */}
           <div className="flex-1 p-6 border-r border-gray-200 dark:border-gray-700 flex flex-col bg-gradient-to-br from-blue-50/30 to-white dark:from-blue-900/10 dark:to-gray-800">
-            <div className="mb-3 flex items-center gap-2">
-              <div className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full"></div>
-              <span className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">
-                {t("content.leftPage")}
-              </span>
-            </div>
+
 
             <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800">
               {note.leftContent ? (
-                <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">
-                  {note.leftContent}
-                </p>
+                <div className="pt-2">
+                  <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">
+                    {note.leftContent}
+                  </p>
+                </div>
               ) : (
                 <p className="text-sm text-gray-400 dark:text-gray-500 italic">
                   {t("content.noContent")}
@@ -108,12 +108,7 @@ export const NoteItem: React.FC<NoteItemProps> = ({
 
           {/* Página derecha */}
           <div className="flex-1 p-6 flex flex-col bg-gradient-to-bl from-green-50/30 to-white dark:from-green-900/10 dark:to-gray-800">
-            <div className="mb-3 flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full"></div>
-              <span className="text-xs font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide">
-                {t("content.rightPage")}
-              </span>
-            </div>
+
 
             <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800">
               {note.rightContent ? (

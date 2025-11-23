@@ -47,7 +47,7 @@ export const useNotes = () => {
         .filter(card => card.type && card.type.toUpperCase() === "EXPLANATION")
         .map(card => ({
           id: card.id,
-          title: card.title || "",
+          title: card.question || "", // Use question as title since no title field in API
           leftContent: card.question || "",
           rightContent: card.answer || "",
           type: card.type,
@@ -122,7 +122,7 @@ export const useNotes = () => {
         .filter(card => card.type && card.type.toUpperCase() === "EXPLANATION")
         .map(card => ({
           id: card.id,
-          title: card.title || "",
+          title: card.question || "", // Use question as title since no title field in API
           leftContent: card.question || "",
           rightContent: card.answer || "",
           type: card.type,
@@ -191,7 +191,7 @@ export const useNotes = () => {
       const card = data.card;
       const mappedNote: Note = {
         id: card.id,
-        title: card.title || "",
+        title: card.question || "", // Use question as title since no title field in API
         leftContent: card.question || "",
         rightContent: card.answer || "",
         type: card.type,
@@ -261,7 +261,7 @@ export const useNotes = () => {
       const card = data.card;
       const mappedNote: Note = {
         id: card.id,
-        title: card.title || "",
+        title: card.question || "", // Use question as title since no title field in API
         leftContent: card.question || "",
         rightContent: card.answer || "",
         type: card.type,
