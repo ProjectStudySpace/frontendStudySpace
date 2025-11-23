@@ -7,6 +7,7 @@ import {
   Flame,
   Plus,
   ChevronDown,
+  Play,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
@@ -14,6 +15,7 @@ import { TopicsManager } from "../components/topicsManager";
 import { CardsManager } from "../components/cardsManager";
 import { NotesManager } from "../components/notesManager";
 import { useStreak } from "../../hooks/useStreaks";
+import { useReviews } from "../../hooks/useReviews";
 import { getStoredUserTimezone, formatDateForUser } from "../utils/dateUtils";
 import { TopicCard } from "../components/topicCard";
 import { useTopics } from "../../hooks/useTopics";
@@ -21,6 +23,7 @@ import { Topic, CreateTopicData } from "../types/topics";
 import { TopicForm } from "../components/topicForm";
 import { GoogleCalendarAuth } from "../components/googleCalendarAuth";
 import { useDynamicPagination } from "../../hooks/useDynamicPagination";
+import StudySession from "../components/studySession";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -39,6 +42,8 @@ const Dashboard = () => {
   const [showContentDropdown, setShowContentDropdown] = useState(false);
   const [showCardForm, setShowCardForm] = useState(false);
   const [showNoteForm, setShowNoteForm] = useState(false);
+  const [showStudySession, setShowStudySession] = useState(false);
+  const [currentSession, setCurrentSession] = useState<number>(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Dynamic pagination for topics
@@ -50,6 +55,7 @@ const Dashboard = () => {
 
   const { getDashboard } = useAuth();
   const { streakData, loading: streakLoading } = useStreak();
+  const { totalPendingCount, pendingReviews, completeReview } = useReviews();
 
   useEffect(() => {
     // Obtener zona horaria del usuario
@@ -168,6 +174,64 @@ const Dashboard = () => {
     navigate("/topics");
   };
 
+  const handleStartReview = () => {
+    if (pendingReviews.length > 0) {
+      setCurrentSession(0);
+      setShowStudySession(true);
+    }
+  };
+
+  const handleCompleteReview = async (difficulty: 1 | 2 | 3) => {
+    const currentReview = pendingReviews[currentSession];
+
+    try {
+      await completeReview(currentReview.id, difficulty);
+      // No avanzar automáticamente, el usuario debe usar los botones de navegación
+    } catch (error) {
+      console.error("Error completando revisión:", error);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentSession < pendingReviews.length - 1) {
+      setCurrentSession((prev) => prev + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentSession > 0) {
+      setCurrentSession((prev) => prev - 1);
+    }
+  };
+
+  const handleExitStudySession = () => {
+    setShowStudySession(false);
+    setCurrentSession(0);
+  };
+
+  // Show study session if active
+  if (
+    showStudySession &&
+    pendingReviews.length > 0 &&
+    currentSession < pendingReviews.length
+  ) {
+    const currentReview = pendingReviews[currentSession];
+
+    return (
+      <StudySession
+        review={currentReview}
+        currentCard={currentSession + 1}
+        totalCards={pendingReviews.length}
+        onComplete={handleCompleteReview}
+        onExit={handleExitStudySession}
+        onNext={handleNext}
+        onPrevious={handlePrevious}
+        canGoNext={currentSession < pendingReviews.length - 1}
+        canGoPrevious={currentSession > 0}
+      />
+    );
+  }
+
   if (selectedTopicId) {
     return (
       <div>
@@ -181,11 +245,29 @@ const Dashboard = () => {
           </button>
         </div>
 
-        {/* Título centrado */}
+        {/* Título centrado con botón de repaso */}
         <div className="text-center mb-6 md:mb-10">
-          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-gray-100 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            {t("topics.studyContent")}
-          </h1>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-gray-100 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              {t("topics.studyContent")}
+            </h1>
+            
+            {/* Botón Iniciar Repaso para vista de tema */}
+            {totalPendingCount > 0 && (
+              <button
+                onClick={handleStartReview}
+                className="flex items-center gap-2 px-4 sm:px-6 py-3 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl justify-center"
+              >
+                <Play size={20} />
+                <span className="sm:hidden">
+                  {t("reviews.startReviewShort")} ({totalPendingCount})
+                </span>
+                <span className="hidden sm:inline">
+                  {t("reviews.startReview")} ({totalPendingCount})
+                </span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Dropdown para nuevo contenido */}
@@ -455,12 +537,28 @@ const Dashboard = () => {
         ) : (
           <>
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-              <div>
+              <div className="flex-1">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                   {t("topics.title")}
                 </h2>
                 <p className="text-gray-600 dark:text-gray-400">{t("topics.subtitle")}</p>
               </div>
+              
+              {/* Botón Iniciar Repaso */}
+              {totalPendingCount > 0 && (
+                <button
+                  onClick={handleStartReview}
+                  className="flex items-center gap-2 px-4 sm:px-6 py-3 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl justify-center self-start md:self-center"
+                >
+                  <Play size={20} />
+                  <span className="sm:hidden">
+                    {t("reviews.startReviewShort")} ({totalPendingCount})
+                  </span>
+                  <span className="hidden sm:inline">
+                    {t("reviews.startReview")} ({totalPendingCount})
+                  </span>
+                </button>
+              )}
             </div>
 
             {/* Barra de búsqueda */}
