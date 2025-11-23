@@ -6,12 +6,12 @@ export interface PastelColor {
 }
 
 export const PASTEL_COLORS: PastelColor[] = [
-    { id: 'dark-blue', name: 'Azul oscuro', value: '#93C5FD', textColor: '#1E3A8A' },
+    { id: 'dark-blue', name: 'Azul oscuro', value: '#60A5FA', textColor: '#1E3A8A' },
     { id: 'light-blue', name: 'Azul claro', value: '#BFDBFE', textColor: '#1E40AF' },
     { id: 'dark-green', name: 'Verde oscuro', value: '#86EFAC', textColor: '#166534' },
     { id: 'light-green', name: 'Verde claro', value: '#BBF7D0', textColor: '#15803D' },
     { id: 'red', name: 'Rojo', value: '#FCA5A5', textColor: '#991B1B' },
-    { id: 'dark-purple', name: 'Morado oscuro', value: '#D8B4FE', textColor: '#7E22CE' },
+    { id: 'dark-purple', name: 'Morado oscuro', value: '#C084FC', textColor: '#7E22CE' },
     { id: 'light-purple', name: 'Morado claro', value: '#E9D5FF', textColor: '#9333EA' },
     { id: 'yellow', name: 'Amarillo', value: '#FDE68A', textColor: '#92400E' },
     { id: 'orange', name: 'Naranja', value: '#FDBA74', textColor: '#9A3412' },
@@ -24,11 +24,13 @@ export const PASTEL_COLORS: PastelColor[] = [
 
 // Mapeo directo de color original -> color más claro
 export const COLOR_TO_LIGHTER: { [key: string]: string } = {
+    '#60A5FA': '#93C5FD',
     '#93C5FD': '#BFDBFE',
     '#BFDBFE': '#DBEAFE',
     '#86EFAC': '#BBF7D0',
     '#BBF7D0': '#DCFCE7',
     '#FCA5A5': '#FECACA',
+    '#C084FC': '#D8B4FE',
     '#D8B4FE': '#E9D5FF',
     '#E9D5FF': '#F3E8FF',
     '#FDE68A': '#FEF3C7',
@@ -41,5 +43,5 @@ export const COLOR_TO_LIGHTER: { [key: string]: string } = {
 };
 
 export const getLighterColor = (originalColor: string): string => {
-    return COLOR_TO_LIGHTER[originalColor] || '#BFDBFE';
+    return COLOR_TO_LIGHTER[originalColor] || '#93C5FD';
 };

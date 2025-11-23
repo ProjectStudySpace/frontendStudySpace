@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NoteItemProps } from "../types/notes";
-import { getLighterColor } from "../types/colors";
+
 import { ImageModal } from "./ImageModal";
 import { BookOpen } from "lucide-react";
 
@@ -17,8 +17,7 @@ export const NoteItem: React.FC<NoteItemProps> = ({
     alt?: string;
   } | null>(null);
 
-  const topicColor = note.topic?.color || "#93C5FD";
-  const lighterColor = getLighterColor(topicColor);
+  const topicColor = note.topic?.color || "#60A5FA";
 
   const handleDelete = async () => {
     if (window.confirm(t("reviews.deleteNoteConfirm"))) {
@@ -44,12 +43,14 @@ export const NoteItem: React.FC<NoteItemProps> = ({
         <div
           className="px-4 py-3"
           style={{
-            backgroundColor: `${lighterColor}30`,
+            backgroundColor: typeof window !== 'undefined' && document.documentElement.classList.contains('dark') 
+              ? `${topicColor}` 
+              : `${topicColor}80`,
           }}
         >
           <div className="flex items-center justify-center gap-2">
-            <BookOpen size={16} className="text-gray-700 dark:text-gray-300" />
-            <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+            <BookOpen size={16} className="text-gray-700 dark:text-gray-700" />
+            <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-700 uppercase tracking-wide">
               {note.topic?.name || t("content.noTopic")}
             </h4>
           </div>

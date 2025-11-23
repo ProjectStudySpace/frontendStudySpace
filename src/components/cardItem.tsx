@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CardItemProps } from "../types/cards";
-import { getLighterColor } from "../types/colors";
+
 import { ImageModal } from "./ImageModal";
 
 export const CardItem: React.FC<CardItemProps> = ({
@@ -17,8 +17,7 @@ export const CardItem: React.FC<CardItemProps> = ({
     alt?: string;
   } | null>(null);
 
-  const topicColor = card.topic?.color || "#93C5FD";
-  const lighterColor = getLighterColor(topicColor);
+  const topicColor = card.topic?.color || "#60A5FA";
 
   // Obtener imágenes por tipo
   const questionImages =
@@ -50,10 +49,12 @@ export const CardItem: React.FC<CardItemProps> = ({
         <div
           className="px-4 py-3"
           style={{
-            backgroundColor: `${lighterColor}30`,
+            backgroundColor: typeof window !== 'undefined' && document.documentElement.classList.contains('dark') 
+              ? `${topicColor}` 
+              : `${topicColor}80`,
           }}
         >
-          <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300 text-center uppercase tracking-wide">
+          <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-700 text-center uppercase tracking-wide">
             {card.topic?.name || t("content.noTopic")}
           </h4>
         </div>

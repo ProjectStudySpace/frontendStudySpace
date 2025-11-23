@@ -15,11 +15,13 @@ export const TopicCard: React.FC<TopicCardProps> = ({
       <div
         className="p-1 cursor-pointer"
         style={{
-          backgroundColor: `${topic.color}20`,
+          backgroundColor: typeof window !== 'undefined' && document.documentElement.classList.contains('dark') 
+            ? `${topic.color}` 
+            : `${topic.color}80`,
         }}
         onClick={() => onSelect(topic.id)}
       >
-        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 text-center">
+        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-800 text-center">
           {topic.name}
         </h3>
       </div>

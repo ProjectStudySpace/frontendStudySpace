@@ -35,8 +35,7 @@ export const ColorSelector: React.FC<ColorSelectorProps> = ({
           style={{ backgroundColor: selectedColor.value }}
         />
         <span
-          className="flex-1 text-left font-medium"
-          style={{ color: selectedColor.textColor }}
+          className="flex-1 text-left font-medium text-gray-900 dark:text-white"
         >
           {selectedColor.name}
         </span>
@@ -69,67 +68,67 @@ export const ColorSelector: React.FC<ColorSelectorProps> = ({
                 {
                   id: "dark-blue",
                   name: t("components.colorSelector.colors.darkBlue"),
-                  value: "#93C5FD",
+                  value: typeof window !== 'undefined' && document.documentElement.classList.contains('dark') ? "#1D4ED8" : "#93C5FD",
                   textColor: "#1E3A8A",
                 },
                 {
                   id: "light-blue",
                   name: t("components.colorSelector.colors.lightBlue"),
-                  value: "#BFDBFE",
+                  value: typeof window !== 'undefined' && document.documentElement.classList.contains('dark') ? "#60A5FA" : "#BFDBFE",
                   textColor: "#1E40AF",
                 },
                 {
                   id: "dark-green",
                   name: t("components.colorSelector.colors.darkGreen"),
-                  value: "#86EFAC",
+                  value: typeof window !== 'undefined' && document.documentElement.classList.contains('dark') ? "#10B981" : "#86EFAC",
                   textColor: "#166534",
                 },
                 {
                   id: "light-green",
                   name: t("components.colorSelector.colors.lightGreen"),
-                  value: "#BBF7D0",
+                  value: typeof window !== 'undefined' && document.documentElement.classList.contains('dark') ? "#34D399" : "#BBF7D0",
                   textColor: "#15803D",
                 },
                 {
                   id: "dark-purple",
                   name: t("components.colorSelector.colors.darkPurple"),
-                  value: "#D8B4FE",
+                  value: typeof window !== 'undefined' && document.documentElement.classList.contains('dark') ? "#7C2D92" : "#D8B4FE",
                   textColor: "#7E22CE",
                 },
                 {
                   id: "light-purple",
                   name: t("components.colorSelector.colors.lightPurple"),
-                  value: "#E9D5FF",
+                  value: typeof window !== 'undefined' && document.documentElement.classList.contains('dark') ? "#A78BFA" : "#E9D5FF",
                   textColor: "#9333EA",
                 },
                 {
                   id: "yellow",
                   name: t("components.colorSelector.colors.yellow"),
-                  value: "#FDE68A",
+                  value: typeof window !== 'undefined' && document.documentElement.classList.contains('dark') ? "#F59E0B" : "#FDE68A",
                   textColor: "#92400E",
                 },
                 {
                   id: "orange",
                   name: t("components.colorSelector.colors.orange"),
-                  value: "#FDBA74",
+                  value: typeof window !== 'undefined' && document.documentElement.classList.contains('dark') ? "#F97316" : "#FDBA74",
                   textColor: "#9A3412",
                 },
                 {
                   id: "turquoise",
                   name: t("components.colorSelector.colors.turquoise"),
-                  value: "#99F6E4",
+                  value: typeof window !== 'undefined' && document.documentElement.classList.contains('dark') ? "#14B8A6" : "#99F6E4",
                   textColor: "#0F766E",
                 },
                 {
                   id: "gray",
                   name: t("components.colorSelector.colors.gray"),
-                  value: "#D1D5DB",
+                  value: typeof window !== 'undefined' && document.documentElement.classList.contains('dark') ? "#6B7280" : "#D1D5DB",
                   textColor: "#374151",
                 },
                 {
                   id: "brown",
                   name: t("components.colorSelector.colors.brown"),
-                  value: "#FED7AA",
+                  value: typeof window !== 'undefined' && document.documentElement.classList.contains('dark') ? "#D97706" : "#FED7AA",
                   textColor: "#92400E",
                 },
               ].map((color) => (
@@ -144,10 +143,7 @@ export const ColorSelector: React.FC<ColorSelectorProps> = ({
                     className="w-8 h-8 rounded-full border border-gray-300 dark:border-gray-600 shadow-sm"
                     style={{ backgroundColor: color.value }}
                   />
-                  <span
-                    className="text-xs font-medium truncate max-w-full"
-                    style={{ color: color.textColor }}
-                  >
+                  <span className="text-xs font-medium truncate max-w-full text-white dark:text-gray-100">
                     {color.name.split(" ")[0]}
                   </span>
                 </button>
