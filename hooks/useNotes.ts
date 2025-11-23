@@ -32,7 +32,7 @@ export const useNotes = () => {
     setError(null);
     try {
       const token = getToken();
-      const response = await fetch(`${API_BASE_URL}/notes/topic/${topicId}`, {
+      const response = await fetch(`${API_BASE_URL}/cards/topic/${topicId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -40,7 +40,24 @@ export const useNotes = () => {
       if (!response.ok) throw new Error("Error al obtener notas");
 
       const data = await response.json();
-      const notesArray: Note[] = data.notes || [];
+      const cardsArray: any[] = data.cards || [];
+      
+      // Filtrar solo las cards de tipo "explanation" (notas) y mapear campos
+      const notesArray: Note[] = cardsArray
+        .filter(card => card.type && card.type.toUpperCase() === "EXPLANATION")
+        .map(card => ({
+          id: card.id,
+          title: card.question || "", // Use question as title since no title field in API
+          leftContent: card.question || "",
+          rightContent: card.answer || "",
+          type: card.type,
+          topicId: card.topicId || topicId,
+          leftImageUrl: card.images?.find((img: any) => img.imageType === "question")?.imageUrl,
+          rightImageUrl: card.images?.find((img: any) => img.imageType === "answer")?.imageUrl,
+          createdAt: card.createdAt,
+          updatedAt: card.updatedAt,
+          topic: card.topic,
+        }));
 
       const notesWithTopic: Note[] = notesArray.map((note) => ({
         ...note,
@@ -86,7 +103,7 @@ export const useNotes = () => {
     try {
       const token = getToken();
       const response = await fetch(
-        `${API_BASE_URL}/notes/search?search=${encodeURIComponent(
+        `${API_BASE_URL}/cards/search?search=${encodeURIComponent(
           searchTerm
         )}&page=${page}&limit=${limit}`,
         {
@@ -98,7 +115,25 @@ export const useNotes = () => {
       if (!response.ok) throw new Error("Error al buscar notas");
 
       const data = await response.json();
-      const notesArray: Note[] = data.notes || [];
+      const cardsArray: any[] = data.cards || [];
+      
+      // Filtrar solo las cards de tipo "explanation" (notas) y mapear campos
+      const notesArray: Note[] = cardsArray
+        .filter(card => card.type && card.type.toUpperCase() === "EXPLANATION")
+        .map(card => ({
+          id: card.id,
+          title: card.question || "", // Use question as title since no title field in API
+          leftContent: card.question || "",
+          rightContent: card.answer || "",
+          type: card.type,
+          topicId: card.topicId,
+          leftImageUrl: card.images?.find((img: any) => img.imageType === "question")?.imageUrl,
+          rightImageUrl: card.images?.find((img: any) => img.imageType === "answer")?.imageUrl,
+          createdAt: card.createdAt,
+          updatedAt: card.updatedAt,
+          topic: card.topic,
+        }));
+      
       setNotes(notesArray);
       const pag = data.pagination || {};
       setPagination({
@@ -127,19 +162,21 @@ export const useNotes = () => {
       const token = getToken();
 
       const formData = new FormData();
-      formData.append("title", noteData.title || "");
-      formData.append("leftContent", noteData.leftContent);
-      formData.append("rightContent", noteData.rightContent);
+      // Mapear campos de nota a los campos que espera el backend
+      formData.append("question", noteData.leftContent);
+      formData.append("answer", noteData.rightContent);
+      formData.append("type", (noteData.type || "explanation").toUpperCase());
       formData.append("topicId", noteData.topicId.toString());
 
+      // Mapear imágenes de nota a los campos que espera el backend
       if (noteData.leftImage) {
-        formData.append("leftImage", noteData.leftImage);
+        formData.append("questionImage", noteData.leftImage);
       }
       if (noteData.rightImage) {
-        formData.append("rightImage", noteData.rightImage);
+        formData.append("answerImage", noteData.rightImage);
       }
 
-      const response = await fetch(`${API_BASE_URL}/notes`, {
+      const response = await fetch(`${API_BASE_URL}/cards`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -149,9 +186,25 @@ export const useNotes = () => {
 
       if (!response.ok) throw new Error("Error al crear nota");
 
-      const newNote = await response.json();
-      setAllNotes((prev) => [...prev, newNote.note]);
-      setNotes((prev) => [...prev, newNote.note]);
+      const data = await response.json();
+      // Mapear la respuesta del backend al formato de nota del frontend
+      const card = data.card;
+      const mappedNote: Note = {
+        id: card.id,
+        title: card.question || "", // Use question as title since no title field in API
+        leftContent: card.question || "",
+        rightContent: card.answer || "",
+        type: card.type,
+        topicId: card.topicId,
+        leftImageUrl: card.images?.find((img: any) => img.imageType === "question")?.imageUrl,
+        rightImageUrl: card.images?.find((img: any) => img.imageType === "answer")?.imageUrl,
+        createdAt: card.createdAt,
+        updatedAt: card.updatedAt,
+        topic: card.topic,
+      };
+      
+      setAllNotes((prev) => [...prev, mappedNote]);
+      setNotes((prev) => [...prev, mappedNote]);
 
       const newTotal = allNotes.length + 1;
       const newTotalPages = Math.ceil(newTotal / pagination.pageSize);
@@ -160,7 +213,7 @@ export const useNotes = () => {
         totalItems: newTotal,
         totalPages: newTotalPages,
       }));
-      return newNote.note;
+      return mappedNote;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");
       throw err;
@@ -179,20 +232,21 @@ export const useNotes = () => {
       const token = getToken();
 
       const formData = new FormData();
-      // Siempre incluir todos los campos, incluso si están vacíos
-      if (updates.title !== undefined) formData.append("title", updates.title);
-      if (updates.leftContent !== undefined) formData.append("leftContent", updates.leftContent);
-      if (updates.rightContent !== undefined) formData.append("rightContent", updates.rightContent);
+      // Mapear campos de nota a los campos que espera el backend
+      if (updates.leftContent !== undefined) formData.append("question", updates.leftContent);
+      if (updates.rightContent !== undefined) formData.append("answer", updates.rightContent);
+      // Siempre enviar el type en mayúsculas para asegurar consistencia
+      formData.append("type", "EXPLANATION");
 
-      // Solo agregar imágenes si hay archivos nuevos
+      // Mapear imágenes de nota a los campos que espera el backend
       if (updates.leftImage) {
-        formData.append("leftImage", updates.leftImage);
+        formData.append("questionImage", updates.leftImage);
       }
       if (updates.rightImage) {
-        formData.append("rightImage", updates.rightImage);
+        formData.append("answerImage", updates.rightImage);
       }
 
-      const response = await fetch(`${API_BASE_URL}/notes/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/cards/${id}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -202,14 +256,30 @@ export const useNotes = () => {
 
       if (!response.ok) throw new Error("Error al actualizar nota");
 
-      const updatedNote = await response.json();
+      const data = await response.json();
+      // Mapear la respuesta del backend al formato de nota del frontend
+      const card = data.card;
+      const mappedNote: Note = {
+        id: card.id,
+        title: card.question || "", // Use question as title since no title field in API
+        leftContent: card.question || "",
+        rightContent: card.answer || "",
+        type: card.type,
+        topicId: card.topicId,
+        leftImageUrl: card.images?.find((img: any) => img.imageType === "question")?.imageUrl,
+        rightImageUrl: card.images?.find((img: any) => img.imageType === "answer")?.imageUrl,
+        createdAt: card.createdAt,
+        updatedAt: card.updatedAt,
+        topic: card.topic,
+      };
+      
       setAllNotes((prev) =>
-        prev.map((note) => (note.id === id ? updatedNote.note : note))
+        prev.map((note) => (note.id === id ? mappedNote : note))
       );
       setNotes((prev) =>
-        prev.map((note) => (note.id === id ? updatedNote.note : note))
+        prev.map((note) => (note.id === id ? mappedNote : note))
       );
-      return updatedNote.note;
+      return mappedNote;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");
       throw err;
@@ -223,7 +293,7 @@ export const useNotes = () => {
     setError(null);
     try {
       const token = getToken();
-      const response = await fetch(`${API_BASE_URL}/notes/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/cards/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

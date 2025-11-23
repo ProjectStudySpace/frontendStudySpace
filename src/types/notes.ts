@@ -3,6 +3,7 @@ export interface Note {
     title?: string;
     leftContent: string;
     rightContent: string;
+    type: "flashcard" | "explanation";
     leftImage?: File | null;
     rightImage?: File | null;
     leftImageUrl?: string;
@@ -22,6 +23,7 @@ export interface Note {
     title?: string;
     leftContent: string;
     rightContent: string;
+    type: "flashcard" | "explanation";
     leftImage?: File;
     rightImage?: File;
     topicId: number;

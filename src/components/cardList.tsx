@@ -15,7 +15,7 @@ export const CardList: React.FC<CardListProps> = ({
   const { t } = useTranslation();
   if (cards.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500">
+      <div className="text-center py-12 text-gray-500 dark:text-gray-400">
         <p className="text-lg mb-4">{t("components.cardList.noCards")}</p>
         {onCreateCard && (
           <button
@@ -30,8 +30,8 @@ export const CardList: React.FC<CardListProps> = ({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
-      <div className="text-lg font-bold text-gray-900 mb-4">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-200 dark:border-gray-700">
+      <div className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
         <h3>
           {t("components.cardList.topicCards")} (
           {pagination ? pagination.totalItems : cards.length})
@@ -50,14 +50,14 @@ export const CardList: React.FC<CardListProps> = ({
         {onCreateCard && (
           <button
             onClick={onCreateCard}
-            className="bg-gray-50 hover:bg-gray-100 border-2 border-dashed border-gray-300 hover:border-indigo-400 rounded-2xl p-6 transition-all duration-200 flex flex-col items-center justify-center min-h-[200px] group"
+            className="bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-indigo-400 dark:hover:border-indigo-500 rounded-2xl p-6 transition-all duration-200 flex flex-col items-center justify-center min-h-[200px] group"
           >
-            <div className="w-12 h-12 rounded-full bg-indigo-100 group-hover:bg-indigo-500 flex items-center justify-center mb-3 transition-colors">
-              <span className="text-3xl text-indigo-600 group-hover:text-white transition-colors">
+            <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-900/30 group-hover:bg-indigo-500 flex items-center justify-center mb-3 transition-colors">
+              <span className="text-3xl text-indigo-600 dark:text-indigo-400 group-hover:text-white transition-colors">
                 +
               </span>
             </div>
-            <span className="text-gray-600 group-hover:text-indigo-600 font-medium transition-colors">
+            <span className="text-gray-600 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 font-medium transition-colors">
               {t("components.cardList.newCard")}
             </span>
           </button>
@@ -68,18 +68,18 @@ export const CardList: React.FC<CardListProps> = ({
           <button
             onClick={() => onPageChange(pagination.currentPage - 1)}
             disabled={pagination.currentPage <= 1}
-            className="px-4 py-2 bg-indigo-500 text-white rounded-lg disabled:bg-gray-300 hover:bg-indigo-600 transition-colors disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-indigo-500 text-white rounded-lg disabled:bg-gray-300 dark:disabled:bg-gray-600 hover:bg-indigo-600 transition-colors disabled:cursor-not-allowed"
           >
             {t("common.previous")}
           </button>
-          <span className="text-gray-600">
+          <span className="text-gray-600 dark:text-gray-400">
             {t("common.page")} {pagination.currentPage} {t("common.of")}{" "}
             {pagination.totalPages}
           </span>
           <button
             onClick={() => onPageChange(pagination.currentPage + 1)}
             disabled={pagination.currentPage >= pagination.totalPages}
-            className="px-4 py-2 bg-indigo-500 text-white rounded-lg disabled:bg-gray-300 hover:bg-indigo-600 transition-colors disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-indigo-500 text-white rounded-lg disabled:bg-gray-300 dark:disabled:bg-gray-600 hover:bg-indigo-600 transition-colors disabled:cursor-not-allowed"
           >
             {t("common.next")}
           </button>

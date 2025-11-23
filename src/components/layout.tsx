@@ -71,13 +71,13 @@ const Layout = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header Mobile */}
-      <header className="lg:hidden bg-white shadow-sm sticky top-0 z-50">
+      <header className="lg:hidden bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
             <button
-              className="p-2 text-gray-600 rounded-xl transition-colors hover:bg-gray-100 active:scale-95"
+              className="p-2 text-gray-600 dark:text-gray-300 rounded-xl transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 active:scale-95"
               onClick={() => setIsMenuOpen(true)}
               aria-label="Abrir menú"
             >
@@ -94,9 +94,9 @@ const Layout = () => {
           </div>
           <div className="flex items-center gap-2">
             <LanguageSelector />
-            <button className="relative p-2 text-gray-600 rounded-xl transition-colors hover:bg-gray-100">
+            <button className="relative p-2 text-gray-600 dark:text-gray-300 rounded-xl transition-colors hover:bg-gray-100 dark:hover:bg-gray-700">
               <Bell size={20} />
-              <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></div>
+              <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-gray-800"></div>
             </button>
           </div>
         </div>
@@ -105,20 +105,20 @@ const Layout = () => {
       {/* Overlay para cerrar el menú al hacer clic fuera */}
       {isMenuOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300"
+          className="fixed inset-0 bg-black/50 dark:bg-black/70 z-40 lg:hidden transition-opacity duration-300"
           onClick={() => setIsMenuOpen(false)}
         />
       )}
 
       {/* Sidebar Mobile - Slide from left */}
       <div
-        className={`fixed top-0 left-0 bottom-0 w-80 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out lg:hidden ${
+        className={`fixed top-0 left-0 bottom-0 w-80 bg-white dark:bg-gray-800 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out lg:hidden ${
           isMenuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="flex flex-col h-full">
           {/* Header del menú */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
             <Link
               to="/topics"
               className="flex items-center gap-3"
@@ -132,7 +132,7 @@ const Layout = () => {
               </h1>
             </Link>
             <button
-              className="p-2 text-gray-600 rounded-xl transition-colors hover:bg-gray-100 active:scale-95"
+              className="p-2 text-gray-600 dark:text-gray-300 rounded-xl transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 active:scale-95"
               onClick={() => setIsMenuOpen(false)}
               aria-label="Cerrar menú"
             >
@@ -141,16 +141,16 @@ const Layout = () => {
           </div>
 
           {/* User info */}
-          <div className="p-6 border-b border-gray-200 bg-gradient-to-br from-indigo-50 to-purple-50">
+          <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
                 {user?.email?.[0]?.toUpperCase() || "E"}
               </div>
               <div>
-                <p className="font-semibold text-gray-900">
+                <p className="font-semibold text-gray-900 dark:text-gray-100">
                   {t("auth.welcomeBack")}
                 </p>
-                <p className="text-sm text-gray-600 truncate max-w-[200px]">
+                <p className="text-sm text-gray-600 dark:text-gray-400 truncate max-w-[200px]">
                   {user?.email || t("landing.hero.activeStudents")}
                 </p>
               </div>
@@ -166,7 +166,7 @@ const Layout = () => {
                   <Link
                     key={link.label}
                     to={link.to}
-                    className="flex items-center gap-3 p-4 rounded-xl transition-all duration-200 text-gray-700 font-medium hover:bg-indigo-50 hover:text-indigo-600 active:scale-95"
+                    className="flex items-center gap-3 p-4 rounded-xl transition-all duration-200 text-gray-700 dark:text-gray-300 font-medium hover:bg-indigo-50 dark:hover:bg-indigo-900/50 hover:text-indigo-600 dark:hover:text-indigo-400 active:scale-95"
                     onClick={handleLinkClick}
                     title={link.label}
                   >
@@ -177,7 +177,7 @@ const Layout = () => {
               })}
 
               {/* Separador visual */}
-              <div className="h-px bg-gray-200 my-2 mx-4"></div>
+              <div className="h-px bg-gray-200 dark:bg-gray-700 my-2 mx-4"></div>
 
               {/* Secciones de usuario */}
               {userLinks.map((link) => {
@@ -186,7 +186,7 @@ const Layout = () => {
                   <Link
                     key={link.label}
                     to={link.to}
-                    className="flex items-center gap-3 p-4 rounded-xl transition-all duration-200 text-gray-700 font-medium hover:bg-indigo-50 hover:text-indigo-600 active:scale-95"
+                    className="flex items-center gap-3 p-4 rounded-xl transition-all duration-200 text-gray-700 dark:text-gray-300 font-medium hover:bg-indigo-50 dark:hover:bg-indigo-900/50 hover:text-indigo-600 dark:hover:text-indigo-400 active:scale-95"
                     onClick={handleLinkClick}
                     title={link.label}
                   >
@@ -199,17 +199,17 @@ const Layout = () => {
           </nav>
 
           {/* Footer del menú con Racha y Logout */}
-          <div className="p-4 border-t border-gray-200 space-y-3">
-            <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-4">
-              <p className="text-sm font-semibold text-gray-900 mb-1">
+          <div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-3">
+            <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-xl p-4">
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">
                 🔥 {t("stats.currentStreak")}:{" "}
                 {dashboardData?.stats?.currentStreak || 0} {t("stats.days")}
               </p>
-              <p className="text-xs text-gray-600">{t("stats.keepGoing")}</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">{t("stats.keepGoing")}</p>
             </div>
             <button
               onClick={handleLogout}
-              className="w-full flex items-center justify-center gap-3 p-3 rounded-xl text-red-600 font-medium hover:bg-red-50 transition-colors active:scale-95"
+              className="w-full flex items-center justify-center gap-3 p-3 rounded-xl text-red-600 dark:text-red-400 font-medium hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors active:scale-95"
             >
               <LogOut size={20} />
               {t("nav.logout")}
@@ -219,10 +219,10 @@ const Layout = () => {
       </div>
 
       {/* Sidebar Desktop - Static */}
-      <div className="hidden lg:block lg:fixed lg:top-0 lg:left-0 lg:bottom-0 lg:w-16 bg-white border-r border-gray-200 shadow-sm overflow-hidden">
+      <div className="hidden lg:block lg:fixed lg:top-0 lg:left-0 lg:bottom-0 lg:w-16 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
         <div className="flex flex-col h-full">
           {/* Header del sidebar */}
-          <div className="flex items-center justify-center p-4 border-b border-gray-200 flex-shrink-0">
+          <div className="flex items-center justify-center p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
             <Link to="/topics" className="flex items-center justify-center">
               <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600">
                 <Brain size={24} className="text-white" />
@@ -238,7 +238,7 @@ const Layout = () => {
                 <Link
                   key={link.label}
                   to={link.to}
-                  className="flex items-center justify-center p-3 py-2.5 rounded-lg text-gray-600 font-medium hover:bg-gray-100 hover:text-indigo-600 transition-colors flex-shrink-0"
+                  className="flex items-center justify-center p-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex-shrink-0"
                   title={link.label}
                 >
                   <Icon size={24} />
@@ -247,7 +247,7 @@ const Layout = () => {
             })}
 
             {/* Separador visual */}
-            <div className="h-px bg-gray-200 mx-2 my-1"></div>
+            <div className="h-px bg-gray-200 dark:bg-gray-700 mx-2 my-1"></div>
 
             {/* Secciones de usuario */}
             {userLinks.map((link) => {
@@ -256,7 +256,7 @@ const Layout = () => {
                 <Link
                   key={link.label}
                   to={link.to}
-                  className="flex items-center justify-center p-3 py-2.5 rounded-lg text-gray-600 font-medium hover:bg-gray-100 hover:text-indigo-600 transition-colors flex-shrink-0"
+                  className="flex items-center justify-center p-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex-shrink-0"
                   title={link.label}
                 >
                   <Icon size={24} />
@@ -266,10 +266,10 @@ const Layout = () => {
           </nav>
 
           {/* Logout button at bottom */}
-          <div className="p-2 border-t border-gray-200 flex-shrink-0">
+          <div className="p-2 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center justify-center p-3 py-2.5 rounded-lg text-red-600 text-sm font-medium hover:bg-red-50 transition-colors"
+              className="w-full flex items-center justify-center p-3 py-2.5 rounded-lg text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
               title="Cerrar sesión"
             >
               <LogOut size={24} />
@@ -279,16 +279,16 @@ const Layout = () => {
       </div>
 
       {/* Header Desktop */}
-      <header className="hidden lg:block bg-white shadow-sm fixed top-0 left-16 right-0 z-20">
+      <header className="hidden lg:block bg-white dark:bg-gray-800 shadow-sm fixed top-0 left-16 right-0 z-20">
         <div className="p-4 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900 gap-3 flex items-center">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 gap-3 flex items-center">
             {t("auth.welcomeBack")}
           </h2>
           <div className="flex items-center gap-4">
             <LanguageSelector />
-            <button className="relative p-2 text-gray-600 rounded-xl hover:bg-gray-100 transition-colors">
+            <button className="relative p-2 text-gray-600 dark:text-gray-300 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
               <Bell size={24} />
-              <div className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>
+              <div className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-gray-800"></div>
             </button>
           </div>
         </div>
@@ -298,11 +298,11 @@ const Layout = () => {
       <div className="lg:ml-16 lg:pt-20">
         <div className="p-4 lg:p-8">
           {/* Welcome message mobile */}
-          <div className="lg:hidden mb-6 bg-white rounded-xl shadow-sm p-4">
-            <h2 className="text-sm font-bold text-gray-900">
+          <div className="lg:hidden mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
+            <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100">
               {t("auth.welcomeBack")}
             </h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
               {user?.email || "Estudiante"}
             </p>
           </div>

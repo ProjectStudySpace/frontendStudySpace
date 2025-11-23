@@ -23,10 +23,10 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
   const [isSearching, setIsSearching] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
 
-  // Dynamic pagination for notes
+  // Dynamic pagination for notes - 2x2 grid on large screens (3 notes + 1 button)
   const { pageSize: dynamicPageSize } = useDynamicPagination({
-    cols: { mobile: 1, md: 1, lg: 1, xl: 1 },
-    mobileLimit: 4, // 3 notes + 1 button
+    cols: { mobile: 1, md: 2, lg: 2, xl: 2 },
+    mobileLimit: 4, // 3 notes + 1 button on mobile
     rows: 2,
   });
 
@@ -161,6 +161,7 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
           title: (noteData as any).title,
           leftContent: (noteData as any).leftContent || "",
           rightContent: (noteData as any).rightContent || "",
+          type: "explanation",
           topicId,
           leftImage: noteData.leftImage,
           rightImage: noteData.rightImage,
@@ -241,12 +242,12 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
     <div className="space-y-6">
       {/* Header con búsqueda */}
       {!showForm && (
-        <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-200 dark:border-gray-700">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex-1 w-full">
               <div className="relative">
                 <Search
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500"
                   size={20}
                 />
                 <input
@@ -254,16 +255,16 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
                   placeholder={t("components.notesManager.searchPlaceholder")}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                 />
               </div>
               {searchTerm.length > 0 && searchTerm.length < 2 && (
-                <p className="text-xs text-gray-500 mt-1 ml-10">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-10">
                   {t("components.notesManager.minCharacters")}
                 </p>
               )}
               {isSearching && (
-                <p className="text-xs text-indigo-600 mt-1 ml-10">
+                <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-1 ml-10">
                   {t("components.notesManager.searching")} "{debouncedTerm}"...
                 </p>
               )}

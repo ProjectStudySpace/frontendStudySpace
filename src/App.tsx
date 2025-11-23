@@ -5,9 +5,8 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
-import CssBaseline from "@mui/material/CssBaseline";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { ThemeProvider as CustomThemeProvider } from "./context/ThemeContext";
 import "./i18n/config"; // ⭐ Importar configuración de i18n
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
@@ -19,12 +18,6 @@ import ProgressPage from "./pages/ProgressPage";
 import Perfil from "./pages/Perfil";
 import Settings from "./pages/Settings";
 import Layout from "./components/layout";
-
-const theme = createTheme({
-  palette: {
-    mode: "light",
-  },
-});
 
 const AppRoutes: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -71,14 +64,13 @@ const AppRoutes: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
+    <CustomThemeProvider>
       <AuthProvider>
         <Router>
           <AppRoutes />
         </Router>
       </AuthProvider>
-    </ThemeProvider>
+    </CustomThemeProvider>
   );
 };
 

@@ -11,29 +11,29 @@ const DifficultySelector: React.FC<DifficultySelectorProps> = ({
     {
       level: 1,
       label: t("difficulty.easy"),
-      bgColor: "bg-green-100 hover:bg-green-200",
-      textColor: "text-green-700",
-      borderColor: "border-green-300",
+      bgColor: "bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-900/50",
+      textColor: "text-green-700 dark:text-green-400",
+      borderColor: "border-green-300 dark:border-green-700",
     },
     {
       level: 2,
       label: t("difficulty.medium"),
-      bgColor: "bg-orange-100 hover:bg-orange-200",
-      textColor: "text-orange-700",
-      borderColor: "border-orange-300",
+      bgColor: "bg-orange-100 dark:bg-orange-900/30 hover:bg-orange-200 dark:hover:bg-orange-900/50",
+      textColor: "text-orange-700 dark:text-orange-400",
+      borderColor: "border-orange-300 dark:border-orange-700",
     },
     {
       level: 3,
       label: t("difficulty.hard"),
-      bgColor: "bg-red-100 hover:bg-red-200",
-      textColor: "text-red-700",
-      borderColor: "border-red-300",
+      bgColor: "bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50",
+      textColor: "text-red-700 dark:text-red-400",
+      borderColor: "border-red-300 dark:border-red-700",
     },
   ];
 
   return (
     <div className="w-full py-4">
-      <h3 className="text-center text-gray-700 font-medium text-sm mb-3">
+      <h3 className="text-center text-gray-700 dark:text-gray-300 font-medium text-sm mb-3">
         {t("components.difficultySelector.howWellRemembered")}
       </h3>
 
