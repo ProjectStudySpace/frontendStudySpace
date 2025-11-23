@@ -144,11 +144,14 @@ const Layout = () => {
           <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
-                {user?.email?.[0]?.toUpperCase() || "E"}
+                {user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "U"}
               </div>
               <div>
                 <p className="font-semibold text-gray-900 dark:text-gray-100">
-                  {t("auth.welcomeBack")}
+                  {user?.name 
+                    ? `${t("auth.welcomeBackName")}${user.name}! 👋`
+                    : t("auth.welcomeBack")
+                  }
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400 truncate max-w-[200px]">
                   {user?.email || t("landing.hero.activeStudents")}
@@ -282,7 +285,10 @@ const Layout = () => {
       <header className="hidden lg:block bg-white dark:bg-gray-800 shadow-sm fixed top-0 left-16 right-0 z-20">
         <div className="p-4 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 gap-3 flex items-center">
-            {t("auth.welcomeBack")}
+            {user?.name 
+              ? `${t("auth.welcomeBackName")}${user.name}! 👋`
+              : t("auth.welcomeBack")
+            }
           </h2>
           <div className="flex items-center gap-4">
             <LanguageSelector />
@@ -300,7 +306,10 @@ const Layout = () => {
           {/* Welcome message mobile */}
           <div className="lg:hidden mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
             <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100">
-              {t("auth.welcomeBack")}
+              {user?.name 
+                ? `${t("auth.welcomeBackName")}${user.name}! 👋`
+                : t("auth.welcomeBack")
+              }
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
               {user?.email || "Estudiante"}

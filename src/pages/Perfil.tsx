@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { User, TrendingUp, Calendar, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useProfile } from "../../hooks/useProfile";
+import { useAuth } from "../context/AuthContext";
 import { ToggleSwitch } from "../components/toggleSwitch";
 import { ConfirmationModal } from "../components/confirmationModal";
 import axios from "axios";
@@ -23,6 +24,7 @@ api.interceptors.request.use((config) => {
 const Perfil = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { user: authUser } = useAuth();
   const { profileData, loading, deleteAccount } = useProfile();
 
   // States for Google Calendar
@@ -65,6 +67,12 @@ const Perfil = () => {
     }
   };
 
+  const handleCancelDisconnect = () => {
+    setShowDisconnectModal(false);
+    // Revert toggle to ON state (since user cancelled disconnect)
+    setIsCalendarConnected(true);
+  };
+
   const handleDeleteAccount = async (password?: string) => {
     if (!password) return;
 
@@ -100,19 +108,28 @@ const Perfil = () => {
         <div className="flex items-center gap-6">
           {/* Avatar - Placeholder for future implementation */}
           <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold flex-shrink-0">
-            {profileData?.user?.name?.[0]?.toUpperCase() ||
-              profileData?.user?.email?.[0]?.toUpperCase() ||
-              "U"}
+            {authUser?.name 
+              ? authUser.name[0]?.toUpperCase()
+              : profileData?.user?.name
+                ? profileData.user.name[0]?.toUpperCase()
+                : profileData?.user?.email?.[0]?.toUpperCase() || 
+                  authUser?.email?.[0]?.toUpperCase() || 
+                  "U"}
           </div>
 
           {/* User Details */}
           <div className="flex-1">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-              {profileData?.user?.name || t("profile.user")}
+              {authUser?.name 
+                ? authUser.name 
+                : profileData?.user?.name 
+                  ? profileData.user.name
+                  : t("profile.user")
+              }
             </h1>
             <p className="text-gray-600 dark:text-gray-400 flex items-center gap-2">
               <User size={18} />
-              {profileData?.user?.email}
+              {authUser?.email || profileData?.user?.email}
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
               {t("profile.memberSince")}{" "}
@@ -199,8 +216,19 @@ const Perfil = () => {
           {/* Google Calendar Toggle */}
           <ToggleSwitch
             checked={isCalendarConnected}
-            onChange={() => {
-              if (isCalendarConnected) {
+            onChange={(checked) => {
+              if (checked) {
+                // User wants to connect - redirect to Google OAuth
+                const token = localStorage.getItem("token");
+                if (!token) {
+                  alert(t("auth.invalidCredentials"));
+                  return;
+                }
+
+                const url = `${API_URL}/auth/google/connect?token=${encodeURIComponent(token)}`;
+                window.location.href = url;
+              } else {
+                // User wants to disconnect - show confirmation modal
                 setShowDisconnectModal(true);
               }
             }}
@@ -241,7 +269,7 @@ const Perfil = () => {
       {/* Disconnect Calendar Modal */}
       <ConfirmationModal
         isOpen={showDisconnectModal}
-        onClose={() => setShowDisconnectModal(false)}
+        onClose={handleCancelDisconnect}
         onConfirm={handleDisconnectCalendar}
         title={t("profile.disconnectCalendar")}
         message={t("profile.disconnectCalendarMessage")}
