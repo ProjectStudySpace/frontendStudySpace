@@ -15,9 +15,16 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  register: (name: string, email: string, password: string) => Promise<boolean>;
+  register: (
+    name: string,
+    email: string,
+    password: string,
+    language?: string
+  ) => Promise<any>;
   logout: () => Promise<void>;
   getDashboard: () => Promise<any>;
+  verifyEmail: (token: string) => Promise<any>;
+  resendVerification: (email: string) => Promise<any>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -104,12 +111,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (data.user?.userTimezone) {
         localStorage.setItem("userTimezone", data.user.userTimezone);
       }
-      
+
       showSuccess("¡Bienvenido!", "Has iniciado sesión correctamente");
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      showError("Error de inicio de sesión", "No se pudo conectar con el servidor");
+
+      // Handle 403 error for unverified email
+      if (error.response?.status === 403) {
+        const errorMessage = error.response.data?.error || "";
+        if (
+          errorMessage.includes("not verified") ||
+          errorMessage.includes("verificado")
+        ) {
+          throw new Error("EMAIL_NOT_VERIFIED");
+        }
+      }
+
+      showError(
+        "Error de inicio de sesión",
+        "No se pudo conectar con el servidor"
+      );
       return false;
     }
   };
@@ -117,8 +139,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (
     name: string,
     email: string,
-    password: string
-  ): Promise<boolean> => {
+    password: string,
+    language?: string
+  ): Promise<any> => {
     try {
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -127,20 +150,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         email,
         password,
         timezone: userTimezone,
+        language: language || "en",
       });
 
       if (!data) {
         showError("Error al crear cuenta", "No se pudo procesar el registro");
-        return false;
+        return null;
       }
 
-      // Registration successful, but do not auto-login
-      showSuccess("¡Cuenta creada!", "Tu cuenta ha sido creada correctamente. Ya puedes iniciar sesión.");
-      return true;
+      // Registration successful, return full response (no token anymore)
+      showSuccess(
+        "¡Cuenta creada!",
+        "Revisa tu correo para verificar tu cuenta."
+      );
+      return data;
     } catch (error) {
       console.error(error);
       showError("Error al crear cuenta", "No se pudo conectar con el servidor");
-      return false;
+      return null;
     }
   };
 
@@ -154,6 +181,52 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       console.error(error);
       return null;
+    }
+  };
+
+  const verifyEmail = async (token: string): Promise<any> => {
+    try {
+      const { data } = await api.get(`/users/verify-email?token=${token}`);
+
+      if (data) {
+        // Save token and set user
+        setUser(data.user);
+        localStorage.setItem("token", data.token);
+        if (data.user?.userTimezone) {
+          localStorage.setItem("userTimezone", data.user.userTimezone);
+        }
+        showSuccess(
+          "¡Correo verificado!",
+          "Tu cuenta ha sido activada correctamente."
+        );
+        return data;
+      }
+      return null;
+    } catch (error: any) {
+      console.error(error);
+      const errorMessage =
+        error.response?.data?.error || "Error al verificar el correo";
+      throw new Error(errorMessage);
+    }
+  };
+
+  const resendVerification = async (email: string): Promise<any> => {
+    try {
+      const { data } = await api.post("/users/resend-verification", { email });
+
+      if (data) {
+        showSuccess(
+          "Email enviado",
+          "Revisa tu bandeja de entrada para el email de verificación."
+        );
+        return data;
+      }
+      return null;
+    } catch (error: any) {
+      console.error(error);
+      const errorMessage =
+        error.response?.data?.error || "Error al reenviar el email";
+      throw new Error(errorMessage);
     }
   };
 
@@ -187,6 +260,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         register,
         logout,
         getDashboard,
+        verifyEmail,
+        resendVerification,
       }}
     >
       {children}

@@ -11,7 +11,9 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [userTimezone, setUserTimezone] = useState("");
-  const { login } = useAuth();
+  const [showUnverifiedMessage, setShowUnverifiedMessage] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const { login, resendVerification } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -23,11 +25,36 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = await login(email, password);
-    if (success) {
-      navigate("/topics");
-    } else {
-      setError(t("auth.invalidCredentials"));
+    setError("");
+    setShowUnverifiedMessage(false);
+
+    try {
+      const success = await login(email, password);
+      if (success) {
+        navigate("/topics");
+      } else {
+        setError(t("auth.invalidCredentials"));
+      }
+    } catch (error: any) {
+      if (error.message === "EMAIL_NOT_VERIFIED") {
+        setShowUnverifiedMessage(true);
+      } else {
+        setError(t("auth.invalidCredentials"));
+      }
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!email) return;
+
+    setIsResending(true);
+    try {
+      await resendVerification(email);
+      // Success message is shown by the function
+    } catch (error) {
+      setError(t("auth.accountCreationError"));
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -43,6 +70,24 @@ const Login: React.FC = () => {
         {error && (
           <Alert className="error-alert" severity="error">
             {error}
+          </Alert>
+        )}
+
+        {showUnverifiedMessage && (
+          <Alert className="error-alert" severity="warning">
+            <div className="mb-2">{t("auth.emailNotVerified")}</div>
+            <div className="mb-3">{t("auth.checkEmailInstructions")}</div>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={handleResendVerification}
+              disabled={isResending}
+              className="mt-2"
+            >
+              {isResending
+                ? t("auth.sending")
+                : t("auth.resendVerificationEmail")}
+            </Button>
           </Alert>
         )}
         <form onSubmit={handleSubmit} className="login-form">

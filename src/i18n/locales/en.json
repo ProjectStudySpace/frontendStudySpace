@@ -30,7 +30,12 @@
     "accountCreated": "Account created successfully. Redirecting to login...",
     "accountCreationError": "Error creating account. Email may already be registered.",
     "accessAccount": "Access your account to continue",
-    "registerToAccess": "Sign up to access your account"
+    "registerToAccess": "Sign up to access your account",
+    "emailNotVerified": "Your email is not verified",
+    "checkEmailInstructions": "Please check your inbox and click the verification link",
+    "resendVerificationEmail": "Resend verification email",
+    "sending": "Sending...",
+    "verificationEmailSent": "Verification email sent. Check your inbox"
   },
   "topics": {
     "title": "Your Study Subjects",
