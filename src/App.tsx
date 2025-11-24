@@ -13,6 +13,8 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Temas from "./pages/Temas";
 import Register from "./pages/Register";
+import EmailSent from "./pages/EmailSent";
+import VerifyEmail from "./pages/VerifyEmail";
 import StudySessions from "./pages/StudySessions";
 import CalendarPage from "./pages/CalendarPage";
 import ProgressPage from "./pages/ProgressPage";
@@ -43,6 +45,8 @@ const AppRoutes: React.FC = () => {
         path="/register"
         element={isAuthenticated ? <Navigate to="/topics" /> : <Register />} // Corregido cambio de URL
       />
+      <Route path="/email-sent" element={<EmailSent />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
       {/* Rutas protegidas */}{" "}
       {/* ELIMINADO !!!! study-sections por duplicado (el usado: /study-sessions) */}
       {isAuthenticated && (

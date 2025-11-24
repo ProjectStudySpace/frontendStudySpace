@@ -14,6 +14,7 @@ const Register: React.FC = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [userTimezone, setUserTimezone] = useState("");
+  const [language, setLanguage] = useState("");
   const { register } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -22,6 +23,10 @@ const Register: React.FC = () => {
     // Capturar zona horaria del navegador al cargar el componente
     const timezone = getUserTimezone();
     setUserTimezone(timezone);
+
+    // Detectar idioma del navegador
+    const browserLang = navigator.language.startsWith("es") ? "es" : "en";
+    setLanguage(browserLang);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -39,10 +44,18 @@ const Register: React.FC = () => {
       return;
     }
 
-    const success = await register(name, email, password);
-    if (success) {
+    const result = await register(name, email, password, language);
+    if (result) {
       setSuccess(t("auth.accountCreated"));
-      setTimeout(() => navigate("/login"), 2000);
+      // Redirect to email-sent page with state
+      setTimeout(() => {
+        navigate("/email-sent", {
+          state: {
+            email: email,
+            language: language,
+          },
+        });
+      }, 2000);
     } else {
       setError(t("auth.accountCreationError"));
     }
