@@ -7,6 +7,7 @@ import {
   TopicsManagerProps,
 } from "../types/topics";
 import { useTopics } from "../../hooks/useTopics";
+import { useNotification } from "../context/NotificationContext";
 import { TopicList } from "./topicList";
 import { TopicForm } from "./topicForm";
 
@@ -36,6 +37,8 @@ export const TopicsManager: React.FC<TopicsManagerProps> = ({
     updateTopic,
     deleteTopic,
   } = useTopics();
+
+  const { showSuccess, showError } = useNotification();
 
   useEffect(() => {
     if (initialTopic) {
@@ -74,18 +77,21 @@ export const TopicsManager: React.FC<TopicsManagerProps> = ({
                 .map((t) => (t.id === updatedTopic.id ? updatedTopic : t))
                 .filter(Boolean) as Topic[]
             );
+          showSuccess("Tema actualizado", "El tema se ha actualizado correctamente");
         }
       } else {
         const newTopic = await addTopic(topicData as CreateTopicData);
         if (newTopic) {
           if (onTopicsChange)
             onTopicsChange([...topics, newTopic].filter(Boolean) as Topic[]);
+          showSuccess("Tema creado", "El tema se ha creado correctamente");
         }
       }
       setShowForm(false);
       setEditingTopic(undefined);
     } catch (error) {
       console.error("Error al guardar tema:", error);
+      showError("Error al guardar", "No se pudo guardar el tema. Inténtalo de nuevo.");
     }
   };
 
@@ -94,8 +100,10 @@ export const TopicsManager: React.FC<TopicsManagerProps> = ({
       await deleteTopic(topicId);
       if (onTopicsChange)
         onTopicsChange(topics.filter((t) => t.id !== topicId));
+      showSuccess("Tema eliminado", "El tema se ha eliminado correctamente");
     } catch (error) {
       console.error("Error al eliminar tema:", error);
+      showError("Error al eliminar", "No se pudo eliminar el tema. Inténtalo de nuevo.");
     }
   };
 

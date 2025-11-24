@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ThemeProvider as CustomThemeProvider } from "./context/ThemeContext";
+import { NotificationProvider } from "./context/NotificationContext";
 import "./i18n/config"; // ⭐ Importar configuración de i18n
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
@@ -65,11 +66,13 @@ const AppRoutes: React.FC = () => {
 const App: React.FC = () => {
   return (
     <CustomThemeProvider>
-      <AuthProvider>
-        <Router>
-          <AppRoutes />
-        </Router>
-      </AuthProvider>
+      <NotificationProvider>
+        <AuthProvider>
+          <Router>
+            <AppRoutes />
+          </Router>
+        </AuthProvider>
+      </NotificationProvider>
     </CustomThemeProvider>
   );
 };
