@@ -6,20 +6,9 @@ import React, {
   ReactNode,
 } from "react";
 import axios from "axios";
+import { api } from "../utils/axiosConfig";
 import { User } from "../types";
-import { API_URL } from "../config";
-
-const api = axios.create({
-  baseURL: API_URL || "http://localhost:3000/api",
-});
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+import { useNotification } from "./NotificationContext";
 
 interface AuthContextType {
   user: User | null;
@@ -27,7 +16,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   register: (name: string, email: string, password: string) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
   getDashboard: () => Promise<any>;
 }
 
@@ -48,6 +37,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const isAuthenticated = !!user;
+  const { showSuccess, showError } = useNotification();
 
   // Verificar sesión al cargar la aplicación
   useEffect(() => {
@@ -103,7 +93,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         timezone: userTimezone,
       });
 
-      if (!data) return false;
+      if (!data) {
+        showError("Error de inicio de sesión", "Credenciales inválidas");
+        return false;
+      }
 
       setUser(data.user);
       localStorage.setItem("token", data.token);
@@ -111,9 +104,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (data.user?.userTimezone) {
         localStorage.setItem("userTimezone", data.user.userTimezone);
       }
+      
+      showSuccess("¡Bienvenido!", "Has iniciado sesión correctamente");
       return true;
     } catch (error) {
       console.error(error);
+      showError("Error de inicio de sesión", "No se pudo conectar con el servidor");
       return false;
     }
   };
@@ -133,12 +129,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         timezone: userTimezone,
       });
 
-      if (!data) return false;
+      if (!data) {
+        showError("Error al crear cuenta", "No se pudo procesar el registro");
+        return false;
+      }
 
       // Registration successful, but do not auto-login
+      showSuccess("¡Cuenta creada!", "Tu cuenta ha sido creada correctamente. Ya puedes iniciar sesión.");
       return true;
     } catch (error) {
       console.error(error);
+      showError("Error al crear cuenta", "No se pudo conectar con el servidor");
       return false;
     }
   };
@@ -159,12 +160,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = async (): Promise<void> => {
     try {
       await api.get("/users/logout");
+      showSuccess("Sesión cerrada", "Has cerrado sesión correctamente");
     } catch (error) {
       // Ignorar errores del servidor (404, etc.) - el logout local es suficiente
       if (axios.isAxiosError(error) && error.response?.status === 404) {
         // Endpoint no existe, continuar con logout local
+        showSuccess("Sesión cerrada", "Has cerrado sesión correctamente");
       } else {
         console.error("Error durante logout:", error);
+        showSuccess("Sesión cerrada", "Has cerrado sesión correctamente");
       }
     } finally {
       localStorage.removeItem("token");

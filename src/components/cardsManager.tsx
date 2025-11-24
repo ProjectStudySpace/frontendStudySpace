@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardsManagerProps } from "../types/cards";
 import { useCards } from "../../hooks/useCards";
+import { useNotification } from "../context/NotificationContext";
 import { CardList } from "./cardList";
 import { CardForm } from "./cardForm";
 import { useDynamicPagination } from "../../hooks/useDynamicPagination";
@@ -29,6 +30,8 @@ export const CardsManager: React.FC<CardsManagerProps> = ({ topicId, openFormIni
     updateCard,
     deleteCard,
   } = useCards();
+
+  const { showSuccess, showError } = useNotification();
 
   useEffect(() => {
     if (topicId) {
@@ -74,21 +77,26 @@ export const CardsManager: React.FC<CardsManagerProps> = ({ topicId, openFormIni
     try {
       if (editingCard) {
         await updateCard(editingCard.id, cardData);
+        showSuccess("Tarjeta actualizada", "La tarjeta se ha actualizado correctamente");
       } else {
         await addCard({ ...cardData, topicId, type: "flashcard" });
+        showSuccess("Tarjeta creada", "La tarjeta se ha creado correctamente");
       }
       setShowForm(false);
       setEditingCard(undefined);
     } catch (error) {
       console.error("Error al guardar tarjeta:", error);
+      showError("Error al guardar", "No se pudo guardar la tarjeta. Inténtalo de nuevo.");
     }
   };
 
   const handleDeleteCard = async (cardId: number) => {
     try {
       await deleteCard(cardId);
+      showSuccess("Tarjeta eliminada", "La tarjeta se ha eliminado correctamente");
     } catch (error) {
       console.error("Error al eliminar tarjeta:", error);
+      showError("Error al eliminar", "No se pudo eliminar la tarjeta. Inténtalo de nuevo.");
     }
   };
 

@@ -7,6 +7,7 @@ import {
   UpdateNoteData,
 } from "../types/notes";
 import { useNotes } from "../../hooks/useNotes";
+import { useNotification } from "../context/NotificationContext";
 import { NoteList } from "./noteList";
 import { NoteForm } from "./noteForm";
 import { Search } from "lucide-react";
@@ -46,6 +47,7 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
 
   const { t } = useTranslation();
   const [localError, setLocalError] = useState<string | null>(null);
+  const { showSuccess, showError } = useNotification();
 
   // Cargar notas inicial o buscar
   const loadNotes = useCallback(
@@ -155,6 +157,7 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
     try {
       if (editingNote) {
         await updateNote(editingNote.id, noteData as UpdateNoteData);
+        showSuccess("Nota actualizada", "La nota se ha actualizado correctamente");
       } else {
         // Para crear, construir con todos los campos
         const createData: CreateNoteData = {
@@ -167,6 +170,7 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
           rightImage: noteData.rightImage,
         };
         await addNote(createData);
+        showSuccess("Nota creada", "La nota se ha creado correctamente");
       }
       setShowForm(false);
       setEditingNote(undefined);
@@ -183,6 +187,7 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
       }
     } catch (error) {
       console.error("Error al guardar nota:", error);
+      showError("Error al guardar", "No se pudo guardar la nota. Inténtalo de nuevo.");
       throw error; // Re-lanzar para que el form lo maneje
     }
   };
@@ -190,6 +195,7 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
   const handleDeleteNote = async (noteId: number) => {
     try {
       await deleteNote(noteId);
+      showSuccess("Nota eliminada", "La nota se ha eliminado correctamente");
 
       // Recargar si estamos buscando
       if (debouncedTerm.trim()) {
@@ -197,6 +203,7 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
       }
     } catch (error) {
       console.error("Error al eliminar nota:", error);
+      showError("Error al eliminar", "No se pudo eliminar la nota. Inténtalo de nuevo.");
     }
   };
 

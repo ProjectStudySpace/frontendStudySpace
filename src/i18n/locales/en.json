@@ -11,6 +11,7 @@
   "auth": {
     "welcome": "Welcome back, please sign in",
     "welcomeBack": "Welcome back! 👋",
+    "welcomeBackName": "Welcome back, ",
     "createAccount": "Create Account",
     "email": "Email",
     "password": "Password",
@@ -140,7 +141,13 @@
     "darkModeDescription": "Changes the application appearance to a dark theme to reduce eye strain",
     "blockApps": "Block external applications",
     "blockAppsLabel": "Block use of other applications",
-    "blockAppsDescription": "Blocks opening of other applications during study sessions to avoid distractions"
+    "blockAppsDescription": "Blocks opening of other applications during study sessions to avoid distractions",
+    "googleCalendar": "Google Calendar Integration",
+    "googleCalendarLabel": "Connect MemoPal with Google Calendar",
+    "googleCalendarDescription": "Sync your study sessions with Google Calendar and receive automatic reminders",
+    "googleCalendarConnected": "Google Calendar connected successfully",
+    "googleCalendarDisconnected": "Google Calendar disconnected successfully",
+    "googleCalendarError": "Error with Google Calendar connection"
   },
   "content": {
     "newContent": "New Content",
