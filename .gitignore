@@ -40,5 +40,6 @@ Thumbs.db
 dist/
 .vite/
 
+useEffect_report.md
 
 
