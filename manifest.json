@@ -1,6 +1,6 @@
 {
-  "name": "StudySpace",
-  "short_name": "StudySpace",
+  "name": "Memopal",
+  "short_name": "Memopal",
   "description": "Plataforma de Estudio con Repaso Espaciado",
   "start_url": "/",
   "display": "standalone",
