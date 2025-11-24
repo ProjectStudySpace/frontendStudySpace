@@ -3,6 +3,7 @@ import React, {
   useContext,
   useState,
   useEffect,
+  useCallback,
   ReactNode,
 } from "react";
 import axios from "axios";
@@ -136,40 +137,46 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const register = async (
-    name: string,
-    email: string,
-    password: string,
-    language?: string
-  ): Promise<any> => {
-    try {
-      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const register = useCallback(
+    async (
+      name: string,
+      email: string,
+      password: string,
+      language?: string
+    ): Promise<any> => {
+      try {
+        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-      const { data } = await api.post("/users/register", {
-        name,
-        email,
-        password,
-        timezone: userTimezone,
-        language: language || "en",
-      });
+        const { data } = await api.post("/users/register", {
+          name,
+          email,
+          password,
+          timezone: userTimezone,
+          language: language || "en",
+        });
 
-      if (!data) {
-        showError("Error al crear cuenta", "No se pudo procesar el registro");
+        if (!data) {
+          showError("Error al crear cuenta", "No se pudo procesar el registro");
+          return null;
+        }
+
+        // Registration successful, return full response (no token anymore)
+        showSuccess(
+          "¡Cuenta creada!",
+          "Revisa tu correo para verificar tu cuenta."
+        );
+        return data;
+      } catch (error) {
+        console.error(error);
+        showError(
+          "Error al crear cuenta",
+          "No se pudo conectar con el servidor"
+        );
         return null;
       }
-
-      // Registration successful, return full response (no token anymore)
-      showSuccess(
-        "¡Cuenta creada!",
-        "Revisa tu correo para verificar tu cuenta."
-      );
-      return data;
-    } catch (error) {
-      console.error(error);
-      showError("Error al crear cuenta", "No se pudo conectar con el servidor");
-      return null;
-    }
-  };
+    },
+    [showError, showSuccess]
+  );
 
   const getDashboard = async (): Promise<any> => {
     try {
@@ -184,51 +191,59 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const verifyEmail = async (token: string): Promise<any> => {
-    try {
-      const { data } = await api.get(`/users/verify-email?token=${token}`);
+  const verifyEmail = useCallback(
+    async (token: string): Promise<any> => {
+      try {
+        const { data } = await api.get(`/users/verify-email?token=${token}`);
 
-      if (data) {
-        // Save token and set user
-        setUser(data.user);
-        localStorage.setItem("token", data.token);
-        if (data.user?.userTimezone) {
-          localStorage.setItem("userTimezone", data.user.userTimezone);
+        if (data) {
+          // Save token and set user
+          setUser(data.user);
+          localStorage.setItem("token", data.token);
+          if (data.user?.userTimezone) {
+            localStorage.setItem("userTimezone", data.user.userTimezone);
+          }
+          showSuccess(
+            "¡Correo verificado!",
+            "Tu cuenta ha sido activada correctamente."
+          );
+          return data;
         }
-        showSuccess(
-          "¡Correo verificado!",
-          "Tu cuenta ha sido activada correctamente."
-        );
-        return data;
+        return null;
+      } catch (error: any) {
+        console.error(error);
+        const errorMessage =
+          error.response?.data?.error || "Error al verificar el correo";
+        throw new Error(errorMessage);
       }
-      return null;
-    } catch (error: any) {
-      console.error(error);
-      const errorMessage =
-        error.response?.data?.error || "Error al verificar el correo";
-      throw new Error(errorMessage);
-    }
-  };
+    },
+    [showSuccess]
+  );
 
-  const resendVerification = async (email: string): Promise<any> => {
-    try {
-      const { data } = await api.post("/users/resend-verification", { email });
+  const resendVerification = useCallback(
+    async (email: string): Promise<any> => {
+      try {
+        const { data } = await api.post("/users/resend-verification", {
+          email,
+        });
 
-      if (data) {
-        showSuccess(
-          "Email enviado",
-          "Revisa tu bandeja de entrada para el email de verificación."
-        );
-        return data;
+        if (data) {
+          showSuccess(
+            "Email enviado",
+            "Revisa tu bandeja de entrada para el email de verificación."
+          );
+          return data;
+        }
+        return null;
+      } catch (error: any) {
+        console.error(error);
+        const errorMessage =
+          error.response?.data?.error || "Error al reenviar el email";
+        throw new Error(errorMessage);
       }
-      return null;
-    } catch (error: any) {
-      console.error(error);
-      const errorMessage =
-        error.response?.data?.error || "Error al reenviar el email";
-      throw new Error(errorMessage);
-    }
-  };
+    },
+    [showSuccess]
+  );
 
   const logout = async (): Promise<void> => {
     try {

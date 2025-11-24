@@ -9,6 +9,7 @@ type VerificationStatus = "verifying" | "success" | "error";
 const VerifyEmail: React.FC = () => {
   const [status, setStatus] = useState<VerificationStatus>("verifying");
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [hasVerified, setHasVerified] = useState(false);
   const { verifyEmail } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -18,20 +19,25 @@ const VerifyEmail: React.FC = () => {
 
   useEffect(() => {
     const verifyToken = async () => {
+      // Prevent multiple verification attempts
+      if (hasVerified) return;
+
       if (!token) {
         setStatus("error");
         setErrorMessage("Token de verificación no encontrado en la URL");
         return;
       }
 
+      setHasVerified(true);
+
       try {
         await verifyEmail(token);
         setStatus("success");
 
-        // Auto-redirect to topics after 2 seconds
+        // Auto-redirect to topics after 1 second
         setTimeout(() => {
           navigate("/topics");
-        }, 2000);
+        }, 1000);
       } catch (error: any) {
         setStatus("error");
         const message =
@@ -63,7 +69,7 @@ const VerifyEmail: React.FC = () => {
     };
 
     verifyToken();
-  }, [token, verifyEmail, navigate]);
+  }, [token, verifyEmail, navigate, hasVerified]);
 
   const renderContent = () => {
     switch (status) {
