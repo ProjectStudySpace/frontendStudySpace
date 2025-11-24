@@ -307,4 +307,4 @@ src/
 - **Integración con Calendario**: Ver y planificar sesiones de estudio
 - **Seguimiento de Progreso**: Monitorear el progreso de aprendizaje con el tiempo
 - **Sistema de Rachas**: Seguimiento de rachas diarias de estudio
-- **build2**
+- **build3**
