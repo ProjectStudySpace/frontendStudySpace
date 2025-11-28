@@ -304,7 +304,50 @@
     "of": "of",
     "search": "Search",
     "deleteImage": "Delete image",
-    "inTotal": "in total"
+    "inTotal": "in total",
+    "backToHome": "Back to Home"
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "intro": "At MemoPal, we take your privacy seriously. This policy describes how we collect, use, and protect your personal information.",
+    "lastUpdated": "Last updated",
+    "collection": {
+      "title": "Information Collection",
+      "content": "We collect information you provide directly to us, such as when you create an account, update your profile, or use our study features. This may include your name, email address, and study progress data."
+    },
+    "usage": {
+      "title": "Information Usage",
+      "content": "We use the collected information to provide, maintain, and improve our services, personalize your learning experience, and communicate with you about updates and new features."
+    },
+    "protection": {
+      "title": "Data Protection",
+      "content": "We implement appropriate technical and organizational security measures to protect your personal data against unauthorized access, alteration, disclosure, or destruction."
+    },
+    "cookies": {
+      "title": "Cookies and Similar Technologies",
+      "content": "We use cookies and similar technologies to improve our site functionality, analyze usage, and personalize content. You can control the use of cookies through your browser settings."
+    }
+  },
+  "terms": {
+    "title": "Terms of Service",
+    "intro": "Welcome to MemoPal. By accessing and using our services, you agree to comply with these terms and conditions.",
+    "lastUpdated": "Last updated",
+    "acceptance": {
+      "title": "Acceptance of Terms",
+      "content": "By registering or using MemoPal, you agree to be legally bound by these terms. If you do not agree with any part of the terms, you may not use our services."
+    },
+    "usage": {
+      "title": "Service Usage",
+      "content": "You agree to use MemoPal only for lawful purposes and in accordance with these terms. You must not use the service in any way that could damage, disable, or overburden our servers or networks."
+    },
+    "account": {
+      "title": "User Account",
+      "content": "You are responsible for maintaining the confidentiality of your account and password. You agree to notify us immediately of any unauthorized use of your account."
+    },
+    "termination": {
+      "title": "Termination",
+      "content": "We reserve the right to suspend or terminate your access to MemoPal at any time, without prior notice, if you violate these terms or for any other reason we deem necessary."
+    }
   },
   "landing": {
     "hero": {

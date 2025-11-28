@@ -653,12 +653,12 @@ const Landing: React.FC = () => {
               </h4>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <a href="#" className="hover:text-white transition">
+                  <a href="/privacy" className="hover:text-white transition">
                     {t("landing.footer.privacy")}
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition">
+                  <a href="/terms" className="hover:text-white transition">
                     {t("landing.footer.terms")}
                   </a>
                 </li>

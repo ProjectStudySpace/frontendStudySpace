@@ -304,7 +304,50 @@
     "of": "de",
     "search": "Buscar",
     "deleteImage": "Eliminar imagen",
-    "inTotal": "en total"
+    "inTotal": "en total",
+    "backToHome": "Volver al inicio"
+  },
+  "privacy": {
+    "title": "Política de Privacidad",
+    "intro": "En MemoPal, nos tomamos muy en serio tu privacidad. Esta política describe cómo recopilamos, usamos y protegemos tu información personal.",
+    "lastUpdated": "Última actualización",
+    "collection": {
+      "title": "Recopilación de Información",
+      "content": "Recopilamos información que nos proporcionas directamente, como cuando creas una cuenta, actualizas tu perfil o utilizas nuestras funciones de estudio. Esto puede incluir tu nombre, dirección de correo electrónico y datos de progreso de estudio."
+    },
+    "usage": {
+      "title": "Uso de la Información",
+      "content": "Utilizamos la información recopilada para proporcionar, mantener y mejorar nuestros servicios, personalizar tu experiencia de aprendizaje, y comunicarnos contigo sobre actualizaciones y nuevas características."
+    },
+    "protection": {
+      "title": "Protección de Datos",
+      "content": "Implementamos medidas de seguridad técnicas y organizativas apropiadas para proteger tus datos personales contra el acceso no autorizado, la alteración, la divulgación o la destrucción."
+    },
+    "cookies": {
+      "title": "Cookies y Tecnologías Similares",
+      "content": "Utilizamos cookies y tecnologías similares para mejorar la funcionalidad de nuestro sitio, analizar el uso y personalizar el contenido. Puedes controlar el uso de cookies a través de la configuración de tu navegador."
+    }
+  },
+  "terms": {
+    "title": "Términos de Servicio",
+    "intro": "Bienvenido a MemoPal. Al acceder y utilizar nuestros servicios, aceptas cumplir con estos términos y condiciones.",
+    "lastUpdated": "Última actualización",
+    "acceptance": {
+      "title": "Aceptación de los Términos",
+      "content": "Al registrarte o utilizar MemoPal, aceptas estar legalmente vinculado por estos términos. Si no estás de acuerdo con alguna parte de los términos, no podrás utilizar nuestros servicios."
+    },
+    "usage": {
+      "title": "Uso del Servicio",
+      "content": "Te comprometes a utilizar MemoPal solo para fines legales y de acuerdo con estos términos. No debes utilizar el servicio de ninguna manera que pueda dañar, deshabilitar o sobrecargar nuestros servidores o redes."
+    },
+    "account": {
+      "title": "Cuenta de Usuario",
+      "content": "Eres responsable de mantener la confidencialidad de tu cuenta y contraseña. Aceptas notificarnos inmediatamente sobre cualquier uso no autorizado de tu cuenta."
+    },
+    "termination": {
+      "title": "Terminación",
+      "content": "Nos reservamos el derecho de suspender o terminar tu acceso a MemoPal en cualquier momento, sin previo aviso, si violas estos términos o por cualquier otra razón que consideremos necesaria."
+    }
   },
   "landing": {
     "hero": {
