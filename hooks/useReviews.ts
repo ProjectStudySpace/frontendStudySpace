@@ -50,24 +50,6 @@ export const useReviews = () => {
   const [error, setError] = useState<string | null>(null);
   const [userTimezone, setUserTimezone] = useState<string>("");
 
-  const fetchAllReviews = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      await Promise.all([
-        fetchPendingReviews(),
-        fetchUpcomingReviews(7),
-        fetchAllUpcomingReviews(),
-      ]);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Error de carga de revisiones"
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   const fetchPendingReviews = async (page: number = 1, limit: number = 5) => {
     try {
       const { data } = await api.get(`/reviews/pending`, {
@@ -137,6 +119,24 @@ export const useReviews = () => {
       throw err;
     }
   };
+
+  const fetchAllReviews = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      await Promise.all([
+        fetchPendingReviews(),
+        fetchUpcomingReviews(7),
+        fetchAllUpcomingReviews(),
+      ]);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Error de carga de revisiones"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [setLoading, setError]);
 
   const completeReview = async (
     scheduledReviewId: number,
@@ -245,7 +245,7 @@ export const useReviews = () => {
     if (storedTimezone) {
       setUserTimezone(storedTimezone);
     }
-  }, [fetchAllReviews]);
+  }, [fetchAllReviews, getStoredUserTimezone, setUserTimezone]);
 
   // Contador total de pendientes (no paginado)
   const totalPendingCount = useMemo(() => {

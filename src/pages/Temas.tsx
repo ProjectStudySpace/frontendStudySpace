@@ -81,7 +81,14 @@ const Dashboard = () => {
     };
     fetchDashboard();
     fetchUserTopics(currentPage, pageSize);
-  }, [refreshTopics, currentPage]);
+  }, [
+    getDashboard,
+    fetchUserTopics,
+    refreshTopics,
+    currentPage,
+    pageSize,
+    setDashboardData,
+  ]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -96,13 +103,13 @@ const Dashboard = () => {
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [setShowContentDropdown]);
 
   // Reset form flags when topic changes
   useEffect(() => {
     setShowCardForm(false);
     setShowNoteForm(false);
-  }, [selectedTopicId]);
+  }, [selectedTopicId, setShowCardForm, setShowNoteForm]);
 
   //funcion para calcular el progreso promedio
   const calculateProgress = () => {
@@ -160,7 +167,10 @@ const Dashboard = () => {
         showSuccess("Tema eliminado", "El tema se ha eliminado correctamente");
       } catch (error) {
         console.error("Error al eliminar materia:", error);
-        showError("Error al eliminar", "No se pudo eliminar el tema. Inténtalo de nuevo.");
+        showError(
+          "Error al eliminar",
+          "No se pudo eliminar el tema. Inténtalo de nuevo."
+        );
       }
     }
   };
@@ -255,7 +265,7 @@ const Dashboard = () => {
             <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-gray-100 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
               {t("topics.studyContent")}
             </h1>
-            
+
             {/* Botón Iniciar Repaso para vista de tema */}
             {totalPendingCount > 0 && (
               <button
@@ -422,7 +432,10 @@ const Dashboard = () => {
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-blue-100 dark:bg-blue-900/30">
-              <BookOpen size={24} className="text-blue-600 dark:text-blue-400" />
+              <BookOpen
+                size={24}
+                className="text-blue-600 dark:text-blue-400"
+              />
             </div>
             <div>
               <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">
@@ -437,7 +450,10 @@ const Dashboard = () => {
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-green-100 dark:bg-green-900/30">
-              <FileText size={24} className="text-green-600 dark:text-green-400" />
+              <FileText
+                size={24}
+                className="text-green-600 dark:text-green-400"
+              />
             </div>
             <div>
               <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">
@@ -453,7 +469,10 @@ const Dashboard = () => {
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-orange-100 dark:bg-orange-900/30">
-              <Flame size={24} className="text-orange-600 dark:text-orange-400" />
+              <Flame
+                size={24}
+                className="text-orange-600 dark:text-orange-400"
+              />
             </div>
             <div className="flex-1">
               <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">
@@ -463,7 +482,9 @@ const Dashboard = () => {
                 <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
                   {streakLoading ? "..." : streakData?.currentStreak || 0}
                 </p>
-                <span className="text-sm text-gray-500 dark:text-gray-400">{t("stats.days")}</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                  {t("stats.days")}
+                </span>
               </div>
               {streakData && streakData.longestStreak > 0 && (
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -484,7 +505,10 @@ const Dashboard = () => {
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-orange-100 dark:bg-orange-900/30">
-              <TrendingUp size={24} className="text-orange-600 dark:text-orange-400" />
+              <TrendingUp
+                size={24}
+                className="text-orange-600 dark:text-orange-400"
+              />
             </div>
             <div>
               <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">
@@ -520,17 +544,26 @@ const Dashboard = () => {
                 try {
                   if (editingTopic) {
                     await updateTopic(editingTopic.id, topicData);
-                    showSuccess("Tema actualizado", "El tema se ha actualizado correctamente");
+                    showSuccess(
+                      "Tema actualizado",
+                      "El tema se ha actualizado correctamente"
+                    );
                   } else {
                     await addTopic(topicData as CreateTopicData);
-                    showSuccess("Tema creado", "El tema se ha creado correctamente");
+                    showSuccess(
+                      "Tema creado",
+                      "El tema se ha creado correctamente"
+                    );
                   }
                   setShowTopicForm(false);
                   setEditingTopic(null);
                   setRefreshTopics((prev) => prev + 1);
                 } catch (error) {
                   console.error("Error al guardar materia:", error);
-                  showError("Error al guardar", "No se pudo guardar el tema. Inténtalo de nuevo.");
+                  showError(
+                    "Error al guardar",
+                    "No se pudo guardar el tema. Inténtalo de nuevo."
+                  );
                 }
               }}
               onCancel={() => {
@@ -548,9 +581,11 @@ const Dashboard = () => {
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                   {t("topics.title")}
                 </h2>
-                <p className="text-gray-600 dark:text-gray-400">{t("topics.subtitle")}</p>
+                <p className="text-gray-600 dark:text-gray-400">
+                  {t("topics.subtitle")}
+                </p>
               </div>
-              
+
               {/* Botón Iniciar Repaso */}
               {totalPendingCount > 0 && (
                 <button
@@ -586,7 +621,10 @@ const Dashboard = () => {
               </div>
             ) : filteredTopics.length === 0 ? (
               <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                <BookOpen size={48} className="mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+                <BookOpen
+                  size={48}
+                  className="mx-auto mb-4 text-gray-300 dark:text-gray-600"
+                />
                 <p className="text-lg mb-2">{t("topics.noTopics")}</p>
                 <p className="text-sm mb-4">{t("topics.noTopicsSubtitle")}</p>
                 <button
