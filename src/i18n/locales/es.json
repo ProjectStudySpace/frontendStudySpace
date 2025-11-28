@@ -309,44 +309,1097 @@
   },
   "privacy": {
     "title": "Política de Privacidad",
-    "intro": "En MemoPal, nos tomamos muy en serio tu privacidad. Esta política describe cómo recopilamos, usamos y protegemos tu información personal.",
+    "subtitle": "POLÍTICA DE PRIVACIDAD PARA MEMOPAL",
     "lastUpdated": "Última actualización",
-    "collection": {
-      "title": "Recopilación de Información",
-      "content": "Recopilamos información que nos proporcionas directamente, como cuando creas una cuenta, actualizas tu perfil o utilizas nuestras funciones de estudio. Esto puede incluir tu nombre, dirección de correo electrónico y datos de progreso de estudio."
+    "lastUpdatedDate": "24/11/2025",
+    "responsible": "Responsable",
+    "responsibleValue": "los propietarios de la plataforma MemoPal",
+    "contactEmail": "Correo de contacto",
+    "contactEmailValue": "support@memopal.app",
+    "jurisdiction": "Jurisdicción",
+    "jurisdictionValue": "Bogotá, Colombia",
+    "section1": {
+      "title": "1. Información que Recopilamos",
+      "intro": "En MemoPal, nos comprometemos a minimizar la recopilación de datos y solo procesamos la información estrictamente necesaria para proporcionar el servicio de repaso espaciado. Nuestra plataforma está diseñada para estudiantes de secundaria, bachillerato, educación superior (grados técnicos, tecnológicos y universitarios), y profesionales de distintos campos que deseen organizar y repasar sus materiales de estudio.",
+      "jwt": {
+        "title": "1.1. Token JWT (Autenticación)",
+        "whatWeCollect": "Qué recopilamos:",
+        "whatWeCollectItems": [
+          "Identificador de sesión con expiración de 48 horas"
+        ],
+        "purpose": "Para qué lo usamos:",
+        "purposeItems": [
+          "Autenticación del usuario y funcionamiento técnico esencial de la aplicación"
+        ],
+        "legalBasis": "Base legal:",
+        "legalBasisValue": "Ejecución de un contrato (Ley 1581 de 2012). Necesario para el servicio solicitado."
+      },
+      "registration": {
+        "title": "1.2. Datos de Registro",
+        "whatWeCollect": "Qué recopilamos:",
+        "whatWeCollectItems": [
+          "Email",
+          "Nombre de usuario opcional",
+          "Contraseña cifrada con bcrypt",
+          "Idioma preferido",
+          "Zona horaria"
+        ],
+        "purpose": "Para qué lo usamos:",
+        "purposeItems": [
+          "Crear y gestionar la cuenta de usuario",
+          "Envío de correos de verificación y comunicaciones esenciales del servicio"
+        ],
+        "legalBasis": "Base legal:",
+        "legalBasisValue": "Consentimiento explícito del usuario o ejecución de un contrato"
+      },
+      "usage": {
+        "title": "1.3. Datos de Uso",
+        "whatWeCollect": "Qué recopilamos:",
+        "whatWeCollectItems": [
+          "Progreso de estudio",
+          "Resultados",
+          "Tarjetas creadas",
+          "Temas de estudio",
+          "Historial de repasos",
+          "Rachas de estudio"
+        ],
+        "purpose": "Para qué lo usamos:",
+        "purposeItems": [
+          "Proporcionar la funcionalidad principal de repaso espaciado",
+          "Mostrar estadísticas de aprendizaje",
+          "Gestionar el sistema de rachas"
+        ],
+        "legalBasis": "Base legal:",
+        "legalBasisValue": "Ejecución de un contrato"
+      },
+      "googleCalendar": {
+        "title": "1.4. Tokens de Google Calendar",
+        "whatWeCollect": "Qué recopilamos:",
+        "whatWeCollectItems": [
+          "Google Access Token y Refresh Token, almacenados de forma segura"
+        ],
+        "purpose": "Para qué lo usamos:",
+        "purposeItems": [
+          "Integración con Google Calendar para crear eventos de estudio programados"
+        ],
+        "legalBasis": "Base legal:",
+        "legalBasisValue": "Consentimiento explícito del usuario (OAuth 2.0)"
+      },
+      "emailVerification": {
+        "title": "1.5. Token de Verificación de Email",
+        "whatWeCollect": "Qué recopilamos:",
+        "whatWeCollectItems": ["Token temporal que expira en 24 horas"],
+        "purpose": "Para qué lo usamos:",
+        "purposeItems": [
+          "Verificar la autenticidad del correo electrónico del usuario"
+        ],
+        "legalBasis": "Base legal:",
+        "legalBasisValue": "Necesidad técnica y de seguridad del servicio"
+      },
+      "images": {
+        "title": "1.6. Imágenes en Tarjetas de Estudio",
+        "whatWeCollect": "Qué recopilamos:",
+        "whatWeCollectItems": [
+          "Imágenes almacenadas en Cloudflare R2 CDN, optimizadas con Sharp"
+        ],
+        "purpose": "Para qué lo usamos:",
+        "purposeItems": [
+          "Permitir al usuario agregar contenido visual a sus materiales de estudio"
+        ],
+        "legalBasis": "Base legal:",
+        "legalBasisValue": "Ejecución de un contrato"
+      },
+      "ai": {
+        "title": "1.7. Uso de Inteligencia Artificial",
+        "intro": "MemoPal puede utilizar servicios de inteligencia artificial de terceros para mejorar la experiencia de estudio del usuario, incluyendo funcionalidades como:",
+        "features": [
+          "Análisis de documentos educativos subidos por el usuario",
+          "Generación automática de tarjetas de estudio basadas en contenido proporcionado",
+          "Creación de resúmenes y notas personalizadas según parámetros del estudiante"
+        ],
+        "importantTitle": "IMPORTANTE SOBRE EL PROCESAMIENTO CON IA:",
+        "importantItems": [
+          "El usuario sube documentos de forma VOLUNTARIA para estas funcionalidades",
+          "Los documentos se envían temporalmente a los servidores del proveedor de IA para su procesamiento",
+          "El contenido se procesa ÚNICAMENTE para generar el resultado solicitado por el usuario",
+          "Los proveedores de IA utilizados NO emplean el contenido del usuario para entrenar sus modelos",
+          "Los documentos originales NO se almacenan permanentemente en los servicios de terceros",
+          "Solo el contenido generado (tarjetas, notas, resúmenes) se guarda en la cuenta del usuario en MemoPal"
+        ],
+        "servicesTitle": "Servicios de IA que pueden ser utilizados:",
+        "servicesItems": [
+          "Google Gemini API: Para procesamiento de lenguaje natural y análisis de contenido educativo",
+          "Políticas del proveedor: https://ai.google.dev/gemini-api/terms"
+        ],
+        "userControl": "El usuario mantiene control total sobre qué documentos procesa con IA y puede optar por NO utilizar estas funcionalidades en cualquier momento."
+      },
+      "clarification": {
+        "title": "ACLARACIÓN IMPORTANTE",
+        "intro": "Nuestra aplicación NO recopila de forma proactiva:",
+        "items": [
+          "Dirección IP completa",
+          "Información detallada del dispositivo",
+          "Datos de localización precisa (GPS)",
+          "Cookies analíticas, de marketing o de terceros",
+          "Datos de navegación más allá de los estrictamente necesarios"
+        ]
+      },
+      "technicalCookies": {
+        "title": "COOKIES TÉCNICAS",
+        "intro": "La aplicación utiliza únicamente:",
+        "items": [
+          "Cookie httpOnly con el token JWT (expiración: 48 horas)",
+          "Configuración: secure en producción, sameSite='lax'",
+          "Propósito exclusivo: autenticación de sesión"
+        ]
+      }
     },
-    "usage": {
-      "title": "Uso de la Información",
-      "content": "Utilizamos la información recopilada para proporcionar, mantener y mejorar nuestros servicios, personalizar tu experiencia de aprendizaje, y comunicarnos contigo sobre actualizaciones y nuevas características."
+    "section2": {
+      "title": "2. Finalidad y Base Legal del Tratamiento",
+      "intro": "Utilizamos sus datos exclusivamente para:",
+      "mainServices": {
+        "title": "2.1. Servicios Principales",
+        "items": [
+          "Proporcionar y mantener el servicio de repaso espaciado con algoritmo adaptativo",
+          "Gestionar su cuenta de usuario y autenticación segura",
+          "Permitirle acceder a su historial de estudio, progreso y estadísticas",
+          "Implementar el sistema de rachas (streaks) para motivar el estudio consistente",
+          "Gestionar temas de estudio con colores personalizables",
+          "Almacenar y mostrar tarjetas de estudio (tipo flashcard o explicación)"
+        ]
+      },
+      "communications": {
+        "title": "2.2. Comunicaciones Esenciales",
+        "items": [
+          "Envío de correo de verificación al registrarse (usando Resend API)",
+          "Notificaciones relacionadas con la seguridad de su cuenta",
+          "Comunicaciones necesarias sobre cambios en el servicio"
+        ]
+      },
+      "integrations": {
+        "title": "2.3. Integraciones Opcionales",
+        "items": [
+          "Sincronización con Google Calendar (solo si usted autoriza explícitamente)",
+          "Creación automática de eventos de estudio en su calendario",
+          "Recordatorios de sesiones programadas (15 y 5 minutos antes)"
+        ]
+      },
+      "legalBasis": "La base legal para este tratamiento es la necesidad para la EJECUCIÓN DEL CONTRATO de prestación de servicios que usted solicita al usar nuestra aplicación, de conformidad con la Ley 1581 de 2012 y demás normativa colombiana de protección de datos."
     },
-    "protection": {
-      "title": "Protección de Datos",
-      "content": "Implementamos medidas de seguridad técnicas y organizativas apropiadas para proteger tus datos personales contra el acceso no autorizado, la alteración, la divulgación o la destrucción."
+    "section3": {
+      "title": "3. Almacenamiento y Seguridad de los Datos",
+      "infrastructure": {
+        "title": "3.1. Infraestructura",
+        "items": [
+          "Base de datos: PostgreSQL hospedada en Railway",
+          "Almacenamiento de imágenes: Cloudflare R2 CDN",
+          "Servidor backend: Railway (https://memopalapi-production.up.railway.app)",
+          "Frontend: Cloudflare Pages (https://memopal.app)"
+        ]
+      },
+      "security": {
+        "title": "3.2. Medidas de Seguridad Implementadas",
+        "items": [
+          "Contraseñas cifradas con bcrypt (factor de costo: 9)",
+          "Tokens JWT con expiración de 48 horas",
+          "Conexiones cifradas HTTPS en todas las comunicaciones",
+          "Cookies httpOnly y secure en producción",
+          "Tokens de Google Calendar con renovación automática",
+          "Validación de ownership en todas las operaciones (los usuarios solo acceden a sus propios recursos)",
+          "Middleware de autenticación en todas las rutas protegidas",
+          "Índices de base de datos optimizados para prevenir accesos no autorizados",
+          "Eliminación en cascada de datos relacionados para garantizar integridad"
+        ]
+      },
+      "imageOptimization": {
+        "title": "3.3. Optimización de Imágenes",
+        "items": [
+          "Todas las imágenes subidas son optimizadas automáticamente con Sharp",
+          "Redimensionamiento máximo: 1200x1200 píxeles",
+          "Formato de salida: JPEG con calidad 85%",
+          "Almacenamiento en Cloudflare R2 CDN para entrega rápida y segura"
+        ]
+      }
     },
-    "cookies": {
-      "title": "Cookies y Tecnologías Similares",
-      "content": "Utilizamos cookies y tecnologías similares para mejorar la funcionalidad de nuestro sitio, analizar el uso y personalizar el contenido. Puedes controlar el uso de cookies a través de la configuración de tu navegador."
+    "section4": {
+      "title": "4. Servicios de Terceros que Utilizamos",
+      "intro": "Para proporcionar nuestro servicio, compartimos datos mínimos y necesarios con los siguientes proveedores:",
+      "railway": {
+        "title": "4.1. Railway (Hospedaje)",
+        "provider": "Proveedor: Railway Corp. (Estados Unidos)",
+        "dataShared": "Datos compartidos: Toda la información almacenada en nuestra base de datos (necesario para el funcionamiento técnico)",
+        "purpose": "Propósito: Hospedaje de base de datos PostgreSQL y servidor backend",
+        "privacy": "Políticas de privacidad: https://railway.app/legal/privacy"
+      },
+      "cloudflareR2": {
+        "title": "4.2. Cloudflare R2 (Almacenamiento CDN)",
+        "provider": "Proveedor: Cloudflare Inc. (Estados Unidos)",
+        "dataShared": "Datos compartidos: Imágenes subidas por el usuario en tarjetas de estudio",
+        "purpose": "Propósito: Almacenamiento y distribución de contenido multimedia",
+        "privacy": "Políticas de privacidad: https://www.cloudflare.com/privacypolicy/"
+      },
+      "cloudflarePages": {
+        "title": "4.3. Cloudflare Pages (Hosting Frontend)",
+        "provider": "Proveedor: Cloudflare Inc. (Estados Unidos)",
+        "dataShared": "Datos compartidos: Ningún dato personal; solo archivos estáticos de la aplicación web",
+        "purpose": "Propósito: Hospedaje y distribución de la interfaz web de usuario",
+        "privacy": "Políticas de privacidad: https://www.cloudflare.com/privacypolicy/"
+      },
+      "resend": {
+        "title": "4.4. Resend (Servicio de Emails)",
+        "provider": "Proveedor: Resend Inc. (Estados Unidos)",
+        "dataShared": "Datos compartidos: Dirección de email del usuario",
+        "purpose": "Propósito: Envío de correos de verificación de cuenta",
+        "privacy": "Políticas de privacidad: https://resend.com/legal/privacy-policy"
+      },
+      "gemini": {
+        "title": "4.5. Google Gemini API (Inteligencia Artificial)",
+        "provider": "Proveedor: Google LLC (Estados Unidos)",
+        "dataShared": "Datos compartidos: Documentos que el usuario sube voluntariamente para procesamiento con IA",
+        "purpose": "Propósito: Procesamiento de lenguaje natural, análisis de documentos, y generación de contenido educativo personalizado",
+        "usage": "Uso: Voluntario - solo cuando el usuario activa funcionalidades de IA",
+        "privacy": "Políticas de privacidad: https://ai.google.dev/gemini-api/terms"
+      },
+      "googleCalendar": {
+        "title": "4.6. Google Calendar API (Integración Opcional)",
+        "provider": "Proveedor: Google LLC (Estados Unidos)",
+        "dataShared": "Datos compartidos: Tokens OAuth 2.0 (Access Token y Refresh Token)",
+        "purpose": "Propósito: Creación automática de eventos de estudio en el calendario del usuario",
+        "scope": "Acceso solicitado: Alcance limitado a https://www.googleapis.com/auth/calendar.events",
+        "usage": "Uso: Completamente OPCIONAL - requiere autorización explícita del usuario",
+        "privacy": "Políticas de privacidad: https://policies.google.com/privacy",
+        "detailsTitle": "Detalles de la integración con Google Calendar:",
+        "details": [
+          "Creación automática de eventos de estudio según algoritmo de repaso espaciado",
+          "Los eventos se crean para el día siguiente a las 9:00 AM por defecto",
+          "Recordatorios automáticos: 15 minutos y 5 minutos antes del evento",
+          "Color de evento: Azul (#4) para fácil identificación visual",
+          "Gestión inteligente: actualización automática si la fecha de repaso cambia",
+          "Eliminación automática si se elimina el conjunto de tarjetas",
+          "El usuario puede desconectar la integración en cualquier momento desde la configuración"
+        ],
+        "important": "IMPORTANTE: No almacenamos credenciales de Google. Solo guardamos los tokens OAuth necesarios para la sincronización, los cuales son renovados automáticamente y pueden ser revocados por el usuario en cualquier momento."
+      }
+    },
+    "section5": {
+      "title": "5. Tiempo de Conservación de los Datos",
+      "activeUse": {
+        "title": "5.1. Durante el Uso Activo del Servicio",
+        "content": "Mientras su cuenta esté activa, conservaremos sus datos de forma indefinida para proporcionar el servicio."
+      },
+      "deletion": {
+        "title": "5.2. Tras Solicitud de Eliminación de Cuenta",
+        "intro": "Cuando solicite la eliminación de su cuenta:",
+        "items": [
+          "Los datos personales serán eliminados de forma permanente dentro de un plazo máximo de 30 días",
+          "El proceso de eliminación incluye:",
+          "- Eliminación de todos los registros en la base de datos (PostgreSQL)",
+          "- Eliminación de todas las imágenes almacenadas en Cloudflare R2",
+          "- Eliminación de todos los eventos creados en Google Calendar (si la integración estaba activa)",
+          "- Revocación de todos los tokens de autenticación y sesión"
+        ]
+      },
+      "autoExpiration": {
+        "title": "5.3. Datos con Tiempo de Expiración Automática",
+        "items": [
+          "Tokens JWT: Expiración automática a las 48 horas",
+          "Tokens de verificación de email: Expiración automática a las 24 horas",
+          "Tokens de Google Calendar: Renovación automática; revocados al eliminar cuenta"
+        ]
+      }
+    },
+    "section6": {
+      "title": "6. Sus Derechos como Titular de Datos",
+      "intro": "De acuerdo con la Ley 1581 de 2012 y el Decreto 1377 de 2013, usted tiene los siguientes derechos:",
+      "access": {
+        "title": "6.1. Derecho de Acceso",
+        "content": "Conocer, actualizar y rectificar sus datos personales almacenados en nuestra plataforma. Puede acceder a toda su información desde la configuración de su cuenta."
+      },
+      "update": {
+        "title": "6.2. Derecho de Actualización y Rectificación",
+        "content": "Modificar sus datos personales en cualquier momento desde la configuración de su cuenta."
+      },
+      "deletion": {
+        "title": "6.3. Derecho de Eliminación",
+        "intro": "Solicitar la eliminación de su cuenta y todos los datos asociados. Esta acción es irreversible y eliminará permanentemente:",
+        "items": [
+          "Su cuenta de usuario",
+          "Todos los temas y tarjetas de estudio creadas",
+          "Todo el historial de repasos y estadísticas",
+          "Todas las imágenes almacenadas",
+          "Todos los eventos de Google Calendar creados por la aplicación (si la integración está activa)"
+        ]
+      },
+      "revocation": {
+        "title": "6.4. Derecho de Revocación del Consentimiento",
+        "intro": "Puede revocar el consentimiento otorgado para el tratamiento de sus datos en cualquier momento mediante:",
+        "items": [
+          "Eliminación de su cuenta desde la configuración",
+          "Desconexión de integraciones opcionales (Google Calendar)",
+          "Contacto con nosotros a través de support@memopal.app"
+        ]
+      },
+      "complaints": {
+        "title": "6.5. Presentación de Quejas",
+        "content": "Si considera que sus derechos han sido vulnerados, puede presentar una queja ante la Superintendencia de Industria y Comercio (SIC) de Colombia."
+      }
+    },
+    "section7": {
+      "title": "7. Menores de Edad",
+      "intro": "Nuestro servicio está dirigido a estudiantes de secundaria, bachillerato, educación superior y profesionales.",
+      "minimumAge": "Edad mínima para uso del servicio: 14 años",
+      "parentalConsent": "Para usuarios menores de 14 años, requerimos el consentimiento de un padre o tutor legal. Los padres o tutores pueden contactarnos en support@memopal.app para gestionar cuentas de menores."
+    },
+    "section8": {
+      "title": "8. Transferencias Internacionales de Datos",
+      "content": "Algunos de nuestros proveedores de servicios están ubicados en Estados Unidos. Al usar MemoPal, usted consiente la transferencia de sus datos a estos proveedores para los fines descritos en esta política.",
+      "compliance": "Todos nuestros proveedores cumplen con estándares internacionales de protección de datos y cuentan con políticas de privacidad robustas."
+    },
+    "section9": {
+      "title": "9. Cambios a esta Política de Privacidad",
+      "intro": "Nos reservamos el derecho de modificar esta Política de Privacidad en cualquier momento. Los cambios significativos serán notificados a través de:",
+      "notificationMethods": [
+        "Correo electrónico a la dirección registrada en su cuenta",
+        "Aviso visible en la plataforma"
+      ],
+      "dateNote": "La fecha de \"Última actualización\" al inicio de este documento indica cuándo se realizó la modificación más reciente.",
+      "recommendation": "Le recomendamos revisar periódicamente esta política para mantenerse informado sobre cómo protegemos su información."
+    },
+    "section10": {
+      "title": "10. Contacto",
+      "intro": "Para cualquier pregunta, sugerencia o ejercicio de sus derechos relacionados con la protección de sus datos personales, puede contactarnos en:",
+      "email": "Correo electrónico: support@memopal.app",
+      "responsible": "Responsable: los propietarios de la plataforma MemoPal",
+      "jurisdiction": "Jurisdicción: Bogotá, Colombia",
+      "responseTime": "Nos comprometemos a responder sus solicitudes en un plazo máximo de 15 días hábiles contados a partir de la recepción de la solicitud."
+    },
+    "footer": {
+      "lastUpdatedNote": "Esta Política de Privacidad fue actualizada por última vez el 24 de noviembre de 2025."
     }
   },
   "terms": {
     "title": "Términos de Servicio",
-    "intro": "Bienvenido a MemoPal. Al acceder y utilizar nuestros servicios, aceptas cumplir con estos términos y condiciones.",
+    "subtitle": "TÉRMINOS DE SERVICIO - MEMOPAL",
     "lastUpdated": "Última actualización",
-    "acceptance": {
-      "title": "Aceptación de los Términos",
-      "content": "Al registrarte o utilizar MemoPal, aceptas estar legalmente vinculado por estos términos. Si no estás de acuerdo con alguna parte de los términos, no podrás utilizar nuestros servicios."
+    "lastUpdatedDate": "24/11/2025",
+    "intro": "MemoPal está diseñada para estudiantes de secundaria, bachillerato, educación superior (grados técnicos, tecnológicos y universitarios), y profesionales de distintos campos que buscan organizar y optimizar sus repasos de estudio mediante el algoritmo de repetición espaciada.",
+    "section1": {
+      "title": "1. Aceptación de los Términos",
+      "content": "Al registrar una cuenta o utilizar los servicios de MemoPal (\"la Plataforma\"), propiedad de los propietarios de la plataforma MemoPal (\"el Proveedor\"), usted (\"el Usuario\") acepta quedar vinculado por estos Términos de Servicio y por nuestra Política de Privacidad. Si no está de acuerdo con cualquier parte de estos términos, debe discontinuar inmediatamente el uso de la Plataforma.",
+      "important": "IMPORTANTE: Estos términos constituyen un acuerdo legal vinculante entre usted y el Proveedor."
     },
-    "usage": {
-      "title": "Uso del Servicio",
-      "content": "Te comprometes a utilizar MemoPal solo para fines legales y de acuerdo con estos términos. No debes utilizar el servicio de ninguna manera que pueda dañar, deshabilitar o sobrecargar nuestros servidores o redes."
+    "section2": {
+      "title": "2. Definición del Servicio",
+      "subtitle1": "2.1. Descripción del Servicio",
+      "description": "MemoPal es una plataforma digital de repaso espaciado diseñada para estudiantes de secundaria, bachillerato, educación superior (grados técnicos, tecnológicos y universitarios), y profesionales de distintos campos que permite crear, organizar y revisar materiales de estudio mediante algoritmos de repaso espaciado adaptativo.",
+      "subtitle2": "2.2. Funcionalidades Principales",
+      "featureA": {
+        "title": "A. Gestión de Contenido",
+        "items": [
+          "Creación y edición de tarjetas de estudio digitales con dos tipos: FLASHCARD (Tarjetas de pregunta y respuesta) y EXPLANATION (Tarjetas tipo nota explicativa)",
+          "Organización por temas de estudio con colores personalizables",
+          "Soporte para múltiples imágenes por tarjeta (máximo 5MB por imagen)",
+          "Optimización automática de imágenes (redimensionamiento a 1200x1200px, compresión JPEG 85%)",
+          "Búsqueda avanzada de tarjetas y temas"
+        ]
+      },
+      "featureB": {
+        "title": "B. Sistema de Repaso Espaciado",
+        "items": [
+          "Algoritmo adaptativo basado en dificultad de las tarjetas",
+          "Programación automática de repasos según intervalos óptimos: Primera revisión (1, 3 o 7 días según dificultad), Revisiones subsecuentes (intervalos ajustados dinámicamente), Intervalo máximo (30 días para tarjetas fáciles)",
+          "Calificación de dificultad en tres niveles (1=Fácil, 2=Medio, 3=Difícil)"
+        ]
+      },
+      "featureC": {
+        "title": "C. Seguimiento y Estadísticas",
+        "items": [
+          "Historial completo de repasos realizados",
+          "Dashboard con métricas de progreso académico: Total de temas y tarjetas, Repasos pendientes y completados, Racha actual y racha más larga, Actividad diaria",
+          "Sistema de rachas (streaks) para motivar estudio consistente",
+          "Estadísticas por tarjeta individual"
+        ]
+      },
+      "featureD": {
+        "title": "D. Integración con Google Calendar (Opcional)",
+        "items": [
+          "Creación automática de eventos para sesiones de estudio",
+          "Sincronización bidireccional con Google Calendar",
+          "Recordatorios automáticos (15 y 5 minutos antes)",
+          "Gestión inteligente de eventos: Creación al agregar nuevas tarjetas, Actualización al completar repasos, Eliminación al borrar contenido"
+        ]
+      },
+      "featureE": {
+        "title": "E. Características de Seguridad y Cuenta",
+        "items": [
+          "Autenticación JWT con tokens de 48 horas",
+          "Verificación obligatoria de correo electrónico",
+          "Contraseñas cifradas con bcrypt",
+          "Gestión de contraseña (cambio y recuperación)",
+          "Soporte multiidioma (Español e Inglés)",
+          "Configuración de zona horaria personalizada"
+        ]
+      },
+      "featureF": {
+        "title": "F. Almacenamiento y Sincronización",
+        "items": [
+          "Almacenamiento seguro del historial de estudio en PostgreSQL",
+          "CDN de Cloudflare R2 para entrega rápida de imágenes",
+          "Paginación optimizada en todas las listas",
+          "Índices de base de datos para rendimiento óptimo"
+        ]
+      }
     },
-    "account": {
-      "title": "Cuenta de Usuario",
-      "content": "Eres responsable de mantener la confidencialidad de tu cuenta y contraseña. Aceptas notificarnos inmediatamente sobre cualquier uso no autorizado de tu cuenta."
+    "section3": {
+      "title": "3. Elegibilidad y Registro",
+      "subtitle1": "3.1. Requisitos de Edad",
+      "ageRequirements": [
+        "Edad mínima: 14 años para registrar una cuenta independiente",
+        "Menores de 14 años: Requieren consentimiento verificable de padres o tutores legales",
+        "El Proveedor se reserva el derecho de solicitar verificación de edad en cualquier momento"
+      ],
+      "subtitle2": "3.2. Proceso de Registro",
+      "registrationInfo": "Información requerida:",
+      "registrationItems": [
+        "Dirección de correo electrónico válida",
+        "Contraseña (mínimo 6 caracteres)",
+        "Zona horaria (detectada automáticamente)",
+        "Idioma preferido (Español o Inglés)",
+        "Nombre (opcional)"
+      ],
+      "registrationExtra": [
+        "Verificación de email obligatoria mediante enlace enviado por correo",
+        "Token de verificación válido por 24 horas",
+        "Opción de reenviar email de verificación si no se recibe"
+      ],
+      "subtitle3": "3.3. Veracidad de la Información",
+      "veracityIntro": "El Usuario garantiza que:",
+      "veracityItems": [
+        "Toda la información proporcionada es veraz, completa y actualizada",
+        "El correo electrónico proporcionado es de su propiedad y control",
+        "No suplantará la identidad de otra persona",
+        "Actualizará su información cuando sea necesario"
+      ],
+      "subtitle4": "3.4. Responsabilidad de la Cuenta",
+      "accountResponsibility": "El Usuario es único responsable de:",
+      "accountItems": [
+        "Mantener la confidencialidad de sus credenciales de acceso",
+        "Todas las actividades que ocurran bajo su cuenta",
+        "El contenido que crea y almacena en la Plataforma"
+      ],
+      "notifyImmediately": "Debe notificar INMEDIATAMENTE al Proveedor sobre:",
+      "notifyItems": [
+        "Cualquier uso no autorizado de su cuenta",
+        "Cualquier brecha de seguridad",
+        "Pérdida o robo de credenciales"
+      ],
+      "subtitle5": "3.5. Uso de Funcionalidades de Inteligencia Artificial",
+      "aiIntro": "MemoPal puede ofrecer funcionalidades que utilizan inteligencia artificial para mejorar la experiencia de aprendizaje. Al utilizar estas funcionalidades, el Usuario reconoce y acepta que:",
+      "aiConsent": {
+        "title": "a) Consentimiento Voluntario",
+        "content": "El uso de funcionalidades de IA es completamente opcional y voluntario. El Usuario decide qué documentos procesar."
+      },
+      "aiResponsibility": {
+        "title": "b) Responsabilidad del Contenido",
+        "intro": "El Usuario es el único responsable de:",
+        "items": [
+          "Asegurar que tiene derecho legal para subir y procesar los documentos que carga",
+          "No subir material con derechos de autor que no puede legalmente reproducir o procesar",
+          "No subir información confidencial, clasificada o sensible de terceros",
+          "Verificar que el contenido subido no viola leyes o derechos de terceros"
+        ]
+      },
+      "aiProhibited": {
+        "title": "c) Contenido Prohibido",
+        "intro": "El Usuario se compromete a NO subir a las funcionalidades de IA:",
+        "items": [
+          "Información confidencial o clasificada de empresas, gobiernos o instituciones",
+          "Material con derechos de autor sin autorización expresa",
+          "Datos personales sensibles de terceros (datos médicos, financieros, etc.)",
+          "Contenido ilegal, ofensivo, o que viole derechos de terceros",
+          "Información que pueda poner en riesgo la seguridad de personas o entidades"
+        ]
+      },
+      "aiNature": {
+        "title": "d) Naturaleza del Contenido Generado",
+        "items": [
+          "El contenido generado por IA es una herramienta de APOYO educativo",
+          "Puede contener inexactitudes o errores que el Usuario debe verificar",
+          "NO sustituye el estudio, análisis crítico o verificación independiente del Usuario",
+          "El Usuario debe revisar y validar el contenido antes de utilizarlo para fines académicos"
+        ]
+      },
+      "aiLimitation": {
+        "title": "e) Limitación de Responsabilidad",
+        "items": [
+          "MemoPal NO se hace responsable por inexactitudes en el contenido generado por IA",
+          "MemoPal NO se hace responsable por el uso inadecuado que el Usuario haga del contenido generado",
+          "MemoPal NO se hace responsable por violaciones de derechos de autor en documentos que el Usuario suba",
+          "El Usuario utiliza las funcionalidades de IA bajo su propio riesgo y responsabilidad"
+        ]
+      },
+      "aiProcessing": {
+        "title": "f) Procesamiento de Datos",
+        "items": [
+          "Los documentos se procesan temporalmente en servidores de terceros (proveedores de IA)",
+          "Los proveedores NO utilizan el contenido para entrenar sus modelos",
+          "Los documentos originales NO se almacenan permanentemente",
+          "Solo el resultado generado se guarda en la cuenta del Usuario"
+        ]
+      },
+      "aiIP": {
+        "title": "g) Propiedad Intelectual",
+        "items": [
+          "El Usuario retiene todos los derechos sobre los documentos originales que sube",
+          "El contenido generado por IA se considera derivado del material original del Usuario",
+          "MemoPal no reclama propiedad sobre el contenido generado para el Usuario"
+        ]
+      }
     },
-    "termination": {
-      "title": "Terminación",
-      "content": "Nos reservamos el derecho de suspender o terminar tu acceso a MemoPal en cualquier momento, sin previo aviso, si violas estos términos o por cualquier otra razón que consideremos necesaria."
+    "section4": {
+      "title": "4. Propiedad Intelectual y Licencias",
+      "subtitle1": "4.1. Contenido del Proveedor",
+      "providerContent": "Todos los derechos de propiedad intelectual sobre la Plataforma son propiedad exclusiva del Proveedor, incluyendo pero no limitado a:",
+      "providerItems": [
+        "Software y código fuente (Node.js, Express, React, TypeScript)",
+        "Algoritmos de repaso espaciado",
+        "Interfaz gráfica y diseño",
+        "Documentación y materiales de ayuda",
+        "Marca \"MemoPal\" y elementos de branding",
+        "Arquitectura de base de datos y estructura"
+      ],
+      "subtitle2": "4.2. Contenido del Usuario",
+      "userContent": "El Usuario conserva TODOS los derechos de propiedad intelectual sobre:",
+      "userItems": [
+        "Tarjetas de estudio que cree",
+        "Temas y organizaciones que diseñe",
+        "Imágenes que suba (siempre que tenga derechos sobre ellas)",
+        "Cualquier otro material original que genere"
+      ],
+      "subtitle3": "4.3. Licencia Otorgada al Proveedor",
+      "licenseToProvider": "Al publicar contenido, el Usuario otorga al Proveedor una licencia:",
+      "licenseToProviderItems": [
+        "NO EXCLUSIVA: El Usuario mantiene plenos derechos",
+        "LIMITADA: Solo para operar la Plataforma",
+        "REVOCABLE: Termina al eliminar el contenido o cerrar la cuenta",
+        "ALCANCE: Almacenar, procesar, mostrar y transmitir el contenido exclusivamente para la prestación del Servicio"
+      ],
+      "subtitle4": "4.4. Licencia Otorgada al Usuario",
+      "licenseToUser": "Se otorga al Usuario una licencia para utilizar la Plataforma que es:",
+      "licenseToUserItems": [
+        "LIMITADA: Solo para uso personal educativo",
+        "NO EXCLUSIVA: Otros usuarios también tienen acceso",
+        "INTRANSFERIBLE: No puede ceder esta licencia a terceros",
+        "REVOCABLE: Puede ser terminada por incumplimiento de estos Términos"
+      ],
+      "subtitle5": "4.5. Prohibiciones Expresas",
+      "prohibitions": "El Usuario NO puede:",
+      "prohibitionItems": [
+        "Copiar, modificar o crear trabajos derivados del software",
+        "Realizar ingeniería inversa (reverse engineering)",
+        "Descompilar o desensamblar el código",
+        "Intentar extraer el código fuente",
+        "Sublicenciar o revender el acceso a la Plataforma"
+      ]
+    },
+    "section5": {
+      "title": "5. Uso Aceptable y Prohibiciones",
+      "subtitle1": "5.1. Usos Permitidos",
+      "allowedUses": [
+        "Uso personal para fines educativos y de aprendizaje",
+        "Creación de materiales de estudio originales o legalmente permitidos",
+        "Compartir materiales de estudio únicamente con otros usuarios registrados (cuando esta función esté disponible)",
+        "Uso de imágenes sobre las cuales tenga derechos o licencia",
+        "Sincronización con servicios de terceros autorizados (Google Calendar)"
+      ],
+      "subtitle2": "5.2. Usos Estrictamente Prohibidos",
+      "prohibitedContentTitle": "A. Contenido Prohibido",
+      "prohibitedContentIntro": "El Usuario NO puede publicar o almacenar:",
+      "prohibitedContentItems": [
+        "Contenido que infrinja derechos de autor o propiedad intelectual de terceros",
+        "Material protegido sin autorización (libros, artículos, material didáctico comercial)",
+        "Contenido ofensivo, discriminatorio, odioso o amenazante",
+        "Material sexualmente explícito o pornográfico",
+        "Contenido que promueva actividades ilegales",
+        "Información personal de terceros sin consentimiento",
+        "Malware, virus o código malicioso"
+      ],
+      "prohibitedActivitiesTitle": "B. Actividades Prohibidas",
+      "prohibitedActivitiesIntro": "El Usuario NO puede:",
+      "prohibitedActivitiesItems": [
+        "Utilizar la Plataforma para actividades comerciales no autorizadas",
+        "Implementar bots, scrapers o métodos automatizados no autorizados",
+        "Realizar ingeniería inversa del software o algoritmos",
+        "Intentar acceder a cuentas de otros usuarios",
+        "Interferir con el funcionamiento normal de la Plataforma",
+        "Sobrecargar o hacer pruebas de estrés a los servidores",
+        "Eludir medidas de seguridad o limitaciones técnicas",
+        "Crear múltiples cuentas para abusar del servicio",
+        "Suplantar la identidad de otros usuarios o personas"
+      ],
+      "technicalLimitsTitle": "C. Límites Técnicos",
+      "technicalLimits": [
+        "Máximo de subida: 5MB por imagen",
+        "Máximo de archivos: 10 imágenes por solicitud",
+        "Formatos de imagen permitidos: JPG, JPEG, PNG, GIF, WEBP",
+        "Límite de tarjetas: Sin límite explícito, sujeto a uso razonable"
+      ],
+      "subtitle3": "5.3. Consecuencias del Incumplimiento",
+      "consequences": [
+        "Advertencia inicial por infracciones menores",
+        "Suspensión temporal de cuenta por infracciones repetidas",
+        "Terminación permanente por infracciones graves",
+        "Posible acción legal en casos de actividades ilegales"
+      ]
+    },
+    "section6": {
+      "title": "6. Protección de Datos y Privacidad",
+      "subtitle1": "6.1. Recopilación y Procesamiento",
+      "collectionIntro": "El Proveedor recopila y procesa únicamente los datos estrictamente necesarios según se detalla en la Política de Privacidad, incluyendo:",
+      "collectionItems": [
+        "Datos de cuenta (email, contraseña cifrada, nombre opcional)",
+        "Datos de uso (tarjetas, temas, historial de repasos, progreso)",
+        "Datos técnicos (tokens JWT con expiración de 48 horas)",
+        "Tokens de integración (Google Calendar, si autorizado)",
+        "Imágenes subidas por el usuario"
+      ],
+      "subtitle2": "6.2. Base Legal del Tratamiento",
+      "legalBasis": [
+        "Ejecución del contrato de prestación de servicios",
+        "Consentimiento explícito para integraciones opcionales",
+        "Cumplimiento de obligaciones legales"
+      ],
+      "subtitle3": "6.3. Datos de Menores",
+      "minorsIntro": "Se implementan medidas de seguridad REFORZADAS para usuarios menores de edad:",
+      "minorsItems": [
+        "Cifrado de contraseñas con bcrypt (factor 9)",
+        "Verificación obligatoria de email",
+        "Almacenamiento en servidores seguros (Railway + Cloudflare)",
+        "Limitación en la recopilación de información personal",
+        "Sin publicidad ni rastreo de comportamiento",
+        "Eliminación automática de datos al cerrar cuenta"
+      ],
+      "subtitle4": "6.4. Cookies y Tecnologías de Rastreo",
+      "cookiesIntro": "La Plataforma utiliza EXCLUSIVAMENTE:",
+      "cookiesItems": [
+        "Cookie técnica httpOnly con token JWT (duración: 48 horas)",
+        "Propósito único: Autenticación de usuario",
+        "NO se utilizan cookies de análisis, marketing o terceros"
+      ],
+      "subtitle5": "6.5. Integraciones de Terceros",
+      "googleCalendarTitle": "A. Google Calendar (Opcional)",
+      "googleCalendarItems": [
+        "Requiere autorización explícita mediante OAuth 2.0",
+        "Permisos limitados: solo eventos de calendario",
+        "El Usuario puede desconectar en cualquier momento",
+        "Al desconectar, se eliminan los tokens de acceso"
+      ],
+      "otherServicesTitle": "B. Otros Servicios",
+      "otherServicesItems": [
+        "Resend (envío de emails de verificación)",
+        "Cloudflare R2 (almacenamiento de imágenes)",
+        "Railway (hospedaje de base de datos)"
+      ],
+      "subtitle6": "6.6. Transferencias Internacionales",
+      "internationalTransfers": [
+        "Los datos pueden procesarse en Estados Unidos (Railway, Cloudflare)",
+        "Se implementan salvaguardas apropiadas de seguridad",
+        "Cifrado en tránsito y en reposo"
+      ]
+    },
+    "section7": {
+      "title": "7. Limitación de Responsabilidad",
+      "subtitle1": "7.1. Naturaleza del Servicio",
+      "serviceNature": "El Proveedor ofrece la Plataforma \"TAL CUAL\" (AS IS) y \"SEGÚN DISPONIBILIDAD\" (AS AVAILABLE):",
+      "serviceNatureItems": [
+        "SIN GARANTÍAS expresas o implícitas de ningún tipo",
+        "No se garantizan resultados educativos específicos",
+        "No se garantiza el rendimiento académico del Usuario",
+        "La Plataforma es una herramienta COMPLEMENTARIA al estudio formal"
+      ],
+      "subtitle2": "7.2. Disponibilidad del Servicio",
+      "availability": [
+        "No se garantiza disponibilidad ininterrumpida (24/7)",
+        "Pueden existir periodos de mantenimiento programado",
+        "Pueden ocurrir interrupciones por causas de fuerza mayor",
+        "El Proveedor se esforzará por minimizar el tiempo de inactividad"
+      ],
+      "subtitle3": "7.3. Responsabilidad por Contenido",
+      "contentResponsibility": "El Proveedor NO se responsabiliza por:",
+      "contentResponsibilityItems": [
+        "La exactitud, calidad o integridad del contenido generado por usuarios",
+        "Errores o inexactitudes en las tarjetas de estudio",
+        "Consecuencias derivadas del uso de información incorrecta",
+        "Material que infrinja derechos de terceros publicado por usuarios"
+      ],
+      "subtitle4": "7.4. Pérdida de Datos",
+      "dataLoss": "Si bien implementamos respaldos regulares, el Proveedor NO se responsabiliza por:",
+      "dataLossItems": [
+        "Pérdida de datos debido a fallas técnicas",
+        "Eliminación accidental por parte del Usuario",
+        "Corrupción de datos por causas externas"
+      ],
+      "dataLossRecommendation": "RECOMENDACIÓN: Mantenga copias de seguridad de contenido importante",
+      "subtitle5": "7.5. Terceros",
+      "thirdParty": "El Proveedor NO se responsabiliza por:",
+      "thirdPartyItems": [
+        "Fallas en servicios de terceros (Google Calendar, Cloudflare, Railway)",
+        "Cambios en APIs o servicios externos",
+        "Interrupción de integraciones por decisiones de terceros"
+      ],
+      "subtitle6": "7.6. Límite Monetario de Responsabilidad",
+      "monetaryLimit": "En la máxima medida permitida por la ley aplicable, la responsabilidad TOTAL del Proveedor no excederá:",
+      "monetaryLimitItems": [
+        "Servicios gratuitos: USD $100",
+        "Servicios pagos (cuando aplique): Monto total pagado en los últimos 6 meses"
+      ],
+      "monetaryLimitNote": "Esta limitación aplica a cualquier teoría legal (contrato, agravio, negligencia)",
+      "subtitle7": "7.7. Exclusión de Daños",
+      "damagesExclusion": "El Proveedor NO será responsable bajo ninguna circunstancia por:",
+      "damagesExclusionItems": [
+        "Daños indirectos, incidentales o consecuentes",
+        "Pérdida de beneficios o ingresos",
+        "Pérdida de oportunidades educativas",
+        "Daño a la reputación",
+        "Pérdida de datos o corrupción",
+        "Costos de adquisición de servicios sustitutos"
+      ],
+      "subtitle8": "7.8. Jurisdicciones que no Permitan Limitaciones",
+      "jurisdictions": "Algunas jurisdicciones no permiten la exclusión de garantías implícitas o limitación de responsabilidad por daños incidentales o consecuentes. En tales casos, las limitaciones anteriores pueden no aplicar completamente."
+    },
+    "section8": {
+      "title": "8. Suspensión y Terminación",
+      "subtitle1": "8.1. Terminación por el Usuario",
+      "userTermination": "El Usuario puede:",
+      "userTerminationItems": [
+        "Dar de baja su cuenta EN CUALQUIER MOMENTO",
+        "Acceder a herramientas de eliminación en la Plataforma",
+        "Solicitar eliminación mediante email a: support@memopal.app"
+      ],
+      "deletionProcess": "Proceso de eliminación:",
+      "deletionProcessItems": [
+        "Solicitud de confirmación con contraseña actual",
+        "Eliminación inmediata del acceso",
+        "Eliminación completa de datos en 30 días",
+        "Notificación por email de confirmación"
+      ],
+      "subtitle2": "8.2. Terminación por el Proveedor",
+      "providerTermination": "El Proveedor puede suspender o terminar el acceso del Usuario en caso de:",
+      "seriousBreachTitle": "A. Incumplimiento Grave",
+      "seriousBreachItems": [
+        "Violación de estos Términos de Servicio",
+        "Publicación de contenido prohibido",
+        "Uso del servicio para actividades ilegales",
+        "Intentos de comprometer la seguridad de la Plataforma"
+      ],
+      "fraudTitle": "B. Actividades Fraudulentas",
+      "fraudItems": [
+        "Uso de información falsa en el registro",
+        "Creación de múltiples cuentas para abuso",
+        "Intentos de acceso no autorizado",
+        "Manipulación de sistemas de pago (cuando aplique)"
+      ],
+      "harmfulTitle": "C. Comportamiento Dañino",
+      "harmfulItems": [
+        "Acoso o amenazas a otros usuarios",
+        "Interferencia con el funcionamiento de la Plataforma",
+        "Sobrecarga intencional de servidores",
+        "Extracción masiva no autorizada de datos"
+      ],
+      "subtitle3": "8.3. Proceso de Terminación",
+      "terminationProcess": [
+        "Notificación previa: El Proveedor intentará notificar antes de terminar el servicio",
+        "Excepciones: Terminación inmediata sin previo aviso en casos graves",
+        "Derecho de apelación: El Usuario puede solicitar revisión de la decisión",
+        "Tiempo de respuesta a apelaciones: 10 días hábiles"
+      ],
+      "subtitle4": "8.4. Efectos de la Terminación",
+      "terminationEffects": [
+        "Pérdida inmediata de acceso a la cuenta",
+        "Eliminación de datos según cronograma establecido",
+        "Eliminación de eventos de Google Calendar (si conectado)",
+        "Eliminación de imágenes de Cloudflare R2",
+        "NO hay reembolsos por servicios no utilizados (en planes pagos futuros)"
+      ]
+    },
+    "section9": {
+      "title": "9. Eliminación de Datos y Baja de Cuenta",
+      "subtitle1": "9.1. Proceso de Eliminación",
+      "requestTitle": "A. Solicitud de Baja",
+      "requestIntro": "El Usuario puede solicitar la eliminación de su cuenta:",
+      "requestItems": [
+        "Desde la configuración de la Plataforma",
+        "Enviando email a: support@memopal.app",
+        "Verificación de identidad requerida (contraseña actual)"
+      ],
+      "deletedDataTitle": "B. Datos Eliminados",
+      "deletedDataIntro": "Al solicitar la baja, se eliminarán TODOS los datos incluyendo:",
+      "deletedDataItems": [
+        "Información de cuenta (email, nombre, preferencias)",
+        "Todos los temas de estudio creados",
+        "Todas las tarjetas y contenido asociado",
+        "Imágenes almacenadas en Cloudflare R2",
+        "Historial completo de repasos",
+        "Sesiones programadas pendientes",
+        "Estadísticas y progreso",
+        "Tokens de integración con Google Calendar",
+        "Eventos creados en Google Calendar"
+      ],
+      "automatedTitle": "C. Proceso Automatizado",
+      "automatedItems": [
+        "Sistema de eliminación en cascada implementado en base de datos",
+        "Garantiza integridad referencial",
+        "Previene datos huérfanos o inconsistentes"
+      ],
+      "subtitle2": "9.2. Período de Retención",
+      "retentionItems": [
+        "Eliminación de datos: 30 días desde la solicitud",
+        "Durante los 30 días: Posibilidad de recuperación si se solicita",
+        "Después de 30 días: Eliminación PERMANENTE e irreversible"
+      ],
+      "subtitle3": "9.3. Excepciones a la Eliminación",
+      "exceptionsIntro": "Los datos pueden retenerse más tiempo cuando:",
+      "exceptionsItems": [
+        "La ley colombiana requiera un período de conservación específico",
+        "Existan disputas legales pendientes",
+        "Sea necesario para prevenir fraude o abuso",
+        "Se requiera para cumplir obligaciones fiscales"
+      ],
+      "subtitle4": "9.4. Conservación Legal",
+      "legalRetentionIntro": "Algunos datos pueden conservarse de forma ANÓNIMA para:",
+      "legalRetentionItems": [
+        "Cumplimiento de obligaciones legales",
+        "Estadísticas agregadas (sin identificación personal)",
+        "Mejora del servicio basada en patrones de uso anónimos"
+      ]
+    },
+    "section10": {
+      "title": "10. Modificaciones de los Términos",
+      "subtitle1": "10.1. Derecho a Modificar",
+      "modifyRight": "El Proveedor se reserva el derecho de modificar estos Términos en cualquier momento para:",
+      "modifyRightItems": [
+        "Adaptarse a cambios legislativos",
+        "Reflejar nuevas funcionalidades del servicio",
+        "Mejorar la claridad y precisión del documento",
+        "Abordar nuevos riesgos o consideraciones de seguridad"
+      ],
+      "subtitle2": "10.2. Proceso de Notificación",
+      "substantialTitle": "A. Modificaciones Sustanciales",
+      "substantialItems": [
+        "Notificación a usuarios con al menos 30 días de antelación",
+        "Envío de notificación por correo electrónico",
+        "Publicación destacada en la Plataforma",
+        "Resumen de cambios principales incluido"
+      ],
+      "minorTitle": "B. Modificaciones Menores",
+      "minorItems": [
+        "Actualización de la fecha en este documento",
+        "Notificación en próximo inicio de sesión",
+        "Publicación en sección de anuncios"
+      ],
+      "subtitle3": "10.3. Aceptación de Modificaciones",
+      "acceptanceItems": [
+        "El uso continuado de la Plataforma después de las modificaciones constituye ACEPTACIÓN",
+        "Si no está de acuerdo: Debe discontinuar el uso y solicitar eliminación de cuenta",
+        "Derecho a solicitar copia de términos anteriores"
+      ],
+      "subtitle4": "10.4. Términos Archivados",
+      "archivedItems": [
+        "Versiones anteriores disponibles a solicitud",
+        "Conservadas para referencia y resolución de disputas",
+        "Aplicables a acciones realizadas bajo su vigencia"
+      ]
+    },
+    "section11": {
+      "title": "11. Legislación Aplicable y Jurisdicción",
+      "subtitle1": "11.1. Ley Aplicable",
+      "applicableLaw": "Estos Términos se regirán e interpretarán de acuerdo con las leyes de la República de Colombia, incluyendo pero no limitado a:",
+      "applicableLawItems": [
+        "Código Civil Colombiano",
+        "Código de Comercio",
+        "Ley 1581 de 2012 (Protección de Datos Personales)",
+        "Ley 1480 de 2011 (Estatuto del Consumidor)",
+        "Decreto 1377 de 2013"
+      ],
+      "subtitle2": "11.2. Jurisdicción",
+      "jurisdictionItems": [
+        "Jurisdicción: Tribunales competentes de Colombia",
+        "Renuncia a fuero: Las partes renuncian expresamente a cualquier otro fuero que pudiera corresponderles"
+      ],
+      "subtitle3": "11.3. Resolución de Disputas",
+      "negotiationTitle": "A. Negociación Directa (Primera instancia)",
+      "negotiationItems": [
+        "Contacto inicial: support@memopal.app",
+        "Tiempo de respuesta: 10 días hábiles",
+        "Intento de resolución amistosa"
+      ],
+      "mediationTitle": "B. Mediación (Segunda instancia)",
+      "mediationItems": [
+        "Mediador neutral acordado por ambas partes",
+        "Gastos compartidos equitativamente",
+        "Proceso voluntario y confidencial"
+      ],
+      "arbitrationTitle": "C. Arbitraje (Tercera instancia - Opcional)",
+      "arbitrationItems": [
+        "Centro de Arbitraje y Conciliación de Colombia",
+        "Procedimiento expedito",
+        "Decisión vinculante"
+      ],
+      "judicialTitle": "D. Acción Judicial (Última instancia)",
+      "judicialItems": [
+        "Tribunales competentes de Colombia",
+        "Proceso ordinario según legislación colombiana"
+      ]
+    },
+    "section12": {
+      "title": "12. Información de Contacto",
+      "intro": "Para consultas, soporte técnico o cualquier comunicación relacionada con estos Términos de Servicio:",
+      "email": "Email principal: support@memopal.app",
+      "website": "Sitio web: https://memopal.app",
+      "docs": "Documentación: https://memopal.app/docs (cuando esté disponible)",
+      "supportHoursTitle": "Horario de Atención:",
+      "supportHours": [
+        "Soporte por email: 24/7 (respuesta en 24-48 horas hábiles)",
+        "Consultas legales: 10 días hábiles"
+      ],
+      "languagesTitle": "Idiomas Disponibles:",
+      "languages": ["Español", "English"]
+    },
+    "section13": {
+      "title": "13. Disposiciones Generales",
+      "subtitle1": "13.1. Acuerdo Completo",
+      "completeAgreement": "Estos Términos, junto con la Política de Privacidad, constituyen el acuerdo COMPLETO entre el Usuario y el Proveedor respecto al uso de la Plataforma.",
+      "subtitle2": "13.2. Divisibilidad",
+      "severability": "Si cualquier disposición de estos Términos se considera inválida o inaplicable:",
+      "severabilityItems": [
+        "Esa disposición se interpretará de manera consistente con la ley aplicable",
+        "Las demás disposiciones permanecerán en pleno vigor y efecto"
+      ],
+      "subtitle3": "13.3. Renuncia",
+      "waiver": "La falta de ejercicio de cualquier derecho no constituye renuncia a ese derecho.",
+      "subtitle4": "13.4. Cesión",
+      "assignmentItems": [
+        "El Usuario NO puede ceder estos Términos sin consentimiento previo por escrito",
+        "El Proveedor puede ceder libremente en caso de fusión, adquisición o venta de activos"
+      ],
+      "subtitle5": "13.5. Notificaciones",
+      "notificationsItems": [
+        "Todas las notificaciones se enviarán al email registrado en la cuenta",
+        "El Usuario es responsable de mantener actualizado su correo electrónico",
+        "Las notificaciones se consideran recibidas 24 horas después del envío"
+      ],
+      "subtitle6": "13.6. Relación entre las Partes",
+      "relationshipIntro": "Estos Términos no crean ninguna relación de:",
+      "relationshipItems": [
+        "Sociedad o joint venture",
+        "Empleo o agencia",
+        "Franquicia o representación"
+      ],
+      "subtitle7": "13.7. Fuerza Mayor",
+      "forceMajeureIntro": "El Proveedor no será responsable por incumplimiento debido a:",
+      "forceMajeureItems": [
+        "Desastres naturales",
+        "Guerras o disturbios civiles",
+        "Ataques cibernéticos masivos",
+        "Fallas en infraestructura de Internet",
+        "Cualquier otra causa fuera del control razonable"
+      ],
+      "subtitle8": "13.8. Idioma",
+      "languageItems": [
+        "Estos Términos están disponibles en Español e Inglés",
+        "En caso de conflicto: La versión en Español prevalece",
+        "El Usuario confirma haber leído y entendido estos Términos en su idioma preferido"
+      ]
+    },
+    "section14": {
+      "title": "14. Funcionalidades Futuras y Beta",
+      "subtitle1": "14.1. Funcionalidades en Desarrollo",
+      "developmentIntro": "La Plataforma puede incluir funcionalidades en desarrollo o beta que:",
+      "developmentItems": [
+        "Pueden contener errores o funcionar de manera imperfecta",
+        "Pueden ser modificadas o eliminadas sin previo aviso",
+        "Se proporcionan \"tal cual\" sin garantías adicionales",
+        "Requieren retroalimentación del usuario para mejorar"
+      ],
+      "subtitle2": "14.2. Programa de Pruebas",
+      "testingItems": [
+        "El Usuario puede ser invitado a probar nuevas funcionalidades",
+        "La participación es voluntaria",
+        "Pueden existir términos adicionales para pruebas beta",
+        "La retroalimentación proporcionada puede ser utilizada para mejorar el servicio"
+      ],
+      "subtitle3": "14.3. Cambios en el Servicio",
+      "changesIntro": "El Proveedor se reserva el derecho de:",
+      "changesItems": [
+        "Agregar nuevas funcionalidades",
+        "Modificar funcionalidades existentes",
+        "Eliminar funcionalidades obsoletas",
+        "Notificación: 30 días antes para cambios sustanciales"
+      ]
+    },
+    "section15": {
+      "title": "15. Reconocimientos y Tecnologías de Terceros",
+      "subtitle1": "15.1. Tecnologías Utilizadas",
+      "techIntro": "La Plataforma está construida con:",
+      "techItems": [
+        "Backend: Node.js, Express.js, PostgreSQL, Prisma ORM",
+        "Frontend: React, TypeScript, Vite",
+        "Infraestructura: Railway, Cloudflare Pages, Cloudflare R2",
+        "Servicios: Resend (emails), Google Calendar API",
+        "Seguridad: bcrypt, JWT, HTTPS"
+      ],
+      "subtitle2": "15.2. Licencias de Código Abierto",
+      "openSource": "Se reconoce y agradece a las comunidades de software de código abierto.",
+      "subtitle3": "15.3. Servicios de Terceros",
+      "thirdPartyIntro": "Al usar integraciones opcionales, el Usuario acepta también los términos de servicio de:",
+      "thirdPartyItems": [
+        "Google (para Google Calendar)",
+        "Cualquier otro servicio que integre en el futuro"
+      ]
+    },
+    "legalNotice": {
+      "title": "Aviso Legal Importante",
+      "intro": "MemoPal es una herramienta educativa COMPLEMENTARIA y NO sustituye:",
+      "items": [
+        "La educación formal en instituciones educativas",
+        "La orientación de profesores o tutores",
+        "El estudio disciplinado y constante",
+        "Métodos de aprendizaje validados científicamente"
+      ],
+      "successFactors": "El éxito educativo depende de múltiples factores más allá del uso de esta Plataforma, incluyendo pero no limitado a:",
+      "successFactorsItems": [
+        "Dedicación personal del estudiante",
+        "Métodos de estudio apropiados",
+        "Ambiente de aprendizaje adecuado",
+        "Apoyo familiar y social",
+        "Recursos educativos complementarios"
+      ],
+      "noGuarantee": "El Proveedor NO garantiza ningún resultado académico específico, incluyendo:",
+      "noGuaranteeItems": [
+        "Mejoras en calificaciones o notas",
+        "Aprobación de exámenes o cursos",
+        "Admisión a instituciones educativas",
+        "Cualquier otro resultado educativo"
+      ]
+    },
+    "consent": {
+      "title": "Consentimiento y Aceptación",
+      "intro": "Al hacer clic en \"Acepto los Términos de Servicio\" durante el registro, o al utilizar la Plataforma, usted confirma que:",
+      "items": [
+        "Ha leído estos Términos de Servicio en su totalidad",
+        "Ha leído la Política de Privacidad",
+        "Comprende y acepta todas las disposiciones",
+        "Acepta quedar legalmente vinculado por estos Términos",
+        "Tiene la edad legal o el consentimiento parental requerido",
+        "Proporcionará información veraz y completa",
+        "Usará la Plataforma de acuerdo con estos Términos"
+      ],
+      "warning": "Si NO acepta estos términos, NO debe usar la Plataforma y debe eliminar su cuenta si ya la creó."
+    },
+    "footer": {
+      "tagline": "MemoPal - Sistema inteligente de repaso espaciado",
+      "copyright": "© 2025 MemoPal. Todos los derechos reservados.",
+      "version": "Versión: 1.0"
     }
   },
   "landing": {
