@@ -7,20 +7,8 @@ import { useAuth } from "../context/AuthContext";
 import { ToggleSwitch } from "../components/toggleSwitch";
 import { ConfirmationModal } from "../components/confirmationModal";
 import { PasswordChangeModal } from "../components/passwordChangeModal";
-import axios from "axios";
+import { api } from "../utils/axiosConfig";
 import { API_URL } from "../config";
-
-const api = axios.create({
-  baseURL: API_URL || "http://localhost:3000/api",
-});
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
 
 const Perfil = () => {
   const navigate = useNavigate();
@@ -78,17 +66,70 @@ const Perfil = () => {
   const handlePasswordChange = async (currentPassword: string, newPassword: string, confirmPassword: string) => {
     try {
       setIsProcessing(true);
-      await api.post("/users/update-password", {
+      
+      console.log("Attempting password change...");
+      
+      const response = await api.put("/users/update-password", {
         currentPassword,
         newPassword,
         confirmPassword
       });
       
-      alert(t("profile.passwordChangeSuccess"));
-      setShowPasswordChangeModal(false);
+      console.log("Password change response:", response);
+      
+      // Check for explicit success indicators in response
+      const isSuccess = response.data && (
+        response.data.success === true || 
+        response.data.message?.includes('success') ||
+        response.status === 200
+      );
+      
+      if (isSuccess) {
+        alert("¡Contraseña cambiada exitosamente! Serás redirigido al login.");
+        setShowPasswordChangeModal(false);
+        
+        // Logout user after successful password change for security
+        setTimeout(() => {
+          logout();
+          navigate("/login");
+        }, 1500);
+      } else {
+        // If no explicit success indicator, treat as failure
+        throw new Error("Password change failed - server returned no success confirmation");
+      }
+      
     } catch (error: any) {
       console.error("Error changing password:", error);
-      alert(error.message || t("profile.passwordChangeError"));
+      
+      // Extract error message from backend response
+      let errorMessage = "Error al cambiar la contraseña";
+      
+      if (error.response) {
+        console.log("Error response data:", error.response.data);
+        console.log("Error status:", error.response.status);
+        
+        // Handle different response formats
+        if (error.response.data?.message) {
+          errorMessage = error.response.data.message;
+        } else if (error.response.data?.error) {
+          errorMessage = error.response.data.error;
+        } else if (error.response.data && typeof error.response.data === 'string') {
+          errorMessage = error.response.data;
+        }
+        
+        // Handle specific status codes
+        if (error.response.status === 401) {
+          errorMessage = "La contraseña actual es incorrecta";
+        } else if (error.response.status === 400) {
+          errorMessage = "Los datos proporcionados no son válidos";
+        } else if (error.response.status === 409) {
+          errorMessage = "La nueva contraseña no cumple con los requisitos";
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      alert(`Error: ${errorMessage}`);
     } finally {
       setIsProcessing(false);
     }

@@ -13,7 +13,7 @@ const Login: React.FC = () => {
   const [userTimezone, setUserTimezone] = useState("");
   const [showUnverifiedMessage, setShowUnverifiedMessage] = useState(false);
   const [isResending, setIsResending] = useState(false);
-  const { login, resendVerification } = useAuth();
+  const { login, resendVerification, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -23,6 +23,13 @@ const Login: React.FC = () => {
     setUserTimezone(timezone);
   }, []);
 
+  // Redirect to topics when authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/topics");
+    }
+  }, [isAuthenticated, navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -30,11 +37,10 @@ const Login: React.FC = () => {
 
     try {
       const success = await login(email, password);
-      if (success) {
-        navigate("/topics");
-      } else {
+      if (!success) {
         setError(t("auth.invalidCredentials"));
       }
+      // Navigation will be handled by the useEffect above when isAuthenticated becomes true
     } catch (error: any) {
       if (error.message === "EMAIL_NOT_VERIFIED") {
         setShowUnverifiedMessage(true);

@@ -33,23 +33,11 @@ export const api = axios.create({
 // Request interceptor for token and request management
 api.interceptors.request.use(
   (config) => {
-    // Add cancellation token
-    config.cancelToken = createCancelToken().token;
-    
     // Add auth token
     const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
-    // Request deduplication
-    const requestKey = `${config.method?.toUpperCase()}-${config.url}-${JSON.stringify(config.params)}`;
-    if (pendingRequests.has(requestKey)) {
-      throw new axios.Cancel('Duplicate request prevented');
-    }
-    
-    pendingRequests.add(requestKey);
-    (config as any).requestKey = requestKey;
     
     return config;
   },
@@ -58,31 +46,12 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor for cleanup and error handling
+// Response interceptor for retry logic and error handling
 api.interceptors.response.use(
   (response: AxiosResponse) => {
-    // Clean up request tracking
-    const requestKey = (response.config as any).requestKey;
-    if (requestKey) {
-      pendingRequests.delete(requestKey);
-      requestQueue.delete(requestKey);
-    }
-    
     return response;
   },
   async (error: AxiosError) => {
-    // Clean up request tracking
-    const requestKey = (error.config as any)?.requestKey;
-    if (requestKey) {
-      pendingRequests.delete(requestKey);
-      requestQueue.delete(requestKey);
-    }
-    
-    // Handle cancellation gracefully
-    if (axios.isCancel(error)) {
-      return Promise.reject(error);
-    }
-    
     // Retry logic for transient errors
     const config = error.config as AxiosRequestConfig & { retryCount?: number };
     config.retryCount = config.retryCount || 0;
@@ -176,8 +145,13 @@ api.interceptors.response.use(
     return response;
   },
   (error: AxiosError) => {
+    // No mostrar errores globales para ciertos endpoints que manejan sus propios errores
+    const url = error.config?.url || '';
+    const isPasswordChange = url.includes('/users/update-password') || url.includes('update-password');
+    const isLogin = url.includes('/users/login');
+    
     // Solo manejar errores de red o servidor, no errores de validación del cliente
-    if (error.response) {
+    if (error.response && !isPasswordChange && !isLogin) {
       const status = error.response.status;
       const message = error.response.data && typeof error.response.data === 'object' 
         ? (error.response.data as any).message 
@@ -194,9 +168,11 @@ api.interceptors.response.use(
           break;
         case 401:
           showErrorGlobal("No autorizado", "Tu sesión ha expirado. Por favor, inicia sesión nuevamente");
-          // Limpiar token inválido
-          localStorage.removeItem("token");
-          localStorage.removeItem("userTimezone");
+          // Limpiar token inválido solo para non-auth endpoints
+          if (!isLogin) {
+            localStorage.removeItem("token");
+            localStorage.removeItem("userTimezone");
+          }
           break;
         case 403:
           showErrorGlobal("Acceso denegado", "No tienes permisos para realizar esta acción");
@@ -216,10 +192,10 @@ api.interceptors.response.use(
             showErrorGlobal("Error de conexión", message || "No se pudo conectar con el servidor");
           }
       }
-    } else if (error.request) {
+    } else if (error.request && !isPasswordChange && !isLogin) {
       // Error de red
       showErrorGlobal("Error de conexión", "No se pudo conectar con el servidor. Verifica tu conexión a internet");
-    } else {
+    } else if (!error.request && !isPasswordChange && !isLogin) {
       // Error en la configuración de la solicitud
       console.error("Error de configuración:", error.message);
     }
