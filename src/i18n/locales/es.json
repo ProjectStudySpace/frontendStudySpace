@@ -23,7 +23,7 @@
     "hasAccount": "¿Ya tienes cuenta?",
     "registerHere": "Regístrate aquí",
     "loginHere": "Inicia sesión",
-    "testCredentials": "correo: test@test.com / Contraseña: 123 para probar",
+    "testCredentials": "Utiliza credenciales de prueba para acceder",
     "invalidCredentials": "Credenciales inválidas",
     "passwordMismatch": "Las contraseñas no coinciden",
     "passwordMinLength": "La contraseña debe tener al menos 6 caracteres",
@@ -156,6 +156,7 @@
     "passwordChangeError": "Error al cambiar la contraseña. Verifica tu contraseña actual.",
     "deleteAccount": "Eliminar cuenta de usuario",
     "deleteAccountTitle": "Eliminar usuario y datos asociados",
+    "deleteAccountDescription": "Esta acción eliminará permanentemente tu cuenta y todos los datos asociados",
     "deleteConfirmMessage": "⚠️ Esta acción es irreversible y eliminará todos tus datos permanentemente, incluyendo materias, tarjetas, notas y sesiones de estudio. Por favor, confirma tu contraseña para continuar.",
     "deleteSuccess": "Cuenta eliminada exitosamente",
     "deleteError": "Error al eliminar la cuenta. Verifica tu contraseña."

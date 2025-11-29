@@ -117,18 +117,18 @@ const Login: React.FC = () => {
             {t("auth.login")}
           </Button>
         </form>
-        <Typography className="test-credentials">
-          {t("auth.testCredentials")}
-        </Typography>
-        <Typography className="mt-4">
-          {t("auth.noAccount")}{" "}
-          <Link
-            to="/register"
-            className="text-blue-500 hover:text-blue-700 font-medium"
-          >
-            {t("auth.registerHere")}
-          </Link>
-        </Typography>
+        
+        <div className="mt-6">
+          <Typography>
+            {t("auth.noAccount")}{" "}
+            <Link
+              to="/register"
+              className="text-blue-500 hover:text-blue-700 font-medium"
+            >
+              {t("auth.registerHere")}
+            </Link>
+          </Typography>
+        </div>
       </div>
     </div>
   );

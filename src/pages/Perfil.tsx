@@ -337,20 +337,22 @@ const Perfil = () => {
       {/* Delete Account Section */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-gray-700">
-            <Trash2 size={20} className="text-gray-600 dark:text-gray-400" />
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-red-100 dark:bg-red-900/30">
+            <Trash2 size={20} className="text-red-600 dark:text-red-400" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            {t("profile.deleteAccountTitle")}
-          </h2>
-        </div>
-
-        <div className="space-y-4">
-          {/* Delete Account Button */}
+          <div className="flex-1">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              {t("profile.deleteAccountTitle")}
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              {t("profile.deleteAccountDescription")}
+            </p>
+          </div>
           <button
             onClick={() => setShowDeleteModal(true)}
-            className="w-full px-4 py-3 bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-800/30 text-red-600 dark:text-red-400 rounded-lg font-medium transition-colors border border-red-300 dark:border-red-700"
+            className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
           >
+            <Trash2 size={18} />
             {t("profile.deleteAccount")}
           </button>
         </div>
