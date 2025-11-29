@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, TrendingUp, Calendar, Trash2 } from "lucide-react";
+import { User, TrendingUp, Calendar, Trash2, Lock } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useProfile } from "../../hooks/useProfile";
 import { useAuth } from "../context/AuthContext";
 import { ToggleSwitch } from "../components/toggleSwitch";
 import { ConfirmationModal } from "../components/confirmationModal";
+import { PasswordChangeModal } from "../components/passwordChangeModal";
 import axios from "axios";
 import { API_URL } from "../config";
 
@@ -34,6 +35,7 @@ const Perfil = () => {
   // Modal states
   const [showDisconnectModal, setShowDisconnectModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showPasswordChangeModal, setShowPasswordChangeModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Check Google Calendar connection status
@@ -71,6 +73,25 @@ const Perfil = () => {
     setShowDisconnectModal(false);
     // Revert toggle to ON state (since user cancelled disconnect)
     setIsCalendarConnected(true);
+  };
+
+  const handlePasswordChange = async (currentPassword: string, newPassword: string, confirmPassword: string) => {
+    try {
+      setIsProcessing(true);
+      await api.post("/users/update-password", {
+        currentPassword,
+        newPassword,
+        confirmPassword
+      });
+      
+      alert(t("profile.passwordChangeSuccess"));
+      setShowPasswordChangeModal(false);
+    } catch (error: any) {
+      console.error("Error changing password:", error);
+      alert(error.message || t("profile.passwordChangeError"));
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleDeleteAccount = async (password?: string) => {
@@ -248,6 +269,30 @@ const Perfil = () => {
         </div>
       </div>
 
+      {/* Password Change Section */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 mb-6">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-100 dark:bg-blue-900/30">
+            <Lock size={20} className="text-blue-600 dark:text-blue-400" />
+          </div>
+          <div className="flex-1">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              {t("profile.changePassword")}
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              {t("profile.changePasswordDescription")}
+            </p>
+          </div>
+          <button
+            onClick={() => setShowPasswordChangeModal(true)}
+            className="px-6 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+          >
+            <Lock size={18} />
+            {t("profile.changePassword")}
+          </button>
+        </div>
+      </div>
+
       {/* Delete Account Section */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
         <div className="flex items-center gap-3 mb-6">
@@ -293,6 +338,14 @@ const Perfil = () => {
         cancelText={t("common.cancel")}
         requirePassword={true}
         isDangerous={true}
+        isLoading={isProcessing}
+      />
+
+      {/* Password Change Modal */}
+      <PasswordChangeModal
+        isOpen={showPasswordChangeModal}
+        onClose={() => setShowPasswordChangeModal(false)}
+        onConfirm={handlePasswordChange}
         isLoading={isProcessing}
       />
     </div>
