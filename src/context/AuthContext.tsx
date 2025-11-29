@@ -72,10 +72,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           localStorage.removeItem("token");
           setUser(null);
         }
-      } catch (error) {
-        console.error("Error verificando sesión:", error);
-        localStorage.removeItem("token");
-        setUser(null);
+      } catch (error: any) {
+        // Handle network errors gracefully during session check
+        if (error.code === 'ERR_INSUFFICIENT_RESOURCES' || error.code === 'ERR_NETWORK') {
+          console.warn('Network error during session check, user will need to login again');
+          localStorage.removeItem("token");
+          setUser(null);
+        } else if (error.response?.status === 401) {
+          // Token expired or invalid
+          localStorage.removeItem("token");
+          localStorage.removeItem("userTimezone");
+          setUser(null);
+        } else {
+          console.error("Error verificando sesión:", error);
+          localStorage.removeItem("token");
+          setUser(null);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -185,8 +197,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (!data) return null;
 
       return data.dashboard;
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      // Enhanced error handling for network issues
+      if (error.code === 'ERR_INSUFFICIENT_RESOURCES' || error.code === 'ERR_NETWORK') {
+        console.warn('Network resource error, will retry automatically');
+        // Don't show error to user as retry logic will handle it
+        return null;
+      } else if (error.code === 'ECONNABORTED') {
+        console.warn('Request timeout for dashboard');
+        return null;
+      } else {
+        console.error('Dashboard error:', error);
+      }
       return null;
     }
   };

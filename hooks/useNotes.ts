@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { Note, CreateNoteData, UpdateNoteData } from "../src/types/notes";
 import { useAuth } from "../src/context/AuthContext";
-import { API_URL } from "../src/config";
-
-const API_BASE_URL = API_URL || "http://localhost:3000/api";
+import { api, deduplicateRequest } from "../src/utils/axiosConfig";
 
 export const useNotes = () => {
   const [notes, setNotes] = useState<Note[]>([]);
@@ -31,15 +29,11 @@ export const useNotes = () => {
     setLoading(true);
     setError(null);
     try {
-      const token = getToken();
-      const response = await fetch(`${API_BASE_URL}/cards/topic/${topicId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) throw new Error("Error al obtener notas");
-
-      const data = await response.json();
+      const requestKey = `notes-topic-${topicId}-${page}-${pageSize}`;
+      const { data } = await deduplicateRequest(requestKey, () =>
+        api.get(`/cards/topic/${topicId}`)
+      );
+      
       const cardsArray: any[] = data.cards || [];
       
       // Filtrar solo las cards de tipo "explanation" (notas) y mapear campos
@@ -81,8 +75,14 @@ export const useNotes = () => {
       });
       setNotes(notesWithTopic.slice(start, end));
       return notesWithTopic;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
+    } catch (err: any) {
+      if (err.code === 'ERR_INSUFFICIENT_RESOURCES' || err.code === 'ERR_NETWORK') {
+        setError("Error de conexión. Verifica tu internet e inténtalo de nuevo.");
+      } else if (err.code === 'ECONNABORTED') {
+        setError("La solicitud tardó demasiado. Inténtalo de nuevo.");
+      } else {
+        setError(err instanceof Error ? err.message : "Error desconocido");
+      }
       setNotes([]);
       setAllNotes([]);
       throw err;
@@ -101,20 +101,13 @@ export const useNotes = () => {
     setLoading(true);
     setError(null);
     try {
-      const token = getToken();
-      const response = await fetch(
-        `${API_BASE_URL}/cards/search?search=${encodeURIComponent(
-          searchTerm
-        )}&page=${page}&limit=${limit}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const requestKey = `notes-search-${searchTerm}-${page}-${limit}`;
+      const { data } = await deduplicateRequest(requestKey, () =>
+        api.get(`/cards/search`, {
+          params: { search: searchTerm, page, limit },
+        })
       );
-      if (!response.ok) throw new Error("Error al buscar notas");
-
-      const data = await response.json();
+      
       const cardsArray: any[] = data.cards || [];
       
       // Filtrar solo las cards de tipo "explanation" (notas) y mapear campos
@@ -144,8 +137,14 @@ export const useNotes = () => {
         pageSize: pag.limit || limit,
       });
       return notesArray;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
+    } catch (err: any) {
+      if (err.code === 'ERR_INSUFFICIENT_RESOURCES' || err.code === 'ERR_NETWORK') {
+        setError("Error de conexión. Verifica tu internet e inténtalo de nuevo.");
+      } else if (err.code === 'ECONNABORTED') {
+        setError("La solicitud tardó demasiado. Inténtalo de nuevo.");
+      } else {
+        setError(err instanceof Error ? err.message : "Error desconocido");
+      }
       setNotes([]);
       throw err;
     } finally {
@@ -159,8 +158,6 @@ export const useNotes = () => {
     setLoading(true);
     setError(null);
     try {
-      const token = getToken();
-
       const formData = new FormData();
       // Mapear campos de nota a los campos que espera el backend
       formData.append("question", noteData.leftContent);
@@ -176,17 +173,8 @@ export const useNotes = () => {
         formData.append("answerImage", noteData.rightImage);
       }
 
-      const response = await fetch(`${API_BASE_URL}/cards`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
-
-      if (!response.ok) throw new Error("Error al crear nota");
-
-      const data = await response.json();
+      const { data } = await api.post(`/cards`, formData);
+      
       // Mapear la respuesta del backend al formato de nota del frontend
       const card = data.card;
       const mappedNote: Note = {
@@ -214,8 +202,14 @@ export const useNotes = () => {
         totalPages: newTotalPages,
       }));
       return mappedNote;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
+    } catch (err: any) {
+      if (err.code === 'ERR_INSUFFICIENT_RESOURCES' || err.code === 'ERR_NETWORK') {
+        setError("Error de conexión. Verifica tu internet e inténtalo de nuevo.");
+      } else if (err.code === 'ECONNABORTED') {
+        setError("La solicitud tardó demasiado. Inténtalo de nuevo.");
+      } else {
+        setError(err instanceof Error ? err.message : "Error desconocido");
+      }
       throw err;
     } finally {
       setLoading(false);
@@ -229,8 +223,6 @@ export const useNotes = () => {
     setLoading(true);
     setError(null);
     try {
-      const token = getToken();
-
       const formData = new FormData();
       // Mapear campos de nota a los campos que espera el backend
       if (updates.leftContent !== undefined) formData.append("question", updates.leftContent);
@@ -246,17 +238,8 @@ export const useNotes = () => {
         formData.append("answerImage", updates.rightImage);
       }
 
-      const response = await fetch(`${API_BASE_URL}/cards/${id}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
-
-      if (!response.ok) throw new Error("Error al actualizar nota");
-
-      const data = await response.json();
+      const { data } = await api.put(`/cards/${id}`, formData);
+      
       // Mapear la respuesta del backend al formato de nota del frontend
       const card = data.card;
       const mappedNote: Note = {
@@ -280,8 +263,14 @@ export const useNotes = () => {
         prev.map((note) => (note.id === id ? mappedNote : note))
       );
       return mappedNote;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
+    } catch (err: any) {
+      if (err.code === 'ERR_INSUFFICIENT_RESOURCES' || err.code === 'ERR_NETWORK') {
+        setError("Error de conexión. Verifica tu internet e inténtalo de nuevo.");
+      } else if (err.code === 'ECONNABORTED') {
+        setError("La solicitud tardó demasiado. Inténtalo de nuevo.");
+      } else {
+        setError(err instanceof Error ? err.message : "Error desconocido");
+      }
       throw err;
     } finally {
       setLoading(false);
@@ -292,15 +281,7 @@ export const useNotes = () => {
     setLoading(true);
     setError(null);
     try {
-      const token = getToken();
-      const response = await fetch(`${API_BASE_URL}/cards/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) throw new Error("Error al eliminar nota");
+      await api.delete(`/cards/${id}`);
 
       // Actualizar allNotes primero
       const updatedAllNotes = allNotes.filter((note) => note.id !== id);
@@ -323,8 +304,14 @@ export const useNotes = () => {
       const start = (Math.min(pagination.currentPage, newTotalPages) - 1) * pagination.pageSize;
       const end = start + pagination.pageSize;
       setNotes(updatedAllNotes.slice(start, end));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
+    } catch (err: any) {
+      if (err.code === 'ERR_INSUFFICIENT_RESOURCES' || err.code === 'ERR_NETWORK') {
+        setError("Error de conexión. Verifica tu internet e inténtalo de nuevo.");
+      } else if (err.code === 'ECONNABORTED') {
+        setError("La solicitud tardó demasiado. Inténtalo de nuevo.");
+      } else {
+        setError(err instanceof Error ? err.message : "Error desconocido");
+      }
       throw err;
     } finally {
       setLoading(false);

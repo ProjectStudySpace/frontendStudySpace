@@ -1,10 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
-import { API_URL } from "../src/config";
-
-const api = axios.create({
-  baseURL: API_URL || "http://localhost:3000/api",
-});
+import { api } from "../src/utils/axiosConfig";
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");

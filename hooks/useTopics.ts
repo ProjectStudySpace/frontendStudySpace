@@ -1,23 +1,7 @@
-import { useState } from "react";
-import axios from "axios";
+import { useState, useCallback } from "react";
 import { Topic, CreateTopicData, UpdateTopicData } from "../src/types/topics";
 import { useAuth } from "../src/context/AuthContext";
-import { API_URL } from "../src/config";
-
-// Usando variable de entorno para producción o desarrollo
-const API_BASE_URL = API_URL || "http://localhost:4000/api";
-
-const api = axios.create({
-  baseURL: API_BASE_URL,
-});
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+import { api, deduplicateRequest } from "../src/utils/axiosConfig";
 
 export const useTopics = () => {
   const [topics, setTopics] = useState<Topic[]>([]);
@@ -38,41 +22,52 @@ export const useTopics = () => {
     return token;
   };
 
-  const fetchUserTopics = async (
-    page: number = 1,
-    limit: number = 10
-  ): Promise<Topic[]> => {
-    if (!user) throw new Error("Usuario no autenticado");
+  const fetchUserTopics = useCallback(
+    async (page: number = 1, limit: number = 10): Promise<Topic[]> => {
+      if (!user) throw new Error("Usuario no autenticado");
 
-    setLoading(true);
-    setError(null);
-    try {
-      const { data } = await api.get(`/topics`, {
-        params: { page, limit },
-      });
+      setLoading(true);
+      setError(null);
 
-      if (!data) {
-        const msg = await data.text();
-        throw new Error(`Error al obtener temas: ${msg}`);
+      try {
+        // Use request deduplication to prevent multiple identical requests
+        const requestKey = `topics-${page}-${limit}`;
+        const { data } = await deduplicateRequest(requestKey, () =>
+          api.get(`/topics`, {
+            params: { page, limit },
+          })
+        );
+
+        if (!data) {
+          throw new Error("No se recibieron datos del servidor");
+        }
+
+        setTopics(data.topics || []);
+        const pag = data.pagination || {};
+        setPagination({
+          currentPage: pag.page || page,
+          totalPages:
+            pag.totalPages || Math.ceil((pag.total || 0) / (pag.limit || limit)),
+          totalItems: pag.total || 0,
+          pageSize: pag.limit || limit,
+        });
+        return data.topics || [];
+      } catch (err: any) {
+        // Handle specific network errors
+        if (err.code === 'ERR_INSUFFICIENT_RESOURCES' || err.code === 'ERR_NETWORK') {
+          setError("Error de conexión. Verifica tu internet e inténtalo de nuevo.");
+        } else if (err.code === 'ECONNABORTED') {
+          setError("La solicitud tardó demasiado. Inténtalo de nuevo.");
+        } else {
+          setError(err.message || "Error desconocido al obtener temas");
+        }
+        return [];
+      } finally {
+        setLoading(false);
       }
-
-      setTopics(data.topics || []);
-      const pag = data.pagination || {};
-      setPagination({
-        currentPage: pag.page || page,
-        totalPages:
-          pag.totalPages || Math.ceil((pag.total || 0) / (pag.limit || limit)),
-        totalItems: pag.total || 0,
-        pageSize: pag.limit || limit,
-      });
-      return data.topics || [];
-    } catch (err: any) {
-      setError(err.message || "Error desconocido");
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [user]
+  );
 
   const addTopic = async (
     topicData: CreateTopicData

@@ -1,12 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import axios from "axios";
-import { API_URL } from "../src/config";
-
-const API_BASE = API_URL || "http://localhost:3000/api";
-
-const api = axios.create({
-  baseURL: API_BASE,
-});
+import { api } from "../src/utils/axiosConfig";
 
 //interceptor para agregar token automáticamente
 api.interceptors.request.use((config) => {
