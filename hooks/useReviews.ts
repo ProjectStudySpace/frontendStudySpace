@@ -7,24 +7,9 @@ import {
   ReviewSession,
   UpcomingReviewItem,
 } from "../src/types/reviews";
-import { API_URL } from "../src/config";
 import { reviewsUpdateEvent } from "./reviewsUpdateEvent";
 import { getStoredUserTimezone } from "../src/utils/dateUtils";
-
-const API_BASE = API_URL || "http://localhost:3000/api";
-
-const api = axios.create({
-  baseURL: API_BASE,
-});
-
-//interceptor para agregar token automáticamente
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+import { api } from "../src/utils/axiosConfig";
 
 export const useReviews = () => {
   const [pendingReviews, setPendingReviews] = useState<ScheduledReview[]>([]);

@@ -1,25 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, TrendingUp, Calendar, Trash2 } from "lucide-react";
+import { User, TrendingUp, Calendar, Trash2, Lock } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useProfile } from "../../hooks/useProfile";
 import { useAuth } from "../context/AuthContext";
 import { ToggleSwitch } from "../components/toggleSwitch";
 import { ConfirmationModal } from "../components/confirmationModal";
-import axios from "axios";
+import { PasswordChangeModal } from "../components/passwordChangeModal";
+import { api } from "../utils/axiosConfig";
 import { API_URL } from "../config";
-
-const api = axios.create({
-  baseURL: API_URL || "http://localhost:3000/api",
-});
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
 
 const Perfil = () => {
   const navigate = useNavigate();
@@ -34,6 +23,7 @@ const Perfil = () => {
   // Modal states
   const [showDisconnectModal, setShowDisconnectModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showPasswordChangeModal, setShowPasswordChangeModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Check Google Calendar connection status
@@ -71,6 +61,78 @@ const Perfil = () => {
     setShowDisconnectModal(false);
     // Revert toggle to ON state (since user cancelled disconnect)
     setIsCalendarConnected(true);
+  };
+
+  const handlePasswordChange = async (currentPassword: string, newPassword: string, confirmPassword: string) => {
+    try {
+      setIsProcessing(true);
+      
+      console.log("Attempting password change...");
+      
+      const response = await api.put("/users/update-password", {
+        currentPassword,
+        newPassword,
+        confirmPassword
+      });
+      
+      console.log("Password change response:", response);
+      
+      // Check for explicit success indicators in response
+      const isSuccess = response.data && (
+        response.data.success === true || 
+        response.data.message?.includes('success') ||
+        response.status === 200
+      );
+      
+      if (isSuccess) {
+        alert("¡Contraseña cambiada exitosamente! Serás redirigido al login.");
+        setShowPasswordChangeModal(false);
+        
+        // Logout user after successful password change for security
+        setTimeout(() => {
+          logout();
+          navigate("/login");
+        }, 1500);
+      } else {
+        // If no explicit success indicator, treat as failure
+        throw new Error("Password change failed - server returned no success confirmation");
+      }
+      
+    } catch (error: any) {
+      console.error("Error changing password:", error);
+      
+      // Extract error message from backend response
+      let errorMessage = "Error al cambiar la contraseña";
+      
+      if (error.response) {
+        console.log("Error response data:", error.response.data);
+        console.log("Error status:", error.response.status);
+        
+        // Handle different response formats
+        if (error.response.data?.message) {
+          errorMessage = error.response.data.message;
+        } else if (error.response.data?.error) {
+          errorMessage = error.response.data.error;
+        } else if (error.response.data && typeof error.response.data === 'string') {
+          errorMessage = error.response.data;
+        }
+        
+        // Handle specific status codes
+        if (error.response.status === 401) {
+          errorMessage = "La contraseña actual es incorrecta";
+        } else if (error.response.status === 400) {
+          errorMessage = "Los datos proporcionados no son válidos";
+        } else if (error.response.status === 409) {
+          errorMessage = "La nueva contraseña no cumple con los requisitos";
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      alert(`Error: ${errorMessage}`);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleDeleteAccount = async (password?: string) => {
@@ -248,23 +310,49 @@ const Perfil = () => {
         </div>
       </div>
 
+      {/* Password Change Section */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 mb-6">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-100 dark:bg-blue-900/30">
+            <Lock size={20} className="text-blue-600 dark:text-blue-400" />
+          </div>
+          <div className="flex-1">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              {t("profile.changePassword")}
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              {t("profile.changePasswordDescription")}
+            </p>
+          </div>
+          <button
+            onClick={() => setShowPasswordChangeModal(true)}
+            className="px-6 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+          >
+            <Lock size={18} />
+            {t("profile.changePassword")}
+          </button>
+        </div>
+      </div>
+
       {/* Delete Account Section */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-gray-700">
-            <Trash2 size={20} className="text-gray-600 dark:text-gray-400" />
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-red-100 dark:bg-red-900/30">
+            <Trash2 size={20} className="text-red-600 dark:text-red-400" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            {t("profile.deleteAccountTitle")}
-          </h2>
-        </div>
-
-        <div className="space-y-4">
-          {/* Delete Account Button */}
+          <div className="flex-1">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              {t("profile.deleteAccountTitle")}
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              {t("profile.deleteAccountDescription")}
+            </p>
+          </div>
           <button
             onClick={() => setShowDeleteModal(true)}
-            className="w-full px-4 py-3 bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-800/30 text-red-600 dark:text-red-400 rounded-lg font-medium transition-colors border border-red-300 dark:border-red-700"
+            className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
           >
+            <Trash2 size={18} />
             {t("profile.deleteAccount")}
           </button>
         </div>
@@ -293,6 +381,14 @@ const Perfil = () => {
         cancelText={t("common.cancel")}
         requirePassword={true}
         isDangerous={true}
+        isLoading={isProcessing}
+      />
+
+      {/* Password Change Modal */}
+      <PasswordChangeModal
+        isOpen={showPasswordChangeModal}
+        onClose={() => setShowPasswordChangeModal(false)}
+        onConfirm={handlePasswordChange}
         isLoading={isProcessing}
       />
     </div>

@@ -1,24 +1,7 @@
 import { useState } from "react";
-import axios from "axios";
 import { Card, CreateCardData, UpdateCardData } from "../src/types/cards";
 import { useAuth } from "../src/context/AuthContext";
-import { API_URL } from "../src/config";
-
-const API_BASE_URL = API_URL || "http://localhost:3000/api";
-
-// Configurar instancia de axios
-const api = axios.create({
-  baseURL: API_BASE_URL,
-});
-
-// Interceptor para agregar token automáticamente
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+import { api } from "../src/utils/axiosConfig";
 
 export const useCards = () => {
   const [cards, setCards] = useState<Card[]>([]);

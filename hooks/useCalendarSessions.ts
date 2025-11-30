@@ -1,15 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { StudySessionCalendar } from "../src/types/reviews";
-import { API_URL } from "../src/config";
 import { reviewsUpdateEvent } from "./reviewsUpdateEvent";
-
-const API_BASE = API_URL || "http://localhost:3000/api";
-
-// Configurar instancia de axios
-const api = axios.create({
-  baseURL: API_BASE,
-});
+import { api } from "../src/utils/axiosConfig";
 
 // Interceptor para agregar token automáticamente
 api.interceptors.request.use((config) => {
