@@ -72,10 +72,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           localStorage.removeItem("token");
           setUser(null);
         }
-      } catch (error) {
-        console.error("Error verificando sesión:", error);
-        localStorage.removeItem("token");
-        setUser(null);
+      } catch (error: any) {
+        // Handle network errors gracefully during session check
+        if (error.code === 'ERR_INSUFFICIENT_RESOURCES' || error.code === 'ERR_NETWORK') {
+          console.warn('Network error during session check, user will need to login again');
+          localStorage.removeItem("token");
+          setUser(null);
+        } else if (error.response?.status === 401) {
+          // Token expired or invalid
+          localStorage.removeItem("token");
+          localStorage.removeItem("userTimezone");
+          setUser(null);
+        } else {
+          console.error("Error verificando sesión:", error);
+          localStorage.removeItem("token");
+          setUser(null);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -95,11 +107,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const { data } = await api.post("/users/login", {
+      console.log("Attempting login with email:", email);
+      
+      const { data, status } = await api.post("/users/login", {
         email,
         password,
         timezone: userTimezone,
       });
+
+      console.log("Login response:", { data, status });
 
       if (!data) {
         showError("Error de inicio de sesión", "Credenciales inválidas");
@@ -116,7 +132,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       showSuccess("¡Bienvenido!", "Has iniciado sesión correctamente");
       return true;
     } catch (error: any) {
-      console.error(error);
+      console.error("Login error:", error);
+      console.error("Error response:", error.response);
+
+      // Handle 401 error specifically
+      if (error.response?.status === 401) {
+        const errorMessage = error.response.data?.message || "Credenciales inválidas";
+        showError("Error de inicio de sesión", errorMessage);
+        return false;
+      }
 
       // Handle 403 error for unverified email
       if (error.response?.status === 403) {
@@ -185,8 +209,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (!data) return null;
 
       return data.dashboard;
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      // Enhanced error handling for network issues
+      if (error.code === 'ERR_INSUFFICIENT_RESOURCES' || error.code === 'ERR_NETWORK') {
+        console.warn('Network resource error, will retry automatically');
+        // Don't show error to user as retry logic will handle it
+        return null;
+      } else if (error.code === 'ECONNABORTED') {
+        console.warn('Request timeout for dashboard');
+        return null;
+      } else {
+        console.error('Dashboard error:', error);
+      }
       return null;
     }
   };

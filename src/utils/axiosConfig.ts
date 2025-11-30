@@ -1,19 +1,103 @@
-import axios, { AxiosResponse, AxiosError } from 'axios';
+import axios, { AxiosResponse, AxiosError, AxiosRequestConfig } from 'axios';
 import { API_URL } from '../config';
 
-// Crear instancia de axios con configuración base
+// Create a cancellation token source for request management
+const createCancelToken = () => axios.CancelToken.source();
+
+// Create request queue for throttling
+const requestQueue = new Map<string, Promise<any>>();
+const pendingRequests = new Set<string>();
+
+// Retry configuration
+const RETRY_CONFIG = {
+  maxRetries: 3,
+  retryDelay: 1000, // 1 second
+  retryCondition: (error: AxiosError) => {
+    return (
+      error.code === 'ERR_NETWORK' ||
+      error.code === 'ERR_INSUFFICIENT_RESOURCES' ||
+      error.code === 'ECONNABORTED' ||
+      (error.response?.status && error.response.status >= 500)
+    );
+  }
+};
+
+// Create axios instance with optimized configuration
 export const api = axios.create({
-  baseURL: API_URL || "http://localhost:3000/api",
+  baseURL: API_URL,
+  timeout: 10000, // 10 second timeout
+  maxRedirects: 5,
+  validateStatus: (status) => status < 500, // Don't treat 5xx as errors for retry logic
 });
 
-// Interceptor para agregar token automáticamente
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+// Request interceptor for token and request management
+api.interceptors.request.use(
+  (config) => {
+    // Add auth token
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
-  return config;
-});
+);
+
+// Response interceptor for retry logic and error handling
+api.interceptors.response.use(
+  (response: AxiosResponse) => {
+    return response;
+  },
+  async (error: AxiosError) => {
+    // Retry logic for transient errors
+    const config = error.config as AxiosRequestConfig & { retryCount?: number };
+    config.retryCount = config.retryCount || 0;
+    
+    if (
+      RETRY_CONFIG.retryCondition(error) &&
+      config.retryCount < RETRY_CONFIG.maxRetries &&
+      !error.response // Only retry for network errors, not HTTP errors
+    ) {
+      config.retryCount++;
+      
+      // Exponential backoff
+      const delay = RETRY_CONFIG.retryDelay * Math.pow(2, config.retryCount - 1);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      
+      console.log(`Retrying request (${config.retryCount}/${RETRY_CONFIG.maxRetries}):`, config.url);
+      return api(config);
+    }
+    
+    return Promise.reject(error);
+  }
+);
+
+// Utility function to cancel all pending requests
+export const cancelAllRequests = () => {
+  pendingRequests.clear();
+  requestQueue.clear();
+};
+
+// Utility function for request deduplication
+export const deduplicateRequest = async <T>(
+  key: string,
+  requestFn: () => Promise<T>
+): Promise<T> => {
+  if (requestQueue.has(key)) {
+    return requestQueue.get(key)!;
+  }
+  
+  const promise = requestFn()
+    .finally(() => {
+      requestQueue.delete(key);
+    });
+    
+  requestQueue.set(key, promise);
+  return promise;
+};
 
 // Función auxiliar para mostrar errores globalmente sin depender del contexto de React
 const showErrorGlobal = (title: string, description: string) => {
@@ -61,8 +145,13 @@ api.interceptors.response.use(
     return response;
   },
   (error: AxiosError) => {
+    // No mostrar errores globales para ciertos endpoints que manejan sus propios errores
+    const url = error.config?.url || '';
+    const isPasswordChange = url.includes('/users/update-password') || url.includes('update-password');
+    const isLogin = url.includes('/users/login');
+    
     // Solo manejar errores de red o servidor, no errores de validación del cliente
-    if (error.response) {
+    if (error.response && !isPasswordChange && !isLogin) {
       const status = error.response.status;
       const message = error.response.data && typeof error.response.data === 'object' 
         ? (error.response.data as any).message 
@@ -79,9 +168,11 @@ api.interceptors.response.use(
           break;
         case 401:
           showErrorGlobal("No autorizado", "Tu sesión ha expirado. Por favor, inicia sesión nuevamente");
-          // Limpiar token inválido
-          localStorage.removeItem("token");
-          localStorage.removeItem("userTimezone");
+          // Limpiar token inválido solo para non-auth endpoints
+          if (!isLogin) {
+            localStorage.removeItem("token");
+            localStorage.removeItem("userTimezone");
+          }
           break;
         case 403:
           showErrorGlobal("Acceso denegado", "No tienes permisos para realizar esta acción");
@@ -101,10 +192,10 @@ api.interceptors.response.use(
             showErrorGlobal("Error de conexión", message || "No se pudo conectar con el servidor");
           }
       }
-    } else if (error.request) {
+    } else if (error.request && !isPasswordChange && !isLogin) {
       // Error de red
       showErrorGlobal("Error de conexión", "No se pudo conectar con el servidor. Verifica tu conexión a internet");
-    } else {
+    } else if (!error.request && !isPasswordChange && !isLogin) {
       // Error en la configuración de la solicitud
       console.error("Error de configuración:", error.message);
     }
