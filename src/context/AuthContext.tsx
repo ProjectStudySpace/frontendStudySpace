@@ -74,8 +74,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       } catch (error: any) {
         // Handle network errors gracefully during session check
-        if (error.code === 'ERR_INSUFFICIENT_RESOURCES' || error.code === 'ERR_NETWORK') {
-          console.warn('Network error during session check, user will need to login again');
+        if (
+          error.code === "ERR_INSUFFICIENT_RESOURCES" ||
+          error.code === "ERR_NETWORK"
+        ) {
+          console.warn(
+            "Network error during session check, user will need to login again"
+          );
           localStorage.removeItem("token");
           setUser(null);
         } else if (error.response?.status === 401) {
@@ -107,15 +112,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      console.log("Attempting login with email:", email);
-      
+
       const { data, status } = await api.post("/users/login", {
         email,
         password,
         timezone: userTimezone,
       });
-
-      console.log("Login response:", { data, status });
 
       if (!data) {
         showError("Error de inicio de sesión", "Credenciales inválidas");
@@ -137,7 +139,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // Handle 401 error specifically
       if (error.response?.status === 401) {
-        const errorMessage = error.response.data?.message || "Credenciales inválidas";
+        const errorMessage =
+          error.response.data?.message || "Credenciales inválidas";
         showError("Error de inicio de sesión", errorMessage);
         return false;
       }
@@ -211,15 +214,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return data.dashboard;
     } catch (error: any) {
       // Enhanced error handling for network issues
-      if (error.code === 'ERR_INSUFFICIENT_RESOURCES' || error.code === 'ERR_NETWORK') {
-        console.warn('Network resource error, will retry automatically');
+      if (
+        error.code === "ERR_INSUFFICIENT_RESOURCES" ||
+        error.code === "ERR_NETWORK"
+      ) {
+        console.warn("Network resource error, will retry automatically");
         // Don't show error to user as retry logic will handle it
         return null;
-      } else if (error.code === 'ECONNABORTED') {
-        console.warn('Request timeout for dashboard');
+      } else if (error.code === "ECONNABORTED") {
+        console.warn("Request timeout for dashboard");
         return null;
       } else {
-        console.error('Dashboard error:', error);
+        console.error("Dashboard error:", error);
       }
       return null;
     }
