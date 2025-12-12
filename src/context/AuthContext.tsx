@@ -7,6 +7,7 @@ import React, {
   ReactNode,
 } from "react";
 import axios from "axios";
+import { getUserTimezone } from "../utils/dateUtils";
 import { api } from "../utils/axiosConfig";
 import { User } from "../types";
 import { useNotification } from "./NotificationContext";
@@ -172,7 +173,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       language?: string
     ): Promise<any> => {
       try {
-        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const userTimezone = getUserTimezone();
 
         const { data } = await api.post("/users/register", {
           name,

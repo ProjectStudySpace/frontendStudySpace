@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Button, TextField, Typography, Container, Alert } from "@mui/material";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { getUserTimezone } from "../utils/dateUtils";
 import { useTranslation } from "react-i18next";
 import "./Register.css";
 
@@ -13,17 +12,12 @@ const Register: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [userTimezone, setUserTimezone] = useState("");
   const [language, setLanguage] = useState("");
   const { register } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
   useEffect(() => {
-    // Capturar zona horaria del navegador al cargar el componente
-    const timezone = getUserTimezone();
-    setUserTimezone(timezone);
-
     // Detectar idioma del navegador
     const browserLang = navigator.language.startsWith("es") ? "es" : "en";
     setLanguage(browserLang);
