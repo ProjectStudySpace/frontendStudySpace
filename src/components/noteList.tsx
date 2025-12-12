@@ -16,27 +16,16 @@ export const NoteList: React.FC<NoteListProps> = ({
   const { t } = useTranslation();
   if (notes.length === 0) {
     return (
-      <div className="text-center py-16 px-4">
-        <div className="max-w-md mx-auto">
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-green-100 dark:from-blue-900/30 dark:to-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <BookOpen size={40} className="text-indigo-600 dark:text-indigo-400" />
-          </div>
-          <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            {t("components.noteList.noNotes")}
-          </h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            {t("components.noteList.createFirstNoteDescription")}
-          </p>
-          {onCreateNote && (
-            <button
-              onClick={onCreateNote}
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-            >
-              <Plus size={20} />
-              {t("components.noteList.createFirstNote")}
-            </button>
-          )}
-        </div>
+      <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+        <p className="text-lg mb-4">{t("components.noteList.noNotes")}</p>
+        {onCreateNote && (
+          <button
+            onClick={onCreateNote}
+            className="bg-indigo-500 hover:bg-indigo-600 text-white font-medium py-2 px-6 rounded-lg transition-colors"
+          >
+            {t("components.noteList.createFirstNote")}
+          </button>
+        )}
       </div>
     );
   }
