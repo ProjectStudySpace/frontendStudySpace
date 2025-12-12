@@ -120,11 +120,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         timezone: userTimezone,
       });
 
-      if (!data) {
+      // Check if the response indicates successful authentication
+      if (!data || !data.user || !data.token) {
         showError("Error de inicio de sesión", "Credenciales inválidas");
         return false;
       }
 
+      // Successful login
       setUser(data.user);
       localStorage.setItem("token", data.token);
       // Persistir zona horaria en localStorage
@@ -138,7 +140,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.error("Login error:", error);
       console.error("Error response:", error.response);
 
-      // Handle 401 error specifically
+      // Handle 401 error specifically for invalid credentials
       if (error.response?.status === 401) {
         const errorMessage =
           error.response.data?.message || "Credenciales inválidas";
@@ -157,6 +159,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       }
 
+      // Handle other network/server errors
       showError(
         "Error de inicio de sesión",
         "No se pudo conectar con el servidor"
