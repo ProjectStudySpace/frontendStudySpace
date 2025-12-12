@@ -26,8 +26,7 @@ const StudySession: React.FC<StudySessionProps> = ({
     alt?: string;
   } | null>(null);
 
-  // Check if this is a note (explanation) or a card
-  // Notes have type "EXPLANATION", cards have type "FLASHCARD"
+  // Check if this is a note or a card
   const isNote = review.card.contentType === "note" || 
                  review.card.type === "EXPLANATION";
 
@@ -72,9 +71,7 @@ const StudySession: React.FC<StudySessionProps> = ({
       <div className="fixed inset-0 bg-white dark:bg-gray-900 flex items-center justify-center p-4 z-50 overflow-y-auto">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg max-w-3xl w-full my-8 border border-gray-200 dark:border-gray-700 flex flex-col">
           <div className="flex-shrink-0">
-            {/* Header */}
             <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-4 sm:px-6 py-4 rounded-t-xl relative">
-              {/* Botón cerrar en la esquina */}
               <button
                 onClick={onExit}
                 className="absolute top-4 right-4 text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-colors"
@@ -83,18 +80,13 @@ const StudySession: React.FC<StudySessionProps> = ({
                 <X size={20} className="sm:w-6 sm:h-6" />
               </button>
 
-              {/* Contenido centrado */}
               <div className="text-center text-white pr-12">
                 <h2 className="text-lg sm:text-xl font-semibold mb-2">
                   {isNote && review.card.title ? review.card.title : t("studySession.title")}
                 </h2>
-
-                {/* Nombre de la materia destacado */}
                 <p className="text-xl sm:text-2xl font-bold mb-2">
                   {review.card.topic.name}
                 </p>
-
-                {/* Contador de tarjetas */}
                 <div className="flex items-center justify-center gap-2 text-sm sm:text-base text-white text-opacity-90">
                   <BookOpen size={16} className="sm:w-5 sm:h-5" />
                   <span>
@@ -105,7 +97,6 @@ const StudySession: React.FC<StudySessionProps> = ({
               </div>
             </div>
 
-            {/* Progress bar */}
             <div className="w-full bg-gray-200 dark:bg-gray-700 h-2">
               <div
                 className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 transition-all duration-300"
@@ -115,10 +106,9 @@ const StudySession: React.FC<StudySessionProps> = ({
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
-            {/* Content display - different for cards vs notes */}
+            {/* Content display */}
             {isNote ? (
               <>
-                {/* Note: Show title separately (question field contains the title) */}
                 <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-xl p-4 sm:p-6 border border-indigo-200 dark:border-indigo-800 mb-4">
                   <h3 className="text-xs sm:text-sm font-semibold text-indigo-800 dark:text-indigo-200 uppercase tracking-wide mb-2 text-center">
                     {t("studySession.noteTitle")}
@@ -128,58 +118,56 @@ const StudySession: React.FC<StudySessionProps> = ({
                   </p>
                 </div>
 
-                {/* Note: Show left page initially */}
-                <div className="bg-indigo-50 dark:bg-indigo-900/30 rounded-xl p-4 sm:p-6 border border-indigo-200 dark:border-indigo-800">
-                  <h3 className="text-xs sm:text-sm font-semibold text-indigo-800 dark:text-indigo-200 uppercase tracking-wide mb-3 text-center">
-                    Página Izquierda
-                  </h3>
-                  <div className="text-base sm:text-lg text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed text-center">
-                    {review.card.leftContent || review.card.question}
-                  </div>
-                  {/* Show left images if available */}
-                  {questionImages.length > 0 && (
-                    <div className="mt-4 flex gap-2 justify-center flex-wrap">
-                      {questionImages.map((img) => (
-                        <img
-                          key={img.id}
-                          src={img.imageUrl}
-                          alt={img.altText || "Imagen"}
-                          className="max-w-[200px] max-h-[200px] object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity"
-                          onClick={() =>
-                            handleImageClick(img.imageUrl, img.altText)
-                          }
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Note: Show right page after clicking "show answer" */}
                 {showAnswer ? (
-                  <div className="bg-green-50 dark:bg-green-900/30 rounded-xl p-4 sm:p-6 border border-green-200 dark:border-green-800">
-                    <h3 className="text-xs sm:text-sm font-semibold text-green-800 dark:text-green-200 uppercase tracking-wide mb-3">
-                      Página Derecha
-                    </h3>
-                    <div className="text-base sm:text-lg text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed">
-                      {review.card.rightContent || review.card.answer}
-                    </div>
-                    {/* Show right images if available */}
-                    {answerImages.length > 0 && (
-                      <div className="mt-4 flex gap-2 justify-center flex-wrap">
-                        {answerImages.map((img) => (
-                          <img
-                            key={img.id}
-                            src={img.imageUrl}
-                            alt={img.altText || "Imagen"}
-                            className="max-w-[200px] max-h-[200px] object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity"
-                            onClick={() =>
-                              handleImageClick(img.imageUrl, img.altText)
-                            }
-                          />
-                        ))}
+                  <>
+                    <div className="bg-indigo-50 dark:bg-indigo-900/30 rounded-xl p-4 sm:p-6 border border-indigo-200 dark:border-indigo-800 mb-4">
+                      <h3 className="text-xs sm:text-sm font-semibold text-indigo-800 dark:text-indigo-200 uppercase tracking-wide mb-3 text-center">
+                        Página Izquierda
+                      </h3>
+                      <div className="text-base sm:text-lg text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed text-center">
+                        {review.card.leftContent || review.card.question}
                       </div>
-                    )}
-                  </div>
+                      {questionImages.length > 0 && (
+                        <div className="mt-4 flex gap-2 justify-center flex-wrap">
+                          {questionImages.map((img) => (
+                            <img
+                              key={img.id}
+                              src={img.imageUrl}
+                              alt={img.altText || "Imagen"}
+                              className="max-w-[200px] max-h-[200px] object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity"
+                              onClick={() =>
+                                handleImageClick(img.imageUrl, img.altText)
+                              }
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="bg-green-50 dark:bg-green-900/30 rounded-xl p-4 sm:p-6 border border-green-200 dark:border-green-800">
+                      <h3 className="text-xs sm:text-sm font-semibold text-green-800 dark:text-green-200 uppercase tracking-wide mb-3">
+                        Página Derecha
+                      </h3>
+                      <div className="text-base sm:text-lg text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed">
+                        {review.card.rightContent || review.card.answer}
+                      </div>
+                      {answerImages.length > 0 && (
+                        <div className="mt-4 flex gap-2 justify-center flex-wrap">
+                          {answerImages.map((img) => (
+                            <img
+                              key={img.id}
+                              src={img.imageUrl}
+                              alt={img.altText || "Imagen"}
+                              className="max-w-[200px] max-h-[200px] object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity"
+                              onClick={() =>
+                                handleImageClick(img.imageUrl, img.altText)
+                              }
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </>
                 ) : (
                   <div className="flex justify-center">
                     <button
@@ -193,7 +181,6 @@ const StudySession: React.FC<StudySessionProps> = ({
               </>
             ) : (
               <>
-                {/* Card: Question - Centrada */}
                 <div className="bg-indigo-50 dark:bg-indigo-900/30 rounded-xl p-4 sm:p-6 border border-indigo-200 dark:border-indigo-800">
                   <h3 className="text-xs sm:text-sm font-semibold text-indigo-800 dark:text-indigo-200 uppercase tracking-wide mb-3 text-center">
                     {t("studySession.question")}
@@ -202,7 +189,6 @@ const StudySession: React.FC<StudySessionProps> = ({
                     {review.card.question}
                   </p>
 
-                  {/* Imágenes de pregunta - Centradas */}
                   {questionImages.length > 0 && (
                     <div className="mt-4 flex gap-2 justify-center flex-wrap">
                       {questionImages.map((img) => (
@@ -220,7 +206,6 @@ const StudySession: React.FC<StudySessionProps> = ({
                   )}
                 </div>
 
-                {/* Card: Answer section */}
                 {showAnswer ? (
                   <div className="bg-green-50 dark:bg-green-900/30 rounded-xl p-4 sm:p-6 border border-green-200 dark:border-green-800">
                     <h3 className="text-xs sm:text-sm font-semibold text-green-800 dark:text-green-200 uppercase tracking-wide mb-3">
@@ -230,7 +215,6 @@ const StudySession: React.FC<StudySessionProps> = ({
                       {review.card.answer}
                     </p>
 
-                    {/* Imágenes de respuesta - Centradas */}
                     {answerImages.length > 0 && (
                       <div className="mt-4 flex gap-2 justify-center flex-wrap">
                         {answerImages.map((img) => (
@@ -260,7 +244,6 @@ const StudySession: React.FC<StudySessionProps> = ({
               </>
             )}
 
-            {/* Difficulty selector */}
             {showAnswer && (
               <DifficultySelector
                 selectedDifficulty={selectedDifficulty}
@@ -269,7 +252,6 @@ const StudySession: React.FC<StudySessionProps> = ({
             )}
           </div>
 
-          {/* Navigation buttons */}
           <div className="flex-shrink-0 border-t border-gray-200 dark:border-gray-700 p-4 sm:p-6">
             <div className="flex justify-between items-center gap-4">
               <button
@@ -302,7 +284,6 @@ const StudySession: React.FC<StudySessionProps> = ({
         </div>
       </div>
 
-      {/* Modal de imagen */}
       {selectedImage && (
         <ImageModal
           imageUrl={selectedImage.url}
