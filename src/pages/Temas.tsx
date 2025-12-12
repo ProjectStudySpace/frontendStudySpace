@@ -672,7 +672,7 @@ const Dashboard = () => {
               </div>
 
               {/* Botón Iniciar Repaso */}
-              {totalPendingCount > 0 && (
+              {/* {totalPendingCount > 0 && (
                 <button
                   onClick={handleStartReview}
                   className="flex items-center gap-2 px-4 sm:px-6 py-3 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl justify-center self-start md:self-center"
@@ -685,7 +685,7 @@ const Dashboard = () => {
                     {t("reviews.startReview")} ({totalPendingCount})
                   </span>
                 </button>
-              )}
+              )} */}
             </div>
 
             {/* Barra de búsqueda */}
