@@ -14,6 +14,15 @@ export interface StudyCard {
     order: number;
     altText?: string;
   }[];
+  // Type field from backend
+  type?: "FLASHCARD" | "EXPLANATION";
+  // Note-specific fields
+  contentType?: "card" | "note";
+  title?: string;
+  leftContent?: string;
+  rightContent?: string;
+  leftImageUrl?: string;
+  rightImageUrl?: string;
 }
 
 export interface ScheduledReview {
