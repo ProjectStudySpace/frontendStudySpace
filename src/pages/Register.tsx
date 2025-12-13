@@ -3,6 +3,7 @@ import { Button, TextField, Typography, Container, Alert } from "@mui/material";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
+import GoogleSignInButton from "../components/GoogleSignInButton";
 import "./Register.css";
 
 const Register: React.FC = () => {
@@ -13,7 +14,7 @@ const Register: React.FC = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [language, setLanguage] = useState("");
-  const { register } = useAuth();
+  const { register, registerWithGoogle } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -117,7 +118,17 @@ const Register: React.FC = () => {
           </Button>
         </form>
 
-        <Typography className="test-credentials">
+        {/* Divider */}
+        <div className="flex items-center my-4">
+          <div className="flex-1 border-t border-gray-300"></div>
+          <span className="px-4 text-gray-500 text-sm">{t("auth.or")}</span>
+          <div className="flex-1 border-t border-gray-300"></div>
+        </div>
+
+        {/* Google Sign-Up Button */}
+        <GoogleSignInButton onClick={registerWithGoogle} variant="register" />
+
+        <Typography className="test-credentials mt-6">
           {t("auth.hasAccount")}{" "}
           <Link
             to="/login"

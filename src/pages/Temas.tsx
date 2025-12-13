@@ -56,7 +56,7 @@ const Dashboard = () => {
     rows: 2,
   });
 
-  const { getDashboard } = useAuth();
+  const { getDashboard, handleGoogleCallback } = useAuth();
   const { streakData, loading: streakLoading } = useStreak();
   const { totalPendingCount, pendingReviews, completeReview } = useReviews();
   const { showSuccess, showError } = useNotification();
@@ -81,6 +81,15 @@ const Dashboard = () => {
     const timezone = getStoredUserTimezone();
     setUserTimezone(timezone);
   }, []);
+
+  // Handle Google OAuth callback on dashboard
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("google_auth") === "success") {
+      handleGoogleCallback();
+    }
+  }, [handleGoogleCallback]);
+
   const {
     topics,
     loading,
