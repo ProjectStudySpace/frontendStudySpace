@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Button, TextField, Typography, Container, Alert } from "@mui/material";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { getUserTimezone } from "../utils/dateUtils";
 import { useTranslation } from "react-i18next";
+import GoogleSignInButton from "../components/GoogleSignInButton";
 import "./Register.css";
 
 const Register: React.FC = () => {
@@ -13,17 +13,12 @@ const Register: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [userTimezone, setUserTimezone] = useState("");
   const [language, setLanguage] = useState("");
-  const { register } = useAuth();
+  const { register, registerWithGoogle } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
   useEffect(() => {
-    // Capturar zona horaria del navegador al cargar el componente
-    const timezone = getUserTimezone();
-    setUserTimezone(timezone);
-
     // Detectar idioma del navegador
     const browserLang = navigator.language.startsWith("es") ? "es" : "en";
     setLanguage(browserLang);
@@ -123,7 +118,17 @@ const Register: React.FC = () => {
           </Button>
         </form>
 
-        <Typography className="test-credentials">
+        {/* Divider */}
+        <div className="flex items-center my-4">
+          <div className="flex-1 border-t border-gray-300"></div>
+          <span className="px-4 text-gray-500 text-sm">{t("auth.or")}</span>
+          <div className="flex-1 border-t border-gray-300"></div>
+        </div>
+
+        {/* Google Sign-Up Button */}
+        <GoogleSignInButton onClick={registerWithGoogle} variant="register" />
+
+        <Typography className="test-credentials mt-6">
           {t("auth.hasAccount")}{" "}
           <Link
             to="/login"

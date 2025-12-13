@@ -112,3 +112,35 @@ export interface ReviewSessionCardProps {
   session: ReviewSession;
   onSessionUpdated?: () => void;
 }
+
+export interface TopicInfo {
+  id: number;
+  name: string;
+  color: string;
+  description?: string;
+}
+
+export interface ReviewByTopic {
+  id: number;
+  dueDate: string;
+  intervalDays: number;
+  card: StudyCard;
+}
+
+export interface PendingByTopicResponse {
+  topic: TopicInfo;
+  flashcards: ReviewByTopic[];
+  explanations: ReviewByTopic[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  counts: {
+    flashcards: number;
+    explanations: number;
+    totalInPage: number;
+  };
+  userTimezone: string;
+}

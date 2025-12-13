@@ -25,6 +25,7 @@ import { GoogleCalendarAuth } from "../components/googleCalendarAuth";
 import { useDynamicPagination } from "../../hooks/useDynamicPagination";
 import StudySession from "../components/studySession";
 import { useNotification } from "../context/NotificationContext";
+import { useReviewsByTopic } from "../../hooks/useReviewsByTopic";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -45,6 +46,7 @@ const Dashboard = () => {
   const [showNoteForm, setShowNoteForm] = useState(false);
   const [showStudySession, setShowStudySession] = useState(false);
   const [currentSession, setCurrentSession] = useState<number>(0);
+  const [showTopicStudySession, setShowTopicStudySession] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Dynamic pagination for topics
@@ -54,16 +56,40 @@ const Dashboard = () => {
     rows: 2,
   });
 
-  const { getDashboard } = useAuth();
+  const { getDashboard, handleGoogleCallback } = useAuth();
   const { streakData, loading: streakLoading } = useStreak();
   const { totalPendingCount, pendingReviews, completeReview } = useReviews();
   const { showSuccess, showError } = useNotification();
+  const {
+    pendingReviews: topicPendingReviews,
+    counts: topicCounts,
+    loading: topicReviewsLoading,
+    fetchPendingByTopic,
+    completeReview: completeTopicReview,
+    currentSession: topicCurrentSession,
+    currentReview: topicCurrentReview,
+    nextCard: topicNextCard,
+    previousCard: topicPreviousCard,
+    resetSession: topicResetSession,
+    canGoNext: topicCanGoNext,
+    canGoPrevious: topicCanGoPrevious,
+    hasReviews: topicHasReviews,
+  } = useReviewsByTopic();
 
   useEffect(() => {
     // Obtener zona horaria del usuario
     const timezone = getStoredUserTimezone();
     setUserTimezone(timezone);
   }, []);
+
+  // Handle Google OAuth callback on dashboard
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("google_auth") === "success") {
+      handleGoogleCallback();
+    }
+  }, [handleGoogleCallback]);
+
   const {
     topics,
     loading,
@@ -89,6 +115,12 @@ const Dashboard = () => {
     pageSize,
     setDashboardData,
   ]);
+
+  useEffect(() => {
+    if (selectedTopicId) {
+      fetchPendingByTopic(selectedTopicId);
+    }
+  }, [selectedTopicId, fetchPendingByTopic]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -223,6 +255,48 @@ const Dashboard = () => {
     setCurrentSession(0);
   };
 
+  const handleStartTopicReview = () => {
+    if (topicHasReviews) {
+      topicResetSession();
+      setShowStudySession(true);
+    }
+  };
+
+  const handleCompleteTopicReview = async (difficulty: 1 | 2 | 3) => {
+    if (!topicCurrentReview) return;
+
+    try {
+      await completeTopicReview(topicCurrentReview.id, difficulty);
+    } catch (error) {
+      console.error("Error completando revisión:", error);
+      showError(
+        "Error al completar revisión",
+        "No se pudo guardar el progreso. Inténtalo de nuevo."
+      );
+    }
+  };
+
+  const handleTopicNext = () => {
+    if (topicCanGoNext) {
+      topicNextCard();
+    } else {
+      showSuccess(
+        "¡Sesión completada!",
+        "Has terminado todas las tarjetas de este tema. ¡Excelente trabajo!"
+      );
+      setShowTopicStudySession(false);
+      topicResetSession();
+      if (selectedTopicId) {
+        fetchPendingByTopic(selectedTopicId);
+      }
+    }
+  };
+
+  const handleExitTopicStudySession = () => {
+    setShowTopicStudySession(false);
+    topicResetSession();
+  };
+
   // Show study session if active
   if (
     showStudySession &&
@@ -246,7 +320,25 @@ const Dashboard = () => {
     );
   }
 
+  // Vista de tema seleccionado
   if (selectedTopicId) {
+    // Sesión de estudio para el tema específico
+    if (showTopicStudySession && topicCurrentReview) {
+      return (
+        <StudySession
+          review={topicCurrentReview}
+          currentCard={topicCurrentSession + 1}
+          totalCards={topicPendingReviews.length}
+          onComplete={handleCompleteTopicReview}
+          onExit={handleExitTopicStudySession}
+          onNext={handleTopicNext}
+          onPrevious={topicPreviousCard}
+          canGoNext={topicCanGoNext}
+          canGoPrevious={topicCanGoPrevious}
+        />
+      );
+    }
+
     return (
       <div>
         {/* Botón volver a materias */}
@@ -267,17 +359,18 @@ const Dashboard = () => {
             </h1>
 
             {/* Botón Iniciar Repaso para vista de tema */}
-            {totalPendingCount > 0 && (
+            {topicCounts.total > 0 && (
               <button
-                onClick={handleStartReview}
-                className="flex items-center gap-2 px-4 sm:px-6 py-3 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl justify-center"
+                onClick={handleStartTopicReview}
+                disabled={topicReviewsLoading}
+                className="flex items-center gap-2 px-4 sm:px-6 py-3 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl justify-center disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Play size={20} />
                 <span className="sm:hidden">
-                  {t("reviews.startReviewShort")} ({totalPendingCount})
+                  {t("reviews.startReviewShort")} ({topicCounts.total})
                 </span>
                 <span className="hidden sm:inline">
-                  {t("reviews.startReview")} ({totalPendingCount})
+                  {t("reviews.startReview")} ({topicCounts.total})
                 </span>
               </button>
             )}
@@ -416,6 +509,7 @@ const Dashboard = () => {
     );
   }
 
+  // Vista principal (lista de temas)
   return (
     <div>
       {/* Google Calendar Auth */}
@@ -587,7 +681,7 @@ const Dashboard = () => {
               </div>
 
               {/* Botón Iniciar Repaso */}
-              {totalPendingCount > 0 && (
+              {/* {totalPendingCount > 0 && (
                 <button
                   onClick={handleStartReview}
                   className="flex items-center gap-2 px-4 sm:px-6 py-3 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl justify-center self-start md:self-center"
@@ -600,7 +694,7 @@ const Dashboard = () => {
                     {t("reviews.startReview")} ({totalPendingCount})
                   </span>
                 </button>
-              )}
+              )} */}
             </div>
 
             {/* Barra de búsqueda */}

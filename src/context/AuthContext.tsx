@@ -7,9 +7,12 @@ import React, {
   ReactNode,
 } from "react";
 import axios from "axios";
+import { getUserTimezone } from "../utils/dateUtils";
 import { api } from "../utils/axiosConfig";
 import { User } from "../types";
 import { useNotification } from "./NotificationContext";
+import { useTranslation } from "react-i18next";
+import { API_URL } from "../config";
 
 interface AuthContextType {
   user: User | null;
@@ -26,7 +29,25 @@ interface AuthContextType {
   getDashboard: () => Promise<any>;
   verifyEmail: (token: string) => Promise<any>;
   resendVerification: (email: string) => Promise<any>;
+  loginWithGoogle: () => void;
+  registerWithGoogle: () => void;
+  handleGoogleCallback: () => Promise<void>;
 }
+
+// Helper function to get Google error message
+const getGoogleErrorMessage = (
+  errorCode: string,
+  t: (key: string) => string
+): string => {
+  const errorMessages: Record<string, string> = {
+    init_failed: t("auth.googleErrors.init_failed"),
+    google_denied: t("auth.googleErrors.google_denied"),
+    invalid_params: t("auth.googleErrors.invalid_params"),
+    invalid_state: t("auth.googleErrors.invalid_state"),
+    callback_failed: t("auth.googleErrors.callback_failed"),
+  };
+  return errorMessages[errorCode] || t("auth.googleAuthError");
+};
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -46,6 +67,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const isAuthenticated = !!user;
   const { showSuccess, showError } = useNotification();
+  const { t, i18n } = useTranslation();
 
   // Verificar sesión al cargar la aplicación
   useEffect(() => {
@@ -172,7 +194,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       language?: string
     ): Promise<any> => {
       try {
-        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const userTimezone = getUserTimezone();
 
         const { data } = await api.post("/users/register", {
           name,
@@ -305,6 +327,74 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  // Google OAuth functions
+  const loginWithGoogle = useCallback(() => {
+    const language = i18n.language || "en";
+    const timezone = getUserTimezone();
+
+    const params = new URLSearchParams({
+      language,
+      timezone,
+    });
+
+    // Redirect to backend Google OAuth endpoint
+    window.location.href = `${API_URL}/auth/google/login?${params.toString()}`;
+  }, [i18n.language]);
+
+  const registerWithGoogle = useCallback(() => {
+    // Same as loginWithGoogle - backend handles both cases
+    loginWithGoogle();
+  }, [loginWithGoogle]);
+
+  const handleGoogleCallback = useCallback(async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const googleAuth = urlParams.get("google_auth");
+    const isNewUser = urlParams.get("new_user") === "true";
+    const wasLinked = urlParams.get("linked") === "true";
+    const error = urlParams.get("error");
+
+    if (error) {
+      showError(t("auth.googleAuthError"), getGoogleErrorMessage(error, t));
+      // Clean URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return;
+    }
+
+    if (googleAuth === "success") {
+      // Fetch user profile - token should be set via httpOnly cookie by backend
+      try {
+        const { data } = await api.get("/users/profile");
+        if (data) {
+          setUser(data.user);
+          if (data.user?.userTimezone) {
+            localStorage.setItem("userTimezone", data.user.userTimezone);
+          }
+          // Store token if provided
+          if (data.token) {
+            localStorage.setItem("token", data.token);
+          }
+
+          if (isNewUser) {
+            showSuccess(t("auth.accountCreated"), t("auth.googleAuthSuccess"));
+          } else if (wasLinked) {
+            showSuccess(t("auth.accountLinked"), t("auth.googleAuthSuccess"));
+          } else {
+            showSuccess(t("auth.welcomeBack"), t("auth.googleAuthSuccess"));
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching user profile after Google auth:", err);
+        showError(
+          t("auth.googleAuthError"),
+          t("auth.googleErrors.callback_failed")
+        );
+      }
+
+      // Clean URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [showSuccess, showError, t]);
+
   return (
     <AuthContext.Provider
       value={{
@@ -317,6 +407,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         getDashboard,
         verifyEmail,
         resendVerification,
+        loginWithGoogle,
+        registerWithGoogle,
+        handleGoogleCallback,
       }}
     >
       {children}
