@@ -83,10 +83,10 @@ const StudySession: React.FC<StudySessionProps> = ({
 
   return (
     <>
-      <div className="fixed inset-0 bg-white dark:bg-gray-900 flex items-center justify-center p-4 z-50 overflow-y-auto">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg max-w-3xl w-full my-8 border border-gray-200 dark:border-gray-700 flex flex-col">
+      <div className="fixed inset-0 bg-white dark:bg-gray-900 z-50 flex flex-col">
+        <div className="bg-white dark:bg-gray-800 shadow-lg w-full h-full overflow-y-auto border-gray-200 dark:border-gray-700 flex flex-col lg:max-w-6xl xl:max-w-7xl 2xl:max-w-[1600px] lg:mx-auto lg:my-4 lg:h-auto lg:max-h-[calc(100vh-2rem)] lg:rounded-xl lg:border">
           <div className="flex-shrink-0">
-            <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-4 sm:px-6 py-4 rounded-t-xl relative">
+            <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-4 sm:px-6 py-4 lg:rounded-t-xl relative">
               <button
                 onClick={onExit}
                 className="absolute top-4 right-4 text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-colors"
@@ -137,9 +137,9 @@ const StudySession: React.FC<StudySessionProps> = ({
                 {showAnswer ? (
                   <>
                     {/* Diseño de libro abierto - dos páginas */}
-                    <div className="flex gap-4 min-h-[400px] max-h-[500px]">
+                    <div className="flex flex-col lg:flex-row gap-4">
                       {/* Página izquierda */}
-                      <div className="flex-1 bg-gradient-to-br from-blue-50/30 to-white dark:from-blue-900/10 dark:to-gray-800 rounded-xl p-4 sm:p-6 border border-indigo-200 dark:border-indigo-800 overflow-y-auto">
+                      <div className="flex-1 bg-gradient-to-br from-blue-50/30 to-white dark:from-blue-900/10 dark:to-gray-800 rounded-xl p-4 sm:p-6 border border-indigo-200 dark:border-indigo-800 overflow-y-auto max-h-[50vh] lg:max-h-[60vh]">
                         <div className="text-sm sm:text-base text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">
                           {noteLeftContent}
                         </div>
@@ -161,7 +161,7 @@ const StudySession: React.FC<StudySessionProps> = ({
                       </div>
 
                       {/* Página derecha */}
-                      <div className="flex-1 bg-gradient-to-bl from-green-50/30 to-white dark:from-green-900/10 dark:to-gray-800 rounded-xl p-4 sm:p-6 border border-green-200 dark:border-green-800 overflow-y-auto">
+                      <div className="flex-1 bg-gradient-to-bl from-green-50/30 to-white dark:from-green-900/10 dark:to-gray-800 rounded-xl p-4 sm:p-6 border border-green-200 dark:border-green-800 overflow-y-auto max-h-[50vh] lg:max-h-[60vh]">
                         <div className="text-sm sm:text-base text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">
                           {noteRightContent}
                         </div>
@@ -196,7 +196,7 @@ const StudySession: React.FC<StudySessionProps> = ({
               </>
             ) : (
               <>
-                <div className="bg-indigo-50 dark:bg-indigo-900/30 rounded-xl p-4 sm:p-6 border border-indigo-200 dark:border-indigo-800">
+                <div className="bg-indigo-50 dark:bg-indigo-900/30 rounded-xl p-4 sm:p-6 border border-indigo-200 dark:border-indigo-800 max-h-[60vh] overflow-y-auto">
                   <h3 className="text-xs sm:text-sm font-semibold text-indigo-800 dark:text-indigo-200 uppercase tracking-wide mb-3 text-center">
                     {t("studySession.question")}
                   </h3>
@@ -222,7 +222,7 @@ const StudySession: React.FC<StudySessionProps> = ({
                 </div>
 
                 {showAnswer ? (
-                  <div className="bg-green-50 dark:bg-green-900/30 rounded-xl p-4 sm:p-6 border border-green-200 dark:border-green-800">
+                  <div className="bg-green-50 dark:bg-green-900/30 rounded-xl p-4 sm:p-6 border border-green-200 dark:border-green-800 max-h-[60vh] overflow-y-auto">
                     <h3 className="text-xs sm:text-sm font-semibold text-green-800 dark:text-green-200 uppercase tracking-wide mb-3">
                       {t("studySession.answer")}
                     </h3>
