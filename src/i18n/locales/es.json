@@ -280,6 +280,7 @@
     "noteInfo": "El título y las imágenes son opcionales. Al menos una de las dos páginas debe tener contenido.",
     "noteInfoBold": "Nota:",
     "atLeastOnePage": "Al menos una página debe tener contenido",
+    "titleRequired": "El título es obligatorio",
     "invalidImage": "Por favor selecciona un archivo de imagen válido",
     "imageTooLarge": "La imagen no puede superar los 5MB",
     "errorSaving": "Error al guardar la nota. Por favor, inténtalo de nuevo.",
@@ -298,7 +299,8 @@
     "viewAnswer": "Ver Respuesta",
     "previous": "Anterior",
     "next": "Siguiente",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "noteTitle": "Título de la Nota"
   },
   "calendarWidget": {
     "title": "Calendario",

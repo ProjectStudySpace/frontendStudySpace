@@ -3,6 +3,22 @@ import { Note, CreateNoteData, UpdateNoteData } from "../src/types/notes";
 import { useAuth } from "../src/context/AuthContext";
 import { api, deduplicateRequest } from "../src/utils/axiosConfig";
 
+// Función auxiliar para extraer título y contenido izquierdo del question
+const extractTitleAndLeftContent = (question: string): { title: string; leftContent: string } => {
+  if (!question) return { title: "", leftContent: "" };
+  
+  // Buscar el patrón título\n\ncontenido
+  const parts = question.split('\n\n');
+  if (parts.length >= 2) {
+    const title = parts[0].trim();
+    const leftContent = parts.slice(1).join('\n\n').trim();
+    return { title, leftContent };
+  }
+  
+  // Si no hay doble salto de línea, usar toda la pregunta como título
+  return { title: question.trim(), leftContent: "" };
+};
+
 export const useNotes = () => {
   const [notes, setNotes] = useState<Note[]>([]);
   const [allNotes, setAllNotes] = useState<Note[]>([]);
@@ -39,19 +55,26 @@ export const useNotes = () => {
       // Filtrar solo las cards de tipo "explanation" (notas) y mapear campos
       const notesArray: Note[] = cardsArray
         .filter(card => card.type && card.type.toUpperCase() === "EXPLANATION")
-        .map(card => ({
-          id: card.id,
-          title: card.question || "", // Use question as title since no title field in API
-          leftContent: card.question || "",
-          rightContent: card.answer || "",
-          type: card.type,
-          topicId: card.topicId || topicId,
-          leftImageUrl: card.images?.find((img: any) => img.imageType === "question")?.imageUrl,
-          rightImageUrl: card.images?.find((img: any) => img.imageType === "answer")?.imageUrl,
-          createdAt: card.createdAt,
-          updatedAt: card.updatedAt,
-          topic: card.topic,
-        }));
+        .map(card => {
+          // Extraer título y contenido izquierdo del question
+          const questionParts = (card.question || "").split('\n\n');
+          const title = questionParts.length > 1 ? questionParts[0].trim() : (card.question || "").trim();
+          const leftContent = questionParts.length > 1 ? questionParts.slice(1).join('\n\n').trim() : (card.question || "");
+          
+          return {
+            id: card.id,
+            title,
+            leftContent,
+            rightContent: card.answer || "",
+            type: card.type,
+            topicId: card.topicId || topicId,
+            leftImageUrl: card.images?.find((img: any) => img.imageType === "question")?.imageUrl,
+            rightImageUrl: card.images?.find((img: any) => img.imageType === "answer")?.imageUrl,
+            createdAt: card.createdAt,
+            updatedAt: card.updatedAt,
+            topic: card.topic,
+          };
+        });
 
       const notesWithTopic: Note[] = notesArray.map((note) => ({
         ...note,
@@ -113,19 +136,26 @@ export const useNotes = () => {
       // Filtrar solo las cards de tipo "explanation" (notas) y mapear campos
       const notesArray: Note[] = cardsArray
         .filter(card => card.type && card.type.toUpperCase() === "EXPLANATION")
-        .map(card => ({
-          id: card.id,
-          title: card.question || "", // Use question as title since no title field in API
-          leftContent: card.question || "",
-          rightContent: card.answer || "",
-          type: card.type,
-          topicId: card.topicId,
-          leftImageUrl: card.images?.find((img: any) => img.imageType === "question")?.imageUrl,
-          rightImageUrl: card.images?.find((img: any) => img.imageType === "answer")?.imageUrl,
-          createdAt: card.createdAt,
-          updatedAt: card.updatedAt,
-          topic: card.topic,
-        }));
+        .map(card => {
+          // Extraer título y contenido izquierdo del question
+          const questionParts = (card.question || "").split('\n\n');
+          const title = questionParts.length > 1 ? questionParts[0].trim() : (card.question || "").trim();
+          const leftContent = questionParts.length > 1 ? questionParts.slice(1).join('\n\n').trim() : (card.question || "");
+          
+          return {
+            id: card.id,
+            title,
+            leftContent,
+            rightContent: card.answer || "",
+            type: card.type,
+            topicId: card.topicId,
+            leftImageUrl: card.images?.find((img: any) => img.imageType === "question")?.imageUrl,
+            rightImageUrl: card.images?.find((img: any) => img.imageType === "answer")?.imageUrl,
+            createdAt: card.createdAt,
+            updatedAt: card.updatedAt,
+            topic: card.topic,
+          };
+        });
       
       setNotes(notesArray);
       const pag = data.pagination || {};
@@ -160,8 +190,13 @@ export const useNotes = () => {
     try {
       const formData = new FormData();
       // Mapear campos de nota a los campos que espera el backend
-      formData.append("question", noteData.leftContent);
-      formData.append("answer", noteData.rightContent);
+      // Enviar title como question (título de la nota) y leftContent como contenido adicional
+      const questionWithTitle = noteData.title 
+        ? `${noteData.title}\n\n${noteData.leftContent || ""}`.trim()
+        : (noteData.leftContent || "");
+      
+      formData.append("question", questionWithTitle || "Sin título");
+      formData.append("answer", noteData.rightContent || "Sin contenido");
       formData.append("type", (noteData.type || "explanation").toUpperCase());
       formData.append("topicId", noteData.topicId.toString());
 
@@ -177,10 +212,15 @@ export const useNotes = () => {
       
       // Mapear la respuesta del backend al formato de nota del frontend
       const card = data.card;
+      // Extraer título y contenido izquierdo del question
+      const questionParts = (card.question || "").split('\n\n');
+      const title = questionParts.length > 1 ? questionParts[0].trim() : (card.question || "").trim();
+      const leftContent = questionParts.length > 1 ? questionParts.slice(1).join('\n\n').trim() : (card.question || "");
+      
       const mappedNote: Note = {
         id: card.id,
-        title: card.question || "", // Use question as title since no title field in API
-        leftContent: card.question || "",
+        title,
+        leftContent,
         rightContent: card.answer || "",
         type: card.type,
         topicId: card.topicId,
@@ -225,8 +265,15 @@ export const useNotes = () => {
     try {
       const formData = new FormData();
       // Mapear campos de nota a los campos que espera el backend
-      if (updates.leftContent !== undefined) formData.append("question", updates.leftContent);
-      if (updates.rightContent !== undefined) formData.append("answer", updates.rightContent);
+      if (updates.title !== undefined || updates.leftContent !== undefined) {
+        const questionWithTitle = updates.title 
+          ? `${updates.title}\n\n${updates.leftContent || ""}`.trim()
+          : (updates.leftContent || "");
+        formData.append("question", questionWithTitle);
+      }
+      if (updates.rightContent !== undefined) {
+        formData.append("answer", updates.rightContent);
+      }
       // Siempre enviar el type en mayúsculas para asegurar consistencia
       formData.append("type", "EXPLANATION");
 
@@ -242,10 +289,15 @@ export const useNotes = () => {
       
       // Mapear la respuesta del backend al formato de nota del frontend
       const card = data.card;
+      // Extraer título y contenido izquierdo del question
+      const questionParts = (card.question || "").split('\n\n');
+      const title = questionParts.length > 1 ? questionParts[0].trim() : (card.question || "").trim();
+      const leftContent = questionParts.length > 1 ? questionParts.slice(1).join('\n\n').trim() : (card.question || "");
+      
       const mappedNote: Note = {
         id: card.id,
-        title: card.question || "", // Use question as title since no title field in API
-        leftContent: card.question || "",
+        title,
+        leftContent,
         rightContent: card.answer || "",
         type: card.type,
         topicId: card.topicId,

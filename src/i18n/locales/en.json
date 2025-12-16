@@ -280,6 +280,7 @@
     "noteInfo": "Title and images are optional. At least one of the two pages must have content.",
     "noteInfoBold": "Note:",
     "atLeastOnePage": "At least one page must have content",
+    "titleRequired": "Title is required",
     "invalidImage": "Please select a valid image file",
     "imageTooLarge": "Image cannot exceed 5MB",
     "errorSaving": "Error saving note. Please try again.",
@@ -298,7 +299,8 @@
     "viewAnswer": "View Answer",
     "previous": "Previous",
     "next": "Next",
-    "close": "Close"
+    "close": "Close",
+    "noteTitle": "Note Title"
   },
   "calendarWidget": {
     "title": "Calendar",
