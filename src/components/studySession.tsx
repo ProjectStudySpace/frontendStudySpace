@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { ScheduledReview, StudySessionProps } from "../types/reviews";
 import DifficultySelector from "./difficultySelector";
@@ -27,8 +27,23 @@ const StudySession: React.FC<StudySessionProps> = ({
   } | null>(null);
 
   // Check if this is a note or a card
-  const isNote = review.card.contentType === "note" || 
+  const isNote = review.card.contentType === "note" ||
                  review.card.type === "EXPLANATION";
+
+  // Extraer título y contenido izquierdo del question para notas
+  const { noteTitle, noteLeftContent, noteRightContent } = useMemo(() => {
+    if (isNote) {
+      // Normalizar saltos de línea (Windows usa \r\n, Unix usa \n)
+      const normalizedQuestion = (review.card.question || "").replace(/\r\n/g, '\n');
+      // Buscar doble salto de línea para separar título de contenido izquierdo
+      const questionParts = normalizedQuestion.split('\n\n');
+      const title = questionParts.length > 1 ? questionParts[0].trim() : normalizedQuestion.trim();
+      const leftContent = questionParts.length > 1 ? questionParts.slice(1).join('\n\n').trim() : "";
+      const rightContent = review.card.answer || "";
+      return { noteTitle: title, noteLeftContent: leftContent, noteRightContent: rightContent };
+    }
+    return { noteTitle: "", noteLeftContent: "", noteRightContent: "" };
+  }, [isNote, review.card.question, review.card.answer]);
 
   const questionImages =
     review.card.images?.filter((img) => img.imageType === "question") || [];
@@ -109,63 +124,63 @@ const StudySession: React.FC<StudySessionProps> = ({
             {/* Content display */}
             {isNote ? (
               <>
+                {/* Mostrar solo el título encima del botón "Ver respuesta" */}
                 <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-xl p-4 sm:p-6 border border-indigo-200 dark:border-indigo-800 mb-4">
                   <h3 className="text-xs sm:text-sm font-semibold text-indigo-800 dark:text-indigo-200 uppercase tracking-wide mb-2 text-center">
                     {t("studySession.noteTitle")}
                   </h3>
                   <p className="text-lg sm:text-xl text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed text-center font-semibold">
-                    {review.card.title || review.card.question}
+                    {noteTitle}
                   </p>
                 </div>
 
                 {showAnswer ? (
                   <>
-                    <div className="bg-indigo-50 dark:bg-indigo-900/30 rounded-xl p-4 sm:p-6 border border-indigo-200 dark:border-indigo-800 mb-4">
-                      <h3 className="text-xs sm:text-sm font-semibold text-indigo-800 dark:text-indigo-200 uppercase tracking-wide mb-3 text-center">
-                        Página Izquierda
-                      </h3>
-                      <div className="text-base sm:text-lg text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed text-center">
-                        {review.card.leftContent || review.card.question}
-                      </div>
-                      {questionImages.length > 0 && (
-                        <div className="mt-4 flex gap-2 justify-center flex-wrap">
-                          {questionImages.map((img) => (
-                            <img
-                              key={img.id}
-                              src={img.imageUrl}
-                              alt={img.altText || "Imagen"}
-                              className="max-w-[200px] max-h-[200px] object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity"
-                              onClick={() =>
-                                handleImageClick(img.imageUrl, img.altText)
-                              }
-                            />
-                          ))}
+                    {/* Diseño de libro abierto - dos páginas */}
+                    <div className="flex gap-4 min-h-[400px] max-h-[500px]">
+                      {/* Página izquierda */}
+                      <div className="flex-1 bg-gradient-to-br from-blue-50/30 to-white dark:from-blue-900/10 dark:to-gray-800 rounded-xl p-4 sm:p-6 border border-indigo-200 dark:border-indigo-800 overflow-y-auto">
+                        <div className="text-sm sm:text-base text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">
+                          {noteLeftContent}
                         </div>
-                      )}
-                    </div>
+                        {questionImages.length > 0 && (
+                          <div className="mt-4 pt-4 border-t border-blue-100 dark:border-blue-800 flex gap-2 justify-center flex-wrap">
+                            {questionImages.map((img) => (
+                              <img
+                                key={img.id}
+                                src={img.imageUrl}
+                                alt={img.altText || "Imagen"}
+                                className="max-w-full max-h-40 object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity shadow-sm"
+                                onClick={() =>
+                                  handleImageClick(img.imageUrl, img.altText)
+                                }
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
 
-                    <div className="bg-green-50 dark:bg-green-900/30 rounded-xl p-4 sm:p-6 border border-green-200 dark:border-green-800">
-                      <h3 className="text-xs sm:text-sm font-semibold text-green-800 dark:text-green-200 uppercase tracking-wide mb-3">
-                        Página Derecha
-                      </h3>
-                      <div className="text-base sm:text-lg text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed">
-                        {review.card.rightContent || review.card.answer}
-                      </div>
-                      {answerImages.length > 0 && (
-                        <div className="mt-4 flex gap-2 justify-center flex-wrap">
-                          {answerImages.map((img) => (
-                            <img
-                              key={img.id}
-                              src={img.imageUrl}
-                              alt={img.altText || "Imagen"}
-                              className="max-w-[200px] max-h-[200px] object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity"
-                              onClick={() =>
-                                handleImageClick(img.imageUrl, img.altText)
-                              }
-                            />
-                          ))}
+                      {/* Página derecha */}
+                      <div className="flex-1 bg-gradient-to-bl from-green-50/30 to-white dark:from-green-900/10 dark:to-gray-800 rounded-xl p-4 sm:p-6 border border-green-200 dark:border-green-800 overflow-y-auto">
+                        <div className="text-sm sm:text-base text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">
+                          {noteRightContent}
                         </div>
-                      )}
+                        {answerImages.length > 0 && (
+                          <div className="mt-4 pt-4 border-t border-green-100 dark:border-green-800 flex gap-2 justify-center flex-wrap">
+                            {answerImages.map((img) => (
+                              <img
+                                key={img.id}
+                                src={img.imageUrl}
+                                alt={img.altText || "Imagen"}
+                                className="max-w-full max-h-40 object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity shadow-sm"
+                                onClick={() =>
+                                  handleImageClick(img.imageUrl, img.altText)
+                                }
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </>
                 ) : (
