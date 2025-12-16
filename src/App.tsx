@@ -42,7 +42,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/" element={<Landing />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsOfService />} />
-      <Route path="/auth/google/callback" element={<GoogleCallback />} />
+      <Route path="/auth/callback" element={<GoogleCallback />} />
       <Route
         path="/login"
         element={isAuthenticated ? <Navigate to="/topics" /> : <Login />} // Corregido cambio de URL
