@@ -22,6 +22,7 @@ import Perfil from "./pages/Perfil";
 import Settings from "./pages/Settings";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import GoogleCallback from "./pages/GoogleCallback";
 import Layout from "./components/layout";
 
 const AppRoutes: React.FC = () => {
@@ -41,6 +42,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/" element={<Landing />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsOfService />} />
+      <Route path="/auth/google/callback" element={<GoogleCallback />} />
       <Route
         path="/login"
         element={isAuthenticated ? <Navigate to="/topics" /> : <Login />} // Corregido cambio de URL
@@ -53,7 +55,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/verify-email" element={<VerifyEmail />} />
       {/* Rutas protegidas */}{" "}
       {/* ELIMINADO !!!! study-sections por duplicado (el usado: /study-sessions) */}
-      {isAuthenticated && (
+      {isAuthenticated ? (
         <Route element={<Layout />}>
           <Route path="/topics" element={<Temas />} />
           <Route path="/study-sessions" element={<StudySessions />} />
@@ -62,11 +64,24 @@ const AppRoutes: React.FC = () => {
           <Route path="/profile" element={<Perfil />} />
           <Route path="/settings" element={<Settings />} />
         </Route>
+      ) : (
+        <>
+          <Route path="/topics" element={<Navigate to="/login" replace />} />
+          <Route
+            path="/study-sessions"
+            element={<Navigate to="/login" replace />}
+          />
+          <Route path="/calendar" element={<Navigate to="/login" replace />} />
+          <Route path="/progress" element={<Navigate to="/login" replace />} />
+          <Route path="/profile" element={<Navigate to="/login" replace />} />
+          <Route path="/settings" element={<Navigate to="/login" replace />} />
+        </>
       )}
-      {/* Redirigir a login si no está autenticado */}
-      {!isAuthenticated && (
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      )}
+      {/*Catch-all: redirigir según estado de autenticación */}
+      <Route
+        path="*"
+        element={<Navigate to={isAuthenticated ? "/topics" : "/"} replace />}
+      />
     </Routes>
   );
 };
