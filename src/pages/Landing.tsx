@@ -56,17 +56,18 @@ const Landing: React.FC = () => {
         }`}
       >
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
-          <div className="flex items-center justify-between h-14 sm:h-16">
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600">
-                <Brain size={20} className="text-white sm:w-6 sm:h-6" />
+          {/* Desktop layout - Una sola fila */}
+          <div className="hidden lg:flex items-center justify-between h-16">
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600">
+                <Brain size={24} className="text-white" />
               </div>
-              <span className="text-base sm:text-xl font-bold bg-gradient-to-br from-indigo-500 to-purple-600 bg-clip-text text-transparent">
+              <span className="text-xl font-bold bg-gradient-to-br from-indigo-500 to-purple-600 bg-clip-text text-transparent">
                 MemoPal
               </span>
             </div>
 
-            <div className="hidden md:flex items-center gap-8">
+            <div className="flex items-center gap-8">
               <a
                 href="#features"
                 className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
@@ -87,32 +88,88 @@ const Landing: React.FC = () => {
               </a>
             </div>
 
-            <div className="flex items-center gap-1.5 sm:gap-4">
-              <div className="scale-90 sm:scale-100">
-                <LanguageSelector />
-              </div>
+            <div className="flex items-center gap-4">
+              <LanguageSelector />
               {!isAuthenticated ? (
                 <button
                   onClick={handleLogin}
-                  className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-3 py-1.5 sm:px-6 sm:py-2 rounded-lg text-sm sm:text-base font-medium transition-all transform hover:scale-105 whitespace-nowrap"
+                  className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-6 py-2 rounded-lg font-medium transition-all transform hover:scale-105 whitespace-nowrap"
                 >
                   {t("landing.nav.login")}
                 </button>
               ) : (
                 <button
                   onClick={handleGetStarted}
-                  className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-3 py-1.5 sm:px-6 sm:py-2 rounded-lg text-sm sm:text-base font-medium transition-all transform hover:scale-105 whitespace-nowrap"
+                  className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-6 py-2 rounded-lg font-medium transition-all transform hover:scale-105 whitespace-nowrap"
                 >
                   {t("landing.hero.goToDashboard")}
                 </button>
               )}
             </div>
           </div>
+
+          {/* Mobile/Tablet layout - Dos filas */}
+          <div className="lg:hidden">
+            {/* Primera fila: Logo y botones */}
+            <div className="flex items-center justify-between h-14 sm:h-16">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600">
+                  <Brain size={20} className="text-white sm:w-6 sm:h-6" />
+                </div>
+                <span className="text-base sm:text-xl font-bold bg-gradient-to-br from-indigo-500 to-purple-600 bg-clip-text text-transparent">
+                  MemoPal
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1.5 sm:gap-3">
+                <div className="scale-90 sm:scale-100">
+                  <LanguageSelector />
+                </div>
+                {!isAuthenticated ? (
+                  <button
+                    onClick={handleLogin}
+                    className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap"
+                  >
+                    {t("landing.nav.login")}
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleGetStarted}
+                    className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap"
+                  >
+                    Dashboard
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Segunda fila: Enlaces de navegación */}
+            <div className="flex items-center justify-center gap-4 sm:gap-6 py-2 sm:py-3 border-t border-gray-200/50">
+              <a
+                href="#features"
+                className="text-xs sm:text-sm text-gray-600 hover:text-gray-900 font-medium transition-colors"
+              >
+                {t("landing.nav.features")}
+              </a>
+              <a
+                href="#how-it-works"
+                className="text-xs sm:text-sm text-gray-600 hover:text-gray-900 font-medium transition-colors"
+              >
+                {t("landing.nav.howItWorks")}
+              </a>
+              <a
+                href="#pricing"
+                className="text-xs sm:text-sm text-gray-600 hover:text-gray-900 font-medium transition-colors"
+              >
+                {t("landing.nav.pricing")}
+              </a>
+            </div>
+          </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-20 sm:pt-24 md:pt-32 pb-12 sm:pb-16 md:pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      <section className="pt-24 sm:pt-28 md:pt-32 pb-12 sm:pb-16 md:pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
             {/* Left column - Text content */}
