@@ -27,7 +27,7 @@
     "invalidCredentials": "Invalid credentials",
     "passwordMismatch": "Passwords do not match",
     "passwordMinLength": "Password must be at least 6 characters",
-    "accountCreated": "Account created successfully. Redirecting to login...",
+    "accountCreated": "Account created successfully!",
     "accountCreationError": "Error creating account. Email may already be registered.",
     "accessAccount": "Access your account to continue",
     "registerToAccess": "Sign up to access your account",
@@ -35,7 +35,20 @@
     "checkEmailInstructions": "Please check your inbox and click the verification link",
     "resendVerificationEmail": "Resend verification email",
     "sending": "Sending...",
-    "verificationEmailSent": "Verification email sent. Check your inbox"
+    "verificationEmailSent": "Verification email sent. Check your inbox",
+    "signInWithGoogle": "Sign in with Google",
+    "signUpWithGoogle": "Sign up with Google",
+    "or": "or",
+    "googleAuthSuccess": "Successfully authenticated with Google",
+    "googleAuthError": "Error authenticating with Google",
+    "accountLinked": "Your Google account has been linked",
+    "googleErrors": {
+      "init_failed": "Failed to initialize Google authentication",
+      "google_denied": "Google authentication was denied",
+      "invalid_params": "Invalid authentication parameters",
+      "invalid_state": "Invalid authentication state",
+      "callback_failed": "Authentication callback failed"
+    }
   },
   "topics": {
     "title": "Your Study Subjects",

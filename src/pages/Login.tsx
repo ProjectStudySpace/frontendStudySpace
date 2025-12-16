@@ -4,6 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getUserTimezone } from "../utils/dateUtils";
 import { useTranslation } from "react-i18next";
+import GoogleSignInButton from "../components/GoogleSignInButton";
 import "./Login.css";
 
 const Login: React.FC = () => {
@@ -13,7 +14,13 @@ const Login: React.FC = () => {
   const [userTimezone, setUserTimezone] = useState("");
   const [showUnverifiedMessage, setShowUnverifiedMessage] = useState(false);
   const [isResending, setIsResending] = useState(false);
-  const { login, resendVerification, isAuthenticated } = useAuth();
+  const {
+    login,
+    resendVerification,
+    isAuthenticated,
+    loginWithGoogle,
+    handleGoogleCallback,
+  } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -22,6 +29,14 @@ const Login: React.FC = () => {
     const timezone = getUserTimezone();
     setUserTimezone(timezone);
   }, []);
+
+  // Handle Google OAuth callback on mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("google_auth") || urlParams.get("error")) {
+      handleGoogleCallback();
+    }
+  }, [handleGoogleCallback]);
 
   // Redirect to topics when authenticated
   useEffect(() => {
@@ -117,7 +132,17 @@ const Login: React.FC = () => {
             {t("auth.login")}
           </Button>
         </form>
-        
+
+        {/* Divider */}
+        <div className="flex items-center my-4">
+          <div className="flex-1 border-t border-gray-300"></div>
+          <span className="px-4 text-gray-500 text-sm">{t("auth.or")}</span>
+          <div className="flex-1 border-t border-gray-300"></div>
+        </div>
+
+        {/* Google Sign-In Button */}
+        <GoogleSignInButton onClick={loginWithGoogle} variant="login" />
+
         <div className="mt-6">
           <Typography>
             {t("auth.noAccount")}{" "}
