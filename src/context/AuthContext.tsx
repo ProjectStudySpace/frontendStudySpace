@@ -83,7 +83,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         const { data } = await api.get("/users/profile");
 
-        if (data) {
+        if (data?.user) {
           setUser(data.user);
           // Persistir zona horaria en localStorage si viene del backend
           if (data.user?.userTimezone) {
@@ -135,7 +135,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-      const { data, status } = await api.post("/users/login", {
+      const { data } = await api.post("/users/login", {
         email,
         password,
         timezone: userTimezone,
@@ -146,8 +146,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return false;
       }
 
-      setUser(data.user);
       localStorage.setItem("token", data.token);
+      setUser(data.user);
       // Persistir zona horaria en localStorage
       if (data.user?.userTimezone) {
         localStorage.setItem("userTimezone", data.user.userTimezone);
@@ -260,8 +260,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         if (data) {
           // Save token and set user
-          setUser(data.user);
           localStorage.setItem("token", data.token);
+          setUser(data.user);
           if (data.user?.userTimezone) {
             localStorage.setItem("userTimezone", data.user.userTimezone);
           }
@@ -352,26 +352,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const isNewUser = urlParams.get("new_user") === "true";
     const wasLinked = urlParams.get("linked") === "true";
     const error = urlParams.get("error");
+    const token = urlParams.get("token");
+
+    //limpiar parametros de la url
+    window.history.replaceState({}, document.title, window.location.pathname);
 
     if (error) {
       showError(t("auth.googleAuthError"), getGoogleErrorMessage(error, t));
-      // Clean URL parameters
-      window.history.replaceState({}, document.title, window.location.pathname);
       return;
     }
 
-    if (googleAuth === "success") {
-      // Fetch user profile - token should be set via httpOnly cookie by backend
+    if (googleAuth === "success" && token) {
+      localStorage.setItem("token", token);
       try {
         const { data } = await api.get("/users/profile");
-        if (data) {
+        if (data?.user) {
           setUser(data.user);
           if (data.user?.userTimezone) {
             localStorage.setItem("userTimezone", data.user.userTimezone);
-          }
-          // Store token if provided
-          if (data.token) {
-            localStorage.setItem("token", data.token);
           }
 
           if (isNewUser) {
@@ -381,6 +379,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           } else {
             showSuccess(t("auth.welcomeBack"), t("auth.googleAuthSuccess"));
           }
+        } else {
+          localStorage.removeItem("token");
+          showError(
+            t("auth.googleAuthError"),
+            t("auth.googleErrors.callback_failed")
+          );
         }
       } catch (err) {
         console.error("Error fetching user profile after Google auth:", err);
@@ -389,9 +393,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           t("auth.googleErrors.callback_failed")
         );
       }
-
-      // Clean URL parameters
-      window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, [showSuccess, showError, t]);
 
