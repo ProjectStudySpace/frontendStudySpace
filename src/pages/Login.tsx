@@ -128,6 +128,14 @@ const Login: React.FC = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+          <div className="text-right mt-1">
+            <Link
+              to="/forgot-password"
+              className="text-sm text-blue-500 hover:text-blue-700"
+            >
+              {t("auth.forgotPassword")}
+            </Link>
+          </div>
           <Button type="submit" fullWidth className="MuiButton-root">
             {t("auth.login")}
           </Button>
