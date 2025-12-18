@@ -170,7 +170,7 @@ const Layout = () => {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4">
+          <nav className="flex-1 p-4 overflow-y-auto">
             <div className="flex flex-col gap-1">
               {navLinks.map((link) => {
                 const Icon = link.icon;
