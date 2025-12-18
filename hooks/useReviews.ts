@@ -61,6 +61,62 @@ export const useReviews = () => {
     }
   };
 
+  const fetchAllPendingReviewsForSession = async () => {
+    try {
+      // Si ya tenemos todas las tarjetas cargadas (menos de 5), usarlas directamente
+      if (pendingReviews.length === totalPendingCount && totalPendingCount > 0) {
+        return; // Ya tenemos todas las tarjetas
+      }
+
+      // Intentar cargar la primera página con límite alto
+      const { data } = await api.get(`/reviews/pending`, {
+        params: { page: 1, limit: 50 } // Límite más alto pero razonable
+      });
+      
+      if (data && data.pendingReviews) {
+        setPendingReviews(data.pendingReviews);
+        
+        // Si hay más páginas, cargar las restantes
+        if (data.pagination && data.pagination.totalPages > 1) {
+          const allReviews = [...data.pendingReviews];
+          
+          // Cargar páginas restantes en paralelo
+          const promises = [];
+          for (let page = 2; page <= data.pagination.totalPages; page++) {
+            promises.push(
+              api.get(`/reviews/pending`, {
+                params: { page, limit: 50 }
+              }).then(response => response.data.pendingReviews || [])
+            );
+          }
+          
+          try {
+            const additionalPages = await Promise.all(promises);
+            additionalPages.forEach(pageReviews => {
+              allReviews.push(...pageReviews);
+            });
+            setPendingReviews(allReviews);
+          } catch (pageError) {
+            console.warn("Error cargando páginas adicionales:", pageError);
+            // Continuar con las tarjetas ya cargadas
+          }
+        }
+        
+        // Procesar userTimezone
+        if (data.userTimezone) {
+          setUserTimezone(data.userTimezone);
+          localStorage.setItem("userTimezone", data.userTimezone);
+        }
+      } else {
+        throw new Error("No se recibieron datos válidos");
+      }
+    } catch (err) {
+      console.warn("Error cargando todas las tarjetas, manteniendo funcionalidad actual:", err);
+      // Si falla todo, no cambiar pendingReviews para mantener la funcionalidad básica
+      // El usuario al menos podrá revisar las 5 tarjetas de la página actual
+    }
+  };
+
   const fetchUpcomingReviews = async (
     days: number = 7,
     page: number = 1,
@@ -251,6 +307,7 @@ export const useReviews = () => {
     userTimezone,
     fetchAllReviews,
     fetchPendingReviews,
+    fetchAllPendingReviewsForSession,
     fetchUpcomingReviews,
     fetchAllUpcomingReviews,
     completeReview,

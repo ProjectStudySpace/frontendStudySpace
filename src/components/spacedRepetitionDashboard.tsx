@@ -24,6 +24,7 @@ const SpacedRepetitionDashboard: React.FC = () => {
     fetchAllReviews,
     fetchUpcomingReviews,
     fetchPendingReviews,
+    fetchAllPendingReviewsForSession,
   } = useReviews();
 
   const { showSuccess, showError } = useNotification();
@@ -48,14 +49,23 @@ const SpacedRepetitionDashboard: React.FC = () => {
     [fetchPendingReviews]
   );
 
-  const startStudySession = () => {
-    if (pendingReviews.length > 0) {
-      setCurrentSession(0);
-      setShowStudySession(true);
+  const startStudySession = async () => {
+    if (totalPendingCount > 0) {
+      // Obtener todas las tarjetas pendientes sin paginación para la sesión
+      try {
+        await fetchAllPendingReviewsForSession();
+        setCurrentSession(0);
+        setShowStudySession(true);
+      } catch (error) {
+        console.error("Error cargando todas las tarjetas para la sesión:", error);
+        showError("Error", "No se pudieron cargar todas las tarjetas para la sesión");
+      }
     }
   };
 
   const handleCompleteReview = async (difficulty: 1 | 2 | 3) => {
+    if (currentSession >= pendingReviews.length) return;
+    
     const currentReview = pendingReviews[currentSession];
 
     try {
@@ -72,7 +82,7 @@ const SpacedRepetitionDashboard: React.FC = () => {
       setCurrentSession((prev) => prev + 1);
     } else {
       // Si llegamos al final, la sesión está completa
-      showSuccess("¡Sesión completada!", `Has terminado todas las ${pendingReviews.length} tarjetas de hoy. ¡Excelente trabajo!`);
+      showSuccess("¡Sesión completada!", `Has terminado todas las ${totalPendingCount} tarjetas de hoy. ¡Excelente trabajo!`);
       setShowStudySession(false);
       setCurrentSession(0);
       // Recargar las revisiones para actualizar el conteo
@@ -115,6 +125,7 @@ const SpacedRepetitionDashboard: React.FC = () => {
 
   if (
     showStudySession &&
+    totalPendingCount > 0 &&
     pendingReviews.length > 0 &&
     currentSession < pendingReviews.length
   ) {

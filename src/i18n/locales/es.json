@@ -82,7 +82,8 @@
     "studyCard": "Tarjeta de Estudio",
     "studyCardDescription": "Formato pregunta-respuesta ideal para repaso activo y memorización.",
     "quickReview": "Repaso rápido",
-    "withImages": "Con imágenes"
+    "withImages": "Con imágenes",
+    "startTopicReview": "Repaso de tarjetas"
   },
   "notes": {
     "title": "Notas de Estudio",
@@ -94,7 +95,8 @@
     "studyNote": "Nota de Estudio",
     "studyNoteDescription": "Formato de libro abierto con dos páginas para contenido extenso.",
     "extensiveContent": "Contenido extenso",
-    "twoPages": "2 páginas"
+    "twoPages": "2 páginas",
+    "startTopicReview": "Repaso de notas"
   },
   "stats": {
     "activeTopics": "Materias activas",
