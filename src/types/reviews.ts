@@ -96,6 +96,7 @@ export interface StudySessionProps {
   onPrevious: () => void;
   canGoNext: boolean;
   canGoPrevious: boolean;
+  topicName?: string; // Optional topic name for topic-specific sessions
 }
 
 export interface ReviewSessionListProps {

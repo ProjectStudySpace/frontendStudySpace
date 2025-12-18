@@ -15,6 +15,7 @@ const StudySession: React.FC<StudySessionProps> = ({
   onPrevious,
   canGoNext,
   canGoPrevious,
+  topicName, // Add optional topicName prop
 }) => {
   const { t } = useTranslation();
   const [showAnswer, setShowAnswer] = useState(false);
@@ -100,7 +101,7 @@ const StudySession: React.FC<StudySessionProps> = ({
                   {isNote && review.card.title ? review.card.title : t("studySession.title")}
                 </h2>
                 <p className="text-xl sm:text-2xl font-bold mb-2">
-                  {review.card.topic.name}
+                  {topicName || review.card.topic?.name || t("studySession.topic")}
                 </p>
                 <div className="flex items-center justify-center gap-2 text-sm sm:text-base text-white text-opacity-90">
                   <BookOpen size={16} className="sm:w-5 sm:h-5" />

@@ -82,7 +82,8 @@
     "studyCard": "Study Card",
     "studyCardDescription": "Question-answer format ideal for active review and memorization.",
     "quickReview": "Quick review",
-    "withImages": "With images"
+    "withImages": "With images",
+    "startTopicReview": "Card Review"
   },
   "notes": {
     "title": "Study Notes",
@@ -94,7 +95,8 @@
     "studyNote": "Study Note",
     "studyNoteDescription": "Open book format with two pages for extensive content.",
     "extensiveContent": "Extensive content",
-    "twoPages": "2 pages"
+    "twoPages": "2 pages",
+    "startTopicReview": "Note Review"
   },
   "stats": {
     "activeTopics": "Active Subjects",
