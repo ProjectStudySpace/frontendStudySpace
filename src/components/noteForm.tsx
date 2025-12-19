@@ -92,6 +92,11 @@ export const NoteForm: React.FC<NoteFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!title.trim()) {
+      alert(t("forms.titleRequired"));
+      return;
+    }
+
     if (!leftContent.trim() && !rightContent.trim()) {
       alert(t("forms.atLeastOnePage"));
       return;
@@ -154,16 +159,14 @@ export const NoteForm: React.FC<NoteFormProps> = ({
         </button>
       </div>
 
-      {/* Título opcional */}
+      {/* Título obligatorio */}
       <div className="mb-6">
         <label
           htmlFor="title"
           className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
         >
           {t("forms.titleLabel")}{" "}
-          <span className="text-gray-400 dark:text-gray-500 font-normal">
-            {t("forms.titleOptional")}
-          </span>
+          <span className="text-red-500">*</span>
         </label>
         <input
           id="title"
@@ -171,6 +174,7 @@ export const NoteForm: React.FC<NoteFormProps> = ({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           disabled={isSubmitting}
+          required
           className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 dark:disabled:bg-gray-600 disabled:text-gray-500 dark:disabled:text-gray-400 text-base"
           placeholder={t("forms.titlePlaceholder")}
           maxLength={200}

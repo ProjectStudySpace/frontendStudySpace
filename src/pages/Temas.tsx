@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   BookOpen,
@@ -16,6 +16,8 @@ import { CardsManager } from "../components/cardsManager";
 import { NotesManager } from "../components/notesManager";
 import { useStreak } from "../../hooks/useStreaks";
 import { useReviews } from "../../hooks/useReviews";
+import { useReviewsByTopic } from "../../hooks/useReviewsByTopic";
+
 import { getStoredUserTimezone, formatDateForUser } from "../utils/dateUtils";
 import { TopicCard } from "../components/topicCard";
 import { useTopics } from "../../hooks/useTopics";
@@ -25,7 +27,7 @@ import { GoogleCalendarAuth } from "../components/googleCalendarAuth";
 import { useDynamicPagination } from "../../hooks/useDynamicPagination";
 import StudySession from "../components/studySession";
 import { useNotification } from "../context/NotificationContext";
-import { useReviewsByTopic } from "../../hooks/useReviewsByTopic";
+
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -47,6 +49,9 @@ const Dashboard = () => {
   const [showStudySession, setShowStudySession] = useState(false);
   const [currentSession, setCurrentSession] = useState<number>(0);
   const [showTopicStudySession, setShowTopicStudySession] = useState(false);
+  const [currentTopicSession, setCurrentTopicSession] = useState<number>(0);
+  const [topicSessionType, setTopicSessionType] = useState<"FLASHCARD" | "EXPLANATION">("FLASHCARD");
+
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Dynamic pagination for topics
@@ -59,22 +64,17 @@ const Dashboard = () => {
   const { getDashboard, handleGoogleCallback } = useAuth();
   const { streakData, loading: streakLoading } = useStreak();
   const { totalPendingCount, pendingReviews, completeReview } = useReviews();
-  const { showSuccess, showError } = useNotification();
   const {
+    fetchPendingFlashcardsByTopic,
+    fetchPendingExplanationsByTopic,
     pendingReviews: topicPendingReviews,
-    counts: topicCounts,
-    loading: topicReviewsLoading,
-    fetchPendingByTopic,
+    topicInfo,
+    counts,
+    loading: topicLoading,
     completeReview: completeTopicReview,
-    currentSession: topicCurrentSession,
-    currentReview: topicCurrentReview,
-    nextCard: topicNextCard,
-    previousCard: topicPreviousCard,
-    resetSession: topicResetSession,
-    canGoNext: topicCanGoNext,
-    canGoPrevious: topicCanGoPrevious,
-    hasReviews: topicHasReviews,
   } = useReviewsByTopic();
+  const { showSuccess, showError } = useNotification();
+
 
   useEffect(() => {
     // Obtener zona horaria del usuario
@@ -116,11 +116,7 @@ const Dashboard = () => {
     setDashboardData,
   ]);
 
-  useEffect(() => {
-    if (selectedTopicId) {
-      fetchPendingByTopic(selectedTopicId);
-    }
-  }, [selectedTopicId, fetchPendingByTopic]);
+
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -142,6 +138,14 @@ const Dashboard = () => {
     setShowCardForm(false);
     setShowNoteForm(false);
   }, [selectedTopicId, setShowCardForm, setShowNoteForm]);
+
+  // Clear topic review state when topic changes
+  useEffect(() => {
+    if (!selectedTopicId) {
+      setShowTopicStudySession(false);
+      setCurrentTopicSession(0);
+    }
+  }, [selectedTopicId]);
 
   //funcion para calcular el progreso promedio
   const calculateProgress = () => {
@@ -255,49 +259,117 @@ const Dashboard = () => {
     setCurrentSession(0);
   };
 
-  const handleStartTopicReview = () => {
-    if (topicHasReviews) {
-      topicResetSession();
-      setShowStudySession(true);
+  const handleStartTopicReview = async (type: "FLASHCARD" | "EXPLANATION") => {
+    if (!selectedTopicId) return;
+    
+    setTopicSessionType(type);
+    setCurrentTopicSession(0);
+    setShowTopicStudySession(true);
+    
+    try {
+      // Load reviews specific to the topic and type
+      let reviews;
+      if (type === "FLASHCARD") {
+        reviews = await fetchPendingFlashcardsByTopic(selectedTopicId);
+      } else {
+        reviews = await fetchPendingExplanationsByTopic(selectedTopicId);
+      }
+      
+      if (!reviews || reviews.length === 0) {
+        setShowTopicStudySession(false);
+        showError(
+          "No hay repasos pendientes",
+          type === "FLASHCARD" 
+            ? "No hay tarjetas pendientes de repaso para este tema" 
+            : "No hay notas pendientes de repaso para este tema"
+        );
+      }
+    } catch (error) {
+      console.error("Error loading topic reviews:", error);
+      setShowTopicStudySession(false);
+      showError(
+        "Error al cargar",
+        "No se pudieron cargar los repasos del tema. Inténtalo de nuevo."
+      );
     }
   };
 
   const handleCompleteTopicReview = async (difficulty: 1 | 2 | 3) => {
-    if (!topicCurrentReview) return;
-
+    const currentReview = topicPendingReviews[currentTopicSession];
+    
     try {
-      await completeTopicReview(topicCurrentReview.id, difficulty);
+      await completeTopicReview(currentReview.id, difficulty);
     } catch (error) {
-      console.error("Error completando revisión:", error);
-      showError(
-        "Error al completar revisión",
-        "No se pudo guardar el progreso. Inténtalo de nuevo."
-      );
-    }
-  };
-
-  const handleTopicNext = () => {
-    if (topicCanGoNext) {
-      topicNextCard();
-    } else {
-      showSuccess(
-        "¡Sesión completada!",
-        "Has terminado todas las tarjetas de este tema. ¡Excelente trabajo!"
-      );
-      setShowTopicStudySession(false);
-      topicResetSession();
-      if (selectedTopicId) {
-        fetchPendingByTopic(selectedTopicId);
-      }
+      console.error("Error completing topic review:", error);
     }
   };
 
   const handleExitTopicStudySession = () => {
     setShowTopicStudySession(false);
-    topicResetSession();
+    setCurrentTopicSession(0);
+    setTopicSessionType("FLASHCARD");
   };
 
-  // Show study session if active
+  const handleTopicNext = () => {
+    if (currentTopicSession < topicPendingReviews.length - 1) {
+      setCurrentTopicSession((prev) => prev + 1);
+    }
+  };
+
+  const handleTopicPrevious = () => {
+    if (currentTopicSession > 0) {
+      setCurrentTopicSession((prev) => prev - 1);
+    }
+  };
+
+
+
+
+
+
+
+
+
+  // Show topic-specific study session if active
+  if (
+    showTopicStudySession &&
+    selectedTopicId &&
+    topicPendingReviews.length > 0 &&
+    currentTopicSession < topicPendingReviews.length
+  ) {
+    const currentReview = topicPendingReviews[currentTopicSession];
+
+    return (
+      <StudySession
+        review={currentReview}
+        currentCard={currentTopicSession + 1}
+        totalCards={topicPendingReviews.length}
+        topicName={topicInfo?.name}
+        onComplete={handleCompleteTopicReview}
+        onExit={handleExitTopicStudySession}
+        onNext={handleTopicNext}
+        onPrevious={handleTopicPrevious}
+        canGoNext={currentTopicSession < topicPendingReviews.length - 1}
+        canGoPrevious={currentTopicSession > 0}
+      />
+    );
+  }
+
+  // Show loading state if loading topic reviews
+  if (
+    showTopicStudySession &&
+    selectedTopicId &&
+    topicLoading
+  ) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
+        <span className="ml-3 text-gray-600 dark:text-gray-400">Cargando repasos del tema...</span>
+      </div>
+    );
+  }
+
+  // Show general study session if active
   if (
     showStudySession &&
     pendingReviews.length > 0 &&
@@ -322,22 +394,7 @@ const Dashboard = () => {
 
   // Vista de tema seleccionado
   if (selectedTopicId) {
-    // Sesión de estudio para el tema específico
-    if (showTopicStudySession && topicCurrentReview) {
-      return (
-        <StudySession
-          review={topicCurrentReview}
-          currentCard={topicCurrentSession + 1}
-          totalCards={topicPendingReviews.length}
-          onComplete={handleCompleteTopicReview}
-          onExit={handleExitTopicStudySession}
-          onNext={handleTopicNext}
-          onPrevious={topicPreviousCard}
-          canGoNext={topicCanGoNext}
-          canGoPrevious={topicCanGoPrevious}
-        />
-      );
-    }
+
 
     return (
       <div>
@@ -358,22 +415,7 @@ const Dashboard = () => {
               {t("topics.studyContent")}
             </h1>
 
-            {/* Botón Iniciar Repaso para vista de tema */}
-            {topicCounts.total > 0 && (
-              <button
-                onClick={handleStartTopicReview}
-                disabled={topicReviewsLoading}
-                className="flex items-center gap-2 px-4 sm:px-6 py-3 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Play size={20} />
-                <span className="sm:hidden">
-                  {t("reviews.startReviewShort")} ({topicCounts.total})
-                </span>
-                <span className="hidden sm:inline">
-                  {t("reviews.startReview")} ({topicCounts.total})
-                </span>
-              </button>
-            )}
+
           </div>
         </div>
 
@@ -477,11 +519,20 @@ const Dashboard = () => {
 
         {/* Sección de Tarjetas */}
         <div className="mb-8 md:mb-10">
-          <div className="flex items-center gap-3 mb-4 md:mb-6">
-            <div className="w-1 h-8 bg-gradient-to-b from-indigo-500 to-purple-600 rounded-full"></div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              {t("cards.title")}
-            </h2>
+          <div className="flex items-center justify-between mb-4 md:mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-1 h-8 bg-gradient-to-b from-indigo-500 to-purple-600 rounded-full"></div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                {t("cards.title")}
+              </h2>
+            </div>
+            <button
+              onClick={() => handleStartTopicReview("FLASHCARD")}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-lg font-medium transition-all transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl"
+            >
+              <Play size={16} />
+              <span>{t("cards.startTopicReview")}</span>
+            </button>
           </div>
           <CardsManager
             topicId={selectedTopicId}
@@ -494,11 +545,20 @@ const Dashboard = () => {
 
         {/* Sección de Notas */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-1 h-8 bg-gradient-to-b from-indigo-500 to-purple-600 rounded-full"></div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              {t("notes.title")}
-            </h2>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-1 h-8 bg-gradient-to-b from-indigo-500 to-purple-600 rounded-full"></div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                {t("notes.title")}
+              </h2>
+            </div>
+            <button
+              onClick={() => handleStartTopicReview("EXPLANATION")}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-lg font-medium transition-all transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl"
+            >
+              <Play size={16} />
+              <span>{t("notes.startTopicReview")}</span>
+            </button>
           </div>
           <NotesManager
             topicId={selectedTopicId}

@@ -14,6 +14,15 @@ export interface StudyCard {
     order: number;
     altText?: string;
   }[];
+  // Type field from backend
+  type?: "FLASHCARD" | "EXPLANATION";
+  // Note-specific fields
+  contentType?: "card" | "note";
+  title?: string;
+  leftContent?: string;
+  rightContent?: string;
+  leftImageUrl?: string;
+  rightImageUrl?: string;
 }
 
 export interface ScheduledReview {
@@ -87,6 +96,7 @@ export interface StudySessionProps {
   onPrevious: () => void;
   canGoNext: boolean;
   canGoPrevious: boolean;
+  topicName?: string; // Optional topic name for topic-specific sessions
 }
 
 export interface ReviewSessionListProps {

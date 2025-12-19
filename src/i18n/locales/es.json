@@ -13,6 +13,32 @@
     "welcomeBack": "¡Bienvenido de vuelta! 👋",
     "welcomeBackName": "¡Bienvenido de nuevo, ",
     "createAccount": "Crear Cuenta",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "forgotPasswordTitle": "Restablecer tu contraseña",
+    "forgotPasswordSubtitle": "Ingresa tu dirección de correo electrónico y te enviaremos un enlace para restablecer tu contraseña",
+    "sendResetLink": "Enviar enlace de restablecimiento",
+    "sendingResetLink": "Enviando...",
+    "resetLinkSent": "Enlace de restablecimiento enviado",
+    "resetLinkSentMessage": "Si existe una cuenta con este correo electrónico, recibirás un enlace para restablecer tu contraseña shortly.",
+    "backToLogin": "Volver al inicio de sesión",
+    "resetPassword": "Restablecer contraseña",
+    "resetPasswordTitle": "Crear nueva contraseña",
+    "resetPasswordSubtitle": "Ingresa tu nueva contraseña a continuación",
+    "newPassword": "Nueva contraseña",
+    "confirmNewPassword": "Confirmar nueva contraseña",
+    "resettingPassword": "Restableciendo...",
+    "passwordResetSuccess": "Restablecimiento de contraseña exitoso",
+    "passwordResetSuccessMessage": "Tu contraseña ha sido restablecida. Ahora puedes iniciar sesión con tu nueva contraseña.",
+    "invalidResetToken": "Enlace de restablecimiento inválido o expirado",
+    "invalidResetTokenMessage": "Este enlace de restablecimiento de contraseña es inválido o ha expirado. Por favor solicita uno nuevo.",
+    "requestNewLink": "Solicitar nuevo enlace",
+    "googleAccountError": "Esta cuenta usa inicio de sesión con Google",
+    "googleAccountErrorMessage": "El restablecimiento de contraseña no está disponible para cuentas que usan inicio de sesión con Google. Por favor inicia sesión con Google.",
+    "tooManyRequests": "Demasiadas solicitudes",
+    "tooManyRequestsMessage": "Has hecho demasiadas solicitudes de restablecimiento de contraseña. Por favor intenta más tarde.",
+    "validatingToken": "Validando enlace de restablecimiento...",
+    "passwordsDoNotMatch": "Las contraseñas no coinciden",
+    "passwordTooShort": "La contraseña debe tener al menos 6 caracteres",
     "email": "Email",
     "password": "Contraseña",
     "confirmPassword": "Confirmar contraseña",
@@ -82,7 +108,8 @@
     "studyCard": "Tarjeta de Estudio",
     "studyCardDescription": "Formato pregunta-respuesta ideal para repaso activo y memorización.",
     "quickReview": "Repaso rápido",
-    "withImages": "Con imágenes"
+    "withImages": "Con imágenes",
+    "startTopicReview": "Repaso de tarjetas"
   },
   "notes": {
     "title": "Notas de Estudio",
@@ -94,7 +121,8 @@
     "studyNote": "Nota de Estudio",
     "studyNoteDescription": "Formato de libro abierto con dos páginas para contenido extenso.",
     "extensiveContent": "Contenido extenso",
-    "twoPages": "2 páginas"
+    "twoPages": "2 páginas",
+    "startTopicReview": "Repaso de notas"
   },
   "stats": {
     "activeTopics": "Materias activas",
@@ -280,6 +308,7 @@
     "noteInfo": "El título y las imágenes son opcionales. Al menos una de las dos páginas debe tener contenido.",
     "noteInfoBold": "Nota:",
     "atLeastOnePage": "Al menos una página debe tener contenido",
+    "titleRequired": "El título es obligatorio",
     "invalidImage": "Por favor selecciona un archivo de imagen válido",
     "imageTooLarge": "La imagen no puede superar los 5MB",
     "errorSaving": "Error al guardar la nota. Por favor, inténtalo de nuevo.",
@@ -298,7 +327,8 @@
     "viewAnswer": "Ver Respuesta",
     "previous": "Anterior",
     "next": "Siguiente",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "noteTitle": "Título de la Nota"
   },
   "calendarWidget": {
     "title": "Calendario",

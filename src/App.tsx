@@ -16,6 +16,8 @@ import Register from "./pages/Register";
 import EmailSent from "./pages/EmailSent";
 import VerifyEmail from "./pages/VerifyEmail";
 import StudySessions from "./pages/StudySessions";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import CalendarPage from "./pages/CalendarPage";
 import ProgressPage from "./pages/ProgressPage";
 import Perfil from "./pages/Perfil";
@@ -53,6 +55,8 @@ const AppRoutes: React.FC = () => {
       />
       <Route path="/email-sent" element={<EmailSent />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       {/* Rutas protegidas */}{" "}
       {/* ELIMINADO !!!! study-sections por duplicado (el usado: /study-sessions) */}
       {isAuthenticated ? (
