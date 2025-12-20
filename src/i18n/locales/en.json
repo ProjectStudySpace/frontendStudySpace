@@ -48,6 +48,10 @@
       "invalid_params": "Invalid authentication parameters",
       "invalid_state": "Invalid authentication state",
       "callback_failed": "Authentication callback failed"
+    },
+    "sessionExpired": {
+      "title": "Session expired",
+      "message": "Your session has expired. You will be redirected to login in a few seconds."
     }
   },
   "topics": {
