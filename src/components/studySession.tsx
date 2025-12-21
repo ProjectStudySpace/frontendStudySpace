@@ -85,7 +85,7 @@ const StudySession: React.FC<StudySessionProps> = ({
   return (
     <>
       <div className="fixed inset-0 bg-white dark:bg-gray-900 z-50 flex flex-col">
-        <div className="bg-white dark:bg-gray-800 shadow-lg w-full h-full overflow-y-auto border-gray-200 dark:border-gray-700 flex flex-col lg:max-w-6xl xl:max-w-7xl 2xl:max-w-[1600px] lg:mx-auto lg:my-4 lg:h-auto lg:max-h-[calc(100vh-2rem)] lg:rounded-xl lg:border">
+        <div className="bg-white dark:bg-gray-800 shadow-lg w-full h-full overflow-y-auto border-gray-200 dark:border-gray-700 flex flex-col lg:max-w-6xl xl:max-w-7xl 2xl:max-w-[1600px] lg:mx-auto lg:my-4 lg:h-auto lg:max-h-[calc(100vh-2rem)] lg:rounded-xl lg:border relative">
           <div className="flex-shrink-0">
             <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-4 sm:px-6 py-4 lg:rounded-t-xl relative">
               <button
@@ -97,19 +97,12 @@ const StudySession: React.FC<StudySessionProps> = ({
               </button>
 
               <div className="text-center text-white pr-12">
-                <h2 className="text-lg sm:text-xl font-semibold mb-2">
-                  {isNote && review.card.title ? review.card.title : t("studySession.title")}
-                </h2>
-                <p className="text-xl sm:text-2xl font-bold mb-2">
+                <p className="text-lg sm:text-xl font-semibold mb-2">
                   {topicName || review.card.topic?.name || t("studySession.topic")}
                 </p>
-                <div className="flex items-center justify-center gap-2 text-sm sm:text-base text-white text-opacity-90">
-                  <BookOpen size={16} className="sm:w-5 sm:h-5" />
-                  <span>
-                    {t("studySession.card")} {currentCard}{" "}
-                    {t("studySession.of")} {totalCards}
-                  </span>
-                </div>
+                <p className="text-sm sm:text-base text-white text-opacity-90">
+                  Sesión de estudio - tarjeta {currentCard} de {totalCards}
+                </p>
               </div>
             </div>
 
@@ -266,36 +259,25 @@ const StudySession: React.FC<StudySessionProps> = ({
                 onSelect={handleDifficultySelect}
               />
             )}
-          </div>
 
-          <div className="flex-shrink-0 border-t border-gray-200 dark:border-gray-700 p-4 sm:p-6">
-            <div className="flex justify-between items-center gap-4">
-              <button
-                onClick={handlePrevious}
-                disabled={!canGoPrevious}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-gray-100 dark:disabled:hover:bg-gray-700"
-              >
-                <ChevronLeft size={20} />
-                <span className="hidden sm:inline">
-                  {t("studySession.previous")}
-                </span>
-              </button>
+            {/* Side navigation buttons */}
+            <button
+              onClick={handlePrevious}
+              disabled={!canGoPrevious}
+              className="fixed left-4 top-1/2 transform -translate-y-1/2 z-10 flex items-center justify-center w-12 h-12 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full shadow-lg border border-gray-200 dark:border-gray-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white dark:disabled:hover:bg-gray-800"
+              aria-label={t("studySession.previous")}
+            >
+              <ChevronLeft size={24} />
+            </button>
 
-              <span className="text-sm text-gray-600 dark:text-gray-400">
-                {currentCard} / {totalCards}
-              </span>
-
-              <button
-                onClick={handleNext}
-                disabled={!canGoNext}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-gray-100 dark:disabled:hover:bg-gray-700"
-              >
-                <span className="hidden sm:inline">
-                  {t("studySession.next")}
-                </span>
-                <ChevronRight size={20} />
-              </button>
-            </div>
+            <button
+              onClick={handleNext}
+              disabled={!canGoNext}
+              className="fixed right-4 top-1/2 transform -translate-y-1/2 z-10 flex items-center justify-center w-12 h-12 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full shadow-lg border border-gray-200 dark:border-gray-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white dark:disabled:hover:bg-gray-800"
+              aria-label={t("studySession.next")}
+            >
+              <ChevronRight size={24} />
+            </button>
           </div>
         </div>
       </div>
