@@ -247,6 +247,7 @@ export const useCards = () => {
 
   return {
     cards,
+    allCards,
     loading,
     error,
     pagination,

@@ -117,18 +117,28 @@ export const useNotes = () => {
   const searchNotes = async (
     searchTerm: string,
     page: number = 1,
-    limit: number = 10
+    limit: number = 10,
+    topicId?: number
   ): Promise<Note[]> => {
     if (!user) throw new Error("Usuario no autenticado");
 
     setLoading(true);
     setError(null);
     try {
-      const requestKey = `notes-search-${searchTerm}-${page}-${limit}`;
+      const requestKey = `notes-search-${searchTerm}-${page}-${limit}-${topicId || 'all'}`;
+      const params: any = { 
+        search: searchTerm, 
+        page, 
+        limit 
+      };
+      
+      // Agregar filtro por tema si se proporciona
+      if (topicId) {
+        params.topicId = topicId;
+      }
+      
       const { data } = await deduplicateRequest(requestKey, () =>
-        api.get(`/cards/search`, {
-          params: { search: searchTerm, page, limit },
-        })
+        api.get(`/cards/search`, { params })
       );
       
       const cardsArray: any[] = data.cards || [];

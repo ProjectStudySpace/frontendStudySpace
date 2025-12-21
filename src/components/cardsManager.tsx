@@ -11,6 +11,15 @@ export const CardsManager: React.FC<CardsManagerProps> = ({ topicId, openFormIni
   const [showForm, setShowForm] = useState(openFormInitially);
   const [editingCard, setEditingCard] = useState<Card | undefined>();
   const [searchTerm, setSearchTerm] = useState("");
+  const [filteredCards, setFilteredCards] = useState<Card[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchPagination, setSearchPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    pageSize: 10, // valor por defecto, se actualizará con dynamicPageSize
+  });
+  const [isSearching, setIsSearching] = useState(false);
   
   // Dynamic pagination for cards
   const { pageSize: dynamicPageSize } = useDynamicPagination({
@@ -21,6 +30,7 @@ export const CardsManager: React.FC<CardsManagerProps> = ({ topicId, openFormIni
   
   const {
     cards,
+    allCards,
     loading,
     error,
     pagination,
@@ -36,11 +46,54 @@ export const CardsManager: React.FC<CardsManagerProps> = ({ topicId, openFormIni
   useEffect(() => {
     if (topicId) {
       setSearchTerm("");
+      setCurrentPage(1);
+      setIsSearching(false);
       fetchCardsByTopic(topicId, 1, dynamicPageSize).catch((error) =>
         console.error("Error fetching cards:", error)
       );
     }
   }, [topicId, dynamicPageSize]);
+  
+  // Filtrar todas las tarjetas y calcular paginación de resultados filtrados
+  useEffect(() => {
+    if (searchTerm.trim()) {
+      // Con búsqueda: mostrar indicador de búsqueda
+      setIsSearching(true);
+      
+      // Simular un pequeño delay para mostrar el indicador
+      const timer = setTimeout(() => {
+        const filtered = allCards.filter((card: Card) =>
+          card.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          card.answer.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setCurrentPage(1);
+        const start = 0;
+        const end = dynamicPageSize;
+        setFilteredCards(filtered.slice(start, end));
+        setSearchPagination({
+          currentPage: 1,
+          totalPages: Math.ceil(filtered.length / dynamicPageSize),
+          totalItems: filtered.length,
+          pageSize: dynamicPageSize,
+        });
+        setIsSearching(false);
+      }, 200);
+      
+      return () => clearTimeout(timer);
+    } else {
+      // Sin búsqueda: mostrar todas las tarjetas paginadas
+      setIsSearching(false);
+      const start = (currentPage - 1) * dynamicPageSize;
+      const end = start + dynamicPageSize;
+      setFilteredCards(allCards.slice(start, end));
+      setSearchPagination({
+        currentPage,
+        totalPages: Math.ceil(allCards.length / dynamicPageSize),
+        totalItems: allCards.length,
+        pageSize: dynamicPageSize,
+      });
+    }
+  }, [allCards, searchTerm, currentPage, dynamicPageSize]);
 
   // Open form when openFormInitially changes to true
   useEffect(() => {
@@ -49,15 +102,29 @@ export const CardsManager: React.FC<CardsManagerProps> = ({ topicId, openFormIni
     }
   }, [openFormInitially]);
 
-  // Filtrar tarjetas localmente (como en Temas.tsx)
-  const filteredCards = cards.filter(
-    (card) =>
-      card.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      card.answer.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   const handlePageChange = (page: number) => {
-    changePage(page, dynamicPageSize);
+    if (searchTerm.trim()) {
+      // Con búsqueda activa: paginar sobre resultados filtrados
+      const filtered = allCards.filter((card: Card) =>
+        card.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        card.answer.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      const start = (page - 1) * dynamicPageSize;
+      const end = start + dynamicPageSize;
+      setFilteredCards(filtered.slice(start, end));
+      setSearchPagination(prev => ({
+        ...prev,
+        currentPage: page,
+      }));
+    } else {
+      // Sin búsqueda: usar cambio de página normal
+      changePage(page, dynamicPageSize);
+      setSearchPagination(prev => ({
+        ...prev,
+        currentPage: page,
+      }));
+    }
+    setCurrentPage(page);
   };
 
   const handleCreateCard = () => {
@@ -128,6 +195,21 @@ export const CardsManager: React.FC<CardsManagerProps> = ({ topicId, openFormIni
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                 />
+                {searchTerm.length > 0 && searchTerm.length < 2 && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-10">
+                    Mínimo 2 caracteres para buscar
+                  </p>
+                )}
+                {isSearching && (
+                  <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-1 ml-10">
+                    Buscando "{searchTerm}"...
+                  </p>
+                )}
+                {searchTerm.trim() && !isSearching && (
+                  <p className="text-xs text-green-600 dark:text-green-400 mt-1 ml-10">
+                    {searchPagination.totalItems} resultado{searchPagination.totalItems !== 1 ? 's' : ''} encontrado{searchPagination.totalItems !== 1 ? 's' : ''}
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -147,7 +229,7 @@ export const CardsManager: React.FC<CardsManagerProps> = ({ topicId, openFormIni
           onEdit={handleEditCard}
           onDelete={handleDeleteCard}
           topicId={topicId}
-          pagination={pagination}
+          pagination={searchTerm.trim() ? searchPagination : pagination}
           onPageChange={handlePageChange}
           onCreateCard={handleCreateCard}
         />

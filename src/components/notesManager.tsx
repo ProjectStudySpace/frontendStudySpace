@@ -54,7 +54,7 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
     async (page: number, searchQuery: string) => {
       try {
         if (searchQuery.trim() && searchQuery.length >= 2) {
-          await searchNotes(searchQuery, page);
+          await searchNotes(searchQuery, page, dynamicPageSize, topicId);
         } else if (!searchQuery.trim()) {
           changePage(page);
         }
@@ -62,7 +62,7 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
         console.error("Error loading notes:", error);
       }
     },
-    [searchNotes, changePage]
+    [searchNotes, changePage, topicId, dynamicPageSize]
   );
 
   // Efecto para cargar notas cuando cambia el tema
