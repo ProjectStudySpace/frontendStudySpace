@@ -1,5 +1,6 @@
 import axios, { AxiosResponse, AxiosError, AxiosRequestConfig } from 'axios';
 import { API_URL } from '../config';
+import i18n from '../i18n/config';
 
 // Create a cancellation token source for request management
 const createCancelToken = () => axios.CancelToken.source();
@@ -99,6 +100,24 @@ export const deduplicateRequest = async <T>(
   return promise;
 };
 
+// Función para manejar sesión expirada
+const handleSessionExpired = () => {
+  // Limpiar tokens del localStorage
+  localStorage.removeItem("token");
+  localStorage.removeItem("userTimezone");
+  
+  // Mostrar notificación de sesión expirada
+  const title = i18n.t('auth.sessionExpired.title');
+  const message = i18n.t('auth.sessionExpired.message');
+  
+  showErrorGlobal(title, message);
+  
+  // Redirigir al login después de mostrar la notificación
+  setTimeout(() => {
+    window.location.href = '/login';
+  }, 4000); // 4 segundos para que el usuario vea la notificación
+};
+
 // Función auxiliar para mostrar errores globalmente sin depender del contexto de React
 const showErrorGlobal = (title: string, description: string) => {
   // Buscar el container de notificaciones existente o crear uno nuevo
@@ -167,7 +186,12 @@ api.interceptors.response.use(
           }
           break;
         case 401:
-          showErrorGlobal("No autorizado", "Tu sesión ha expirado. Por favor, inicia sesión nuevamente");
+          // Verificar si es un error de token expirado (no para endpoints de login)
+          if (!isLogin) {
+            handleSessionExpired();
+          } else {
+            showErrorGlobal("No autorizado", "Credenciales inválidas");
+          }
           // Limpiar token inválido solo para non-auth endpoints
           if (!isLogin) {
             localStorage.removeItem("token");

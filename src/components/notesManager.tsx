@@ -24,9 +24,9 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
   const [isSearching, setIsSearching] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
 
-  // Dynamic pagination for notes - 2x2 grid on large screens (3 notes + 1 button)
+  // Dynamic pagination for notes - same pattern as flashcards
   const { pageSize: dynamicPageSize } = useDynamicPagination({
-    cols: { mobile: 1, md: 2, lg: 2, xl: 2 },
+    cols: { mobile: 1, md: 2, lg: 3, xl: 4 },
     mobileLimit: 4, // 3 notes + 1 button on mobile
     rows: 2,
   });
@@ -54,7 +54,7 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
     async (page: number, searchQuery: string) => {
       try {
         if (searchQuery.trim() && searchQuery.length >= 2) {
-          await searchNotes(searchQuery, page);
+          await searchNotes(searchQuery, page, dynamicPageSize, topicId);
         } else if (!searchQuery.trim()) {
           changePage(page);
         }
@@ -62,7 +62,7 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
         console.error("Error loading notes:", error);
       }
     },
-    [searchNotes, changePage]
+    [searchNotes, changePage, topicId, dynamicPageSize]
   );
 
   // Efecto para cargar notas cuando cambia el tema

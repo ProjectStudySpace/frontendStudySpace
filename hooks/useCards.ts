@@ -37,9 +37,28 @@ export const useCards = () => {
       const allCardsArray: Card[] = data.cards || [];
       
       // Filtrar solo las cards de tipo "flashcard" (tarjetas)
-      const cardsArray: Card[] = allCardsArray.filter(card =>
-        card.type && card.type.toUpperCase() === "FLASHCARD"
-      );
+      const cardsArray: Card[] = allCardsArray.filter(card => {
+        if (!card.type) {
+          console.warn(`Card ${card.id} has no type, skipping`);
+          return false;
+        }
+        const normalizedType = card.type.toUpperCase().trim();
+        if (normalizedType !== "FLASHCARD") {
+          // Log solo si es inesperado (no "EXPLANATION")
+          if (normalizedType !== "EXPLANATION") {
+            console.warn(`Card ${card.id} has unexpected type: ${card.type}`);
+          }
+          return false;
+        }
+        return true;
+      });
+
+      // ✅ NUEVO: Alertar si se filtran muchas cards
+      if (allCardsArray.length > 0 && cardsArray.length === 0) {
+        console.error(`All ${allCardsArray.length} cards were filtered out. Check types in database.`);
+      } else if (cardsArray.length < allCardsArray.length) {
+        console.log(`Filtered ${allCardsArray.length - cardsArray.length} non-flashcard cards from ${allCardsArray.length} total`);
+      }
 
       const cardsWithTopic: Card[] = cardsArray.map((card) => ({
         ...card,
@@ -90,9 +109,28 @@ export const useCards = () => {
 
       const allCardsArray: Card[] = data.cards || [];
       // Filtrar solo las cards de tipo "flashcard" (tarjetas)
-      const cardsArray: Card[] = allCardsArray.filter(card =>
-        card.type && card.type.toUpperCase() === "FLASHCARD"
-      );
+      const cardsArray: Card[] = allCardsArray.filter(card => {
+        if (!card.type) {
+          console.warn(`Card ${card.id} has no type, skipping`);
+          return false;
+        }
+        const normalizedType = card.type.toUpperCase().trim();
+        if (normalizedType !== "FLASHCARD") {
+          // Log solo si es inesperado (no "EXPLANATION")
+          if (normalizedType !== "EXPLANATION") {
+            console.warn(`Card ${card.id} has unexpected type: ${card.type}`);
+          }
+          return false;
+        }
+        return true;
+      });
+      
+      // ✅ NUEVO: Alertar si se filtran muchas cards
+      if (allCardsArray.length > 0 && cardsArray.length === 0) {
+        console.error(`All ${allCardsArray.length} cards were filtered out. Check types in database.`);
+      } else if (cardsArray.length < allCardsArray.length) {
+        console.log(`Filtered ${allCardsArray.length - cardsArray.length} non-flashcard cards from ${allCardsArray.length} total`);
+      }
       setCards(cardsArray);
       const pag = data.pagination || {};
       setPagination({
@@ -247,6 +285,7 @@ export const useCards = () => {
 
   return {
     cards,
+    allCards,
     loading,
     error,
     pagination,

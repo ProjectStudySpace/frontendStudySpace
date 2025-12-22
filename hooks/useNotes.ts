@@ -54,7 +54,14 @@ export const useNotes = () => {
       
       // Filtrar solo las cards de tipo "explanation" (notas) y mapear campos
       const notesArray: Note[] = cardsArray
-        .filter(card => card.type && card.type.toUpperCase() === "EXPLANATION")
+        .filter(card => {
+          if (!card.type) {
+            console.warn(`Card ${card.id} has no type, skipping`);
+            return false;
+          }
+          const normalizedType = card.type.toUpperCase().trim();
+          return normalizedType === "EXPLANATION";
+        })
         .map(card => {
           // Extraer título y contenido izquierdo del question
           const questionParts = (card.question || "").split('\n\n');
@@ -75,6 +82,13 @@ export const useNotes = () => {
             topic: card.topic,
           };
         });
+
+      // ✅ NUEVO: Alertar si se filtran muchas cards
+      if (cardsArray.length > 0 && notesArray.length === 0) {
+        console.error(`All ${cardsArray.length} cards were filtered out as notes. Check types in database.`);
+      } else if (notesArray.length < cardsArray.length) {
+        console.log(`Filtered ${cardsArray.length - notesArray.length} non-explanation cards from ${cardsArray.length} total`);
+      }
 
       const notesWithTopic: Note[] = notesArray.map((note) => ({
         ...note,
@@ -117,25 +131,42 @@ export const useNotes = () => {
   const searchNotes = async (
     searchTerm: string,
     page: number = 1,
-    limit: number = 10
+    limit: number = 10,
+    topicId?: number
   ): Promise<Note[]> => {
     if (!user) throw new Error("Usuario no autenticado");
 
     setLoading(true);
     setError(null);
     try {
-      const requestKey = `notes-search-${searchTerm}-${page}-${limit}`;
+      const requestKey = `notes-search-${searchTerm}-${page}-${limit}-${topicId || 'all'}`;
+      const params: any = { 
+        search: searchTerm, 
+        page, 
+        limit 
+      };
+      
+      // Agregar filtro por tema si se proporciona
+      if (topicId) {
+        params.topicId = topicId;
+      }
+      
       const { data } = await deduplicateRequest(requestKey, () =>
-        api.get(`/cards/search`, {
-          params: { search: searchTerm, page, limit },
-        })
+        api.get(`/cards/search`, { params })
       );
       
       const cardsArray: any[] = data.cards || [];
       
       // Filtrar solo las cards de tipo "explanation" (notas) y mapear campos
       const notesArray: Note[] = cardsArray
-        .filter(card => card.type && card.type.toUpperCase() === "EXPLANATION")
+        .filter(card => {
+          if (!card.type) {
+            console.warn(`Card ${card.id} has no type, skipping`);
+            return false;
+          }
+          const normalizedType = card.type.toUpperCase().trim();
+          return normalizedType === "EXPLANATION";
+        })
         .map(card => {
           // Extraer título y contenido izquierdo del question
           const questionParts = (card.question || "").split('\n\n');
@@ -156,6 +187,13 @@ export const useNotes = () => {
             topic: card.topic,
           };
         });
+
+      // ✅ NUEVO: Alertar si se filtran muchas cards
+      if (cardsArray.length > 0 && notesArray.length === 0) {
+        console.error(`All ${cardsArray.length} cards were filtered out as notes. Check types in database.`);
+      } else if (notesArray.length < cardsArray.length) {
+        console.log(`Filtered ${cardsArray.length - notesArray.length} non-explanation cards from ${cardsArray.length} total`);
+      }
       
       setNotes(notesArray);
       const pag = data.pagination || {};

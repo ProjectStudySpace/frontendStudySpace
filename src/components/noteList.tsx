@@ -41,7 +41,7 @@ export const NoteList: React.FC<NoteListProps> = ({
           </h3>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {notes.map((note) => (
           <NoteItem
             key={note.id}

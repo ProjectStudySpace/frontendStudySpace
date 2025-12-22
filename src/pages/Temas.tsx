@@ -296,11 +296,26 @@ const Dashboard = () => {
 
   const handleCompleteTopicReview = async (difficulty: 1 | 2 | 3) => {
     const currentReview = topicPendingReviews[currentTopicSession];
+    const totalReviews = topicPendingReviews.length;
     
     try {
       await completeTopicReview(currentReview.id, difficulty);
+      
+      // ✅ NUEVO: Manejar progresión automática y finalización de sesión
+      if (currentTopicSession >= totalReviews - 1) {
+        // Era la última tarjeta
+        showSuccess(
+          "¡Sesión completada!",
+          `Has completado todas las ${topicSessionType === "FLASHCARD" ? "tarjetas" : "notas"} de repaso`
+        );
+        handleExitTopicStudySession();
+      } else {
+        // Hay más tarjetas, avanzar a la siguiente
+        setCurrentTopicSession(prev => prev + 1);
+      }
     } catch (error) {
       console.error("Error completing topic review:", error);
+      showError("Error al completar", "No se pudo completar la revisión. Inténtalo de nuevo.");
     }
   };
 

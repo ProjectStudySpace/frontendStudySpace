@@ -74,6 +74,10 @@
       "invalid_params": "Parámetros de autenticación inválidos",
       "invalid_state": "Estado de autenticación inválido",
       "callback_failed": "Error en el callback de autenticación"
+    },
+    "sessionExpired": {
+      "title": "Sesión expirada",
+      "message": "Tu sesión ha expirado. Serás redirigido al login en unos segundos."
     }
   },
   "topics": {
