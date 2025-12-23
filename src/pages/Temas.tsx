@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   BookOpen,
@@ -28,7 +28,6 @@ import { useDynamicPagination } from "../../hooks/useDynamicPagination";
 import StudySession from "../components/studySession";
 import { useNotification } from "../context/NotificationContext";
 
-
 const Dashboard = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -50,7 +49,9 @@ const Dashboard = () => {
   const [currentSession, setCurrentSession] = useState<number>(0);
   const [showTopicStudySession, setShowTopicStudySession] = useState(false);
   const [currentTopicSession, setCurrentTopicSession] = useState<number>(0);
-  const [topicSessionType, setTopicSessionType] = useState<"FLASHCARD" | "EXPLANATION">("FLASHCARD");
+  const [topicSessionType, setTopicSessionType] = useState<
+    "FLASHCARD" | "EXPLANATION"
+  >("FLASHCARD");
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -74,7 +75,6 @@ const Dashboard = () => {
     completeReview: completeTopicReview,
   } = useReviewsByTopic();
   const { showSuccess, showError } = useNotification();
-
 
   useEffect(() => {
     // Obtener zona horaria del usuario
@@ -115,8 +115,6 @@ const Dashboard = () => {
     pageSize,
     setDashboardData,
   ]);
-
-
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -261,11 +259,11 @@ const Dashboard = () => {
 
   const handleStartTopicReview = async (type: "FLASHCARD" | "EXPLANATION") => {
     if (!selectedTopicId) return;
-    
+
     setTopicSessionType(type);
     setCurrentTopicSession(0);
     setShowTopicStudySession(true);
-    
+
     try {
       // Load reviews specific to the topic and type
       let reviews;
@@ -274,13 +272,13 @@ const Dashboard = () => {
       } else {
         reviews = await fetchPendingExplanationsByTopic(selectedTopicId);
       }
-      
+
       if (!reviews || reviews.length === 0) {
         setShowTopicStudySession(false);
         showError(
           "No hay repasos pendientes",
-          type === "FLASHCARD" 
-            ? "No hay tarjetas pendientes de repaso para este tema" 
+          type === "FLASHCARD"
+            ? "No hay tarjetas pendientes de repaso para este tema"
             : "No hay notas pendientes de repaso para este tema"
         );
       }
@@ -297,25 +295,30 @@ const Dashboard = () => {
   const handleCompleteTopicReview = async (difficulty: 1 | 2 | 3) => {
     const currentReview = topicPendingReviews[currentTopicSession];
     const totalReviews = topicPendingReviews.length;
-    
+
     try {
       await completeTopicReview(currentReview.id, difficulty);
-      
+
       // ✅ NUEVO: Manejar progresión automática y finalización de sesión
       if (currentTopicSession >= totalReviews - 1) {
         // Era la última tarjeta
         showSuccess(
           "¡Sesión completada!",
-          `Has completado todas las ${topicSessionType === "FLASHCARD" ? "tarjetas" : "notas"} de repaso`
+          `Has completado todas las ${
+            topicSessionType === "FLASHCARD" ? "tarjetas" : "notas"
+          } de repaso`
         );
         handleExitTopicStudySession();
       } else {
         // Hay más tarjetas, avanzar a la siguiente
-        setCurrentTopicSession(prev => prev + 1);
+        setCurrentTopicSession((prev) => prev + 1);
       }
     } catch (error) {
       console.error("Error completing topic review:", error);
-      showError("Error al completar", "No se pudo completar la revisión. Inténtalo de nuevo.");
+      showError(
+        "Error al completar",
+        "No se pudo completar la revisión. Inténtalo de nuevo."
+      );
     }
   };
 
@@ -336,14 +339,6 @@ const Dashboard = () => {
       setCurrentTopicSession((prev) => prev - 1);
     }
   };
-
-
-
-
-
-
-
-
 
   // Show topic-specific study session if active
   if (
@@ -371,15 +366,13 @@ const Dashboard = () => {
   }
 
   // Show loading state if loading topic reviews
-  if (
-    showTopicStudySession &&
-    selectedTopicId &&
-    topicLoading
-  ) {
+  if (showTopicStudySession && selectedTopicId && topicLoading) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
-        <span className="ml-3 text-gray-600 dark:text-gray-400">Cargando repasos del tema...</span>
+        <span className="ml-3 text-gray-600 dark:text-gray-400">
+          Cargando repasos del tema...
+        </span>
       </div>
     );
   }
@@ -409,8 +402,6 @@ const Dashboard = () => {
 
   // Vista de tema seleccionado
   if (selectedTopicId) {
-
-
     return (
       <div>
         {/* Botón volver a materias */}
@@ -429,8 +420,6 @@ const Dashboard = () => {
             <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-gray-100 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
               {t("topics.studyContent")}
             </h1>
-
-
           </div>
         </div>
 

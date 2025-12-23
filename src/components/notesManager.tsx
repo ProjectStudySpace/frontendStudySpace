@@ -34,7 +34,6 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
   const {
     notes,
     loading,
-    error,
     pagination,
     fetchNotesByTopic,
     searchNotes,

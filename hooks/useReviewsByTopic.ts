@@ -1,12 +1,8 @@
 import { useState, useCallback } from "react";
 import { api } from "../src/utils/axiosConfig";
-import { ScheduledReview, StudyCard } from "../src/types/reviews";
+import { ScheduledReview } from "../src/types/reviews";
 import { reviewsUpdateEvent } from "./reviewsUpdateEvent";
-import {
-  TopicInfo,
-  ReviewByTopic,
-  PendingByTopicResponse,
-} from "../src/types/reviews";
+import { TopicInfo, PendingByTopicResponse } from "../src/types/reviews";
 
 export const useReviewsByTopic = () => {
   const [pendingReviews, setPendingReviews] = useState<ScheduledReview[]>([]);
@@ -132,22 +128,31 @@ export const useReviewsByTopic = () => {
         if (!result) throw new Error("Error al completar la revisión");
 
         // ✅ NUEVO: Actualizar lista local inmediatamente (actualización optimista)
-        const reviewIndex = pendingReviews.findIndex(r => r.id === scheduledReviewId);
+        const reviewIndex = pendingReviews.findIndex(
+          (r) => r.id === scheduledReviewId
+        );
         if (reviewIndex !== -1) {
           const completedReview = pendingReviews[reviewIndex];
-          const updatedReviews = pendingReviews.filter(r => r.id !== scheduledReviewId);
+          const updatedReviews = pendingReviews.filter(
+            (r) => r.id !== scheduledReviewId
+          );
           setPendingReviews(updatedReviews);
-          
+
           // Actualizar conteos
           const isFlashcard = completedReview.card.type === "FLASHCARD";
-          setCounts(prev => ({
+          setCounts((prev) => ({
             flashcards: isFlashcard ? prev.flashcards - 1 : prev.flashcards,
-            explanations: !isFlashcard ? prev.explanations - 1 : prev.explanations,
+            explanations: !isFlashcard
+              ? prev.explanations - 1
+              : prev.explanations,
             total: prev.total - 1,
           }));
-          
+
           // Ajustar sesión actual si es necesario
-          if (currentSession >= updatedReviews.length && updatedReviews.length > 0) {
+          if (
+            currentSession >= updatedReviews.length &&
+            updatedReviews.length > 0
+          ) {
             setCurrentSession(updatedReviews.length - 1);
           } else if (updatedReviews.length === 0) {
             setCurrentSession(0);

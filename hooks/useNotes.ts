@@ -34,7 +34,6 @@ const mapCardToNote = (card: any, topicId?: number): Note => {
 
 export const useNotes = () => {
   const [notes, setNotes] = useState<Note[]>([]);
-  const [allNotes, setAllNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentTopicId, setCurrentTopicId] = useState<number | null>(null);

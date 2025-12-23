@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useReviews } from "../../hooks/useReviews";
 import { useNotification } from "../context/NotificationContext";
@@ -57,15 +57,21 @@ const SpacedRepetitionDashboard: React.FC = () => {
         setCurrentSession(0);
         setShowStudySession(true);
       } catch (error) {
-        console.error("Error cargando todas las tarjetas para la sesión:", error);
-        showError("Error", "No se pudieron cargar todas las tarjetas para la sesión");
+        console.error(
+          "Error cargando todas las tarjetas para la sesión:",
+          error
+        );
+        showError(
+          "Error",
+          "No se pudieron cargar todas las tarjetas para la sesión"
+        );
       }
     }
   };
 
   const handleCompleteReview = async (difficulty: 1 | 2 | 3) => {
     if (currentSession >= pendingReviews.length) return;
-    
+
     const currentReview = pendingReviews[currentSession];
 
     try {
@@ -73,7 +79,10 @@ const SpacedRepetitionDashboard: React.FC = () => {
       // No avanzar automáticamente, el usuario debe usar los botones de navegación
     } catch (error) {
       console.error("Error completando revisión:", error);
-      showError("Error al completar revisión", "No se pudo guardar el progreso. Inténtalo de nuevo.");
+      showError(
+        "Error al completar revisión",
+        "No se pudo guardar el progreso. Inténtalo de nuevo."
+      );
     }
   };
 
@@ -82,7 +91,10 @@ const SpacedRepetitionDashboard: React.FC = () => {
       setCurrentSession((prev) => prev + 1);
     } else {
       // Si llegamos al final, la sesión está completa
-      showSuccess("¡Sesión completada!", `Has terminado todas las ${totalPendingCount} tarjetas de hoy. ¡Excelente trabajo!`);
+      showSuccess(
+        "¡Sesión completada!",
+        `Has terminado todas las ${totalPendingCount} tarjetas de hoy. ¡Excelente trabajo!`
+      );
       setShowStudySession(false);
       setCurrentSession(0);
       // Recargar las revisiones para actualizar el conteo
@@ -183,7 +195,10 @@ const SpacedRepetitionDashboard: React.FC = () => {
           <div className="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-600">
             <div className="flex items-center gap-3 sm:gap-4">
               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center bg-red-100 dark:bg-red-900/30">
-                <Clock size={20} className="sm:w-6 sm:h-6 text-red-600 dark:text-red-400" />
+                <Clock
+                  size={20}
+                  className="sm:w-6 sm:h-6 text-red-600 dark:text-red-400"
+                />
               </div>
               <div>
                 <p className="text-gray-600 dark:text-gray-300 text-xs sm:text-sm mb-1">
@@ -199,7 +214,10 @@ const SpacedRepetitionDashboard: React.FC = () => {
           <div className="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-600">
             <div className="flex items-center gap-3 sm:gap-4">
               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center bg-orange-100 dark:bg-orange-900/30">
-                <BookOpen size={20} className="sm:w-6 sm:h-6 text-orange-600 dark:text-orange-400" />
+                <BookOpen
+                  size={20}
+                  className="sm:w-6 sm:h-6 text-orange-600 dark:text-orange-400"
+                />
               </div>
               <div>
                 <p className="text-gray-600 dark:text-gray-300 text-xs sm:text-sm mb-1">

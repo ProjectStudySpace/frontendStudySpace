@@ -1,15 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  TopicFormProps,
-  CreateTopicData,
-  UpdateTopicData,
-} from "../types/topics";
+import { TopicFormProps } from "../types/topics";
 import { useColorSelector } from "../../hooks/useColor";
 import { ColorSelector } from "./colorSelector";
-import { PastelColor } from "../types/colors";
-
-const getDefaultColor = () => "#93C5FD";
 
 export const TopicForm: React.FC<TopicFormProps> = ({
   onSubmit,
@@ -99,7 +92,9 @@ export const TopicForm: React.FC<TopicFormProps> = ({
           onToggle={colorSelector.toggleColorPicker}
           onClose={colorSelector.closeColorPicker}
         />
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t("forms.selectColor")}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          {t("forms.selectColor")}
+        </p>
       </div>
 
       <div className="flex gap-3 justify-end pt-4 border-t border-gray-200 dark:border-gray-700">

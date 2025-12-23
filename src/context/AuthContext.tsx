@@ -123,14 +123,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkSession();
   }, []);
 
-  //funcion para obtener token
-
-  const getToken = (): string => {
-    const token = localStorage.getItem("token");
-    if (!token) throw new Error("No se encontró token. Inicia sesión.");
-    return token;
-  };
-
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;

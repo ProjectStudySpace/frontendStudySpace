@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { ScheduledReview, StudySessionProps } from "../types/reviews";
+import { StudySessionProps } from "../types/reviews";
 import DifficultySelector from "./difficultySelector";
-import { X, ChevronLeft, ChevronRight, BookOpen } from "lucide-react";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { ImageModal } from "./ImageModal";
 
 const StudySession: React.FC<StudySessionProps> = ({
@@ -28,20 +28,33 @@ const StudySession: React.FC<StudySessionProps> = ({
   } | null>(null);
 
   // Check if this is a note or a card
-  const isNote = review.card.contentType === "note" ||
-                 review.card.type === "EXPLANATION";
+  const isNote =
+    review.card.contentType === "note" || review.card.type === "EXPLANATION";
 
   // Extraer título y contenido izquierdo del question para notas
   const { noteTitle, noteLeftContent, noteRightContent } = useMemo(() => {
     if (isNote) {
       // Normalizar saltos de línea (Windows usa \r\n, Unix usa \n)
-      const normalizedQuestion = (review.card.question || "").replace(/\r\n/g, '\n');
+      const normalizedQuestion = (review.card.question || "").replace(
+        /\r\n/g,
+        "\n"
+      );
       // Buscar doble salto de línea para separar título de contenido izquierdo
-      const questionParts = normalizedQuestion.split('\n\n');
-      const title = questionParts.length > 1 ? questionParts[0].trim() : normalizedQuestion.trim();
-      const leftContent = questionParts.length > 1 ? questionParts.slice(1).join('\n\n').trim() : "";
+      const questionParts = normalizedQuestion.split("\n\n");
+      const title =
+        questionParts.length > 1
+          ? questionParts[0].trim()
+          : normalizedQuestion.trim();
+      const leftContent =
+        questionParts.length > 1
+          ? questionParts.slice(1).join("\n\n").trim()
+          : "";
       const rightContent = review.card.answer || "";
-      return { noteTitle: title, noteLeftContent: leftContent, noteRightContent: rightContent };
+      return {
+        noteTitle: title,
+        noteLeftContent: leftContent,
+        noteRightContent: rightContent,
+      };
     }
     return { noteTitle: "", noteLeftContent: "", noteRightContent: "" };
   }, [isNote, review.card.question, review.card.answer]);
@@ -98,7 +111,9 @@ const StudySession: React.FC<StudySessionProps> = ({
 
               <div className="text-center text-white pr-12">
                 <p className="text-lg sm:text-xl font-semibold mb-2">
-                  {topicName || review.card.topic?.name || t("studySession.topic")}
+                  {topicName ||
+                    review.card.topic?.name ||
+                    t("studySession.topic")}
                 </p>
                 <p className="text-sm sm:text-base text-white text-opacity-90">
                   Sesión de estudio - tarjeta {currentCard} de {totalCards}

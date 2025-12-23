@@ -2,13 +2,12 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { NoteListProps } from "../types/notes";
 import { NoteItem } from "./noteItem";
-import { BookOpen, Plus } from "lucide-react";
+import { BookOpen } from "lucide-react";
 
 export const NoteList: React.FC<NoteListProps> = ({
   notes,
   onEdit,
   onDelete,
-  topicId,
   pagination,
   onPageChange,
   onCreateNote,
@@ -34,7 +33,10 @@ export const NoteList: React.FC<NoteListProps> = ({
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-200 dark:border-gray-700">
       <div className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
         <div className="flex items-center gap-2">
-          <BookOpen size={20} className="text-indigo-600 dark:text-indigo-400" />
+          <BookOpen
+            size={20}
+            className="text-indigo-600 dark:text-indigo-400"
+          />
           <h3>
             {t("components.noteList.topicNotes")} (
             {pagination ? pagination.totalItems : notes.length})

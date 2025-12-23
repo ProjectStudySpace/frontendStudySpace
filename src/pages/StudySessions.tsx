@@ -1,8 +1,6 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import SpacedRepetitionDashboard from "../components/spacedRepetitionDashboard";
 import { useReviews } from "../../hooks/useReviews";
-import CalendarWidget from "../components/calendarWidget";
-import { BookOpen, TrendingUp, Clock } from "lucide-react";
 
 const StudySessions = () => {
   const { fetchAllReviews, pendingReviews, upcomingReviews } = useReviews();

@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-import axios from "axios";
 import { StudySessionCalendar } from "../src/types/reviews";
 import { reviewsUpdateEvent } from "./reviewsUpdateEvent";
 import { api } from "../src/utils/axiosConfig";
