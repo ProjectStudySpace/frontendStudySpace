@@ -1623,6 +1623,15 @@
       "topicCards": "Topic cards",
       "newCard": "New card"
     },
+    "cardsManager": {
+      "searchPlaceholder": "Search cards by question or answer...",
+      "minCharacters": "Minimum 2 characters to search",
+      "searching": "Searching",
+      "resultsFound": "results found",
+      "resultFound": "result found",
+      "errorLoading": "Error loading cards",
+      "retry": "Retry"
+    },
     "colorSelector": {
       "themeColor": "Theme color",
       "colors": {
@@ -1695,6 +1704,8 @@
       "searchPlaceholder": "Search in notes by title or content...",
       "minCharacters": "Type at least 2 characters to search",
       "searching": "Searching",
+      "resultsFound": "results found",
+      "resultFound": "result found",
       "errorLoading": "Error loading notes",
       "retry": "Retry"
     },
@@ -1708,6 +1719,44 @@
       "newSubject": "+ New Subject",
       "viewAllTopics": "View all topics",
       "searchSubjects": "Search subjects..."
+    }
+  },
+  "notifications": {
+    "cardCreated": {
+      "title": "Card created",
+      "message": "The card has been created successfully"
+    },
+    "cardUpdated": {
+      "title": "Card updated",
+      "message": "The card has been updated successfully"
+    },
+    "cardDeleted": {
+      "title": "Card deleted",
+      "message": "The card has been deleted successfully"
+    },
+    "cardError": {
+      "title": "Error saving",
+      "message": "Could not save the card. Please try again."
+    },
+    "noteCreated": {
+      "title": "Note created",
+      "message": "The note has been created successfully"
+    },
+    "noteUpdated": {
+      "title": "Note updated",
+      "message": "The note has been updated successfully"
+    },
+    "noteDeleted": {
+      "title": "Note deleted",
+      "message": "The note has been deleted successfully"
+    },
+    "noteError": {
+      "title": "Error saving",
+      "message": "Could not save the note. Please try again."
+    },
+    "deleteError": {
+      "title": "Error deleting",
+      "message": "Could not delete the item. Please try again."
     }
   }
 }

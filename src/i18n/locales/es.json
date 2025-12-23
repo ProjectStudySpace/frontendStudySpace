@@ -1627,6 +1627,15 @@
       "topicCards": "Tarjetas del tema",
       "newCard": "Nueva tarjeta"
     },
+    "cardsManager": {
+      "searchPlaceholder": "Buscar en tarjetas por pregunta o respuesta...",
+      "minCharacters": "Mínimo 2 caracteres para buscar",
+      "searching": "Buscando",
+      "resultsFound": "resultados encontrados",
+      "resultFound": "resultado encontrado",
+      "errorLoading": "Error al cargar las tarjetas",
+      "retry": "Reintentar"
+    },
     "colorSelector": {
       "themeColor": "Color del tema",
       "colors": {
@@ -1699,6 +1708,8 @@
       "searchPlaceholder": "Buscar en notas por título o contenido...",
       "minCharacters": "Escribe al menos 2 caracteres para buscar",
       "searching": "Buscando",
+      "resultsFound": "resultados encontrados",
+      "resultFound": "resultado encontrado",
       "errorLoading": "Error al cargar notas",
       "retry": "Reintentar"
     },
@@ -1712,6 +1723,44 @@
       "newSubject": "+ Nueva Materia",
       "viewAllTopics": "Ver todos los temas",
       "searchSubjects": "Buscar materias..."
+    }
+  },
+  "notifications": {
+    "cardCreated": {
+      "title": "Tarjeta creada",
+      "message": "La tarjeta se ha creado correctamente"
+    },
+    "cardUpdated": {
+      "title": "Tarjeta actualizada",
+      "message": "La tarjeta se ha actualizado correctamente"
+    },
+    "cardDeleted": {
+      "title": "Tarjeta eliminada",
+      "message": "La tarjeta se ha eliminado correctamente"
+    },
+    "cardError": {
+      "title": "Error al guardar",
+      "message": "No se pudo guardar la tarjeta. Inténtalo de nuevo."
+    },
+    "noteCreated": {
+      "title": "Nota creada",
+      "message": "La nota se ha creado correctamente"
+    },
+    "noteUpdated": {
+      "title": "Nota actualizada",
+      "message": "La nota se ha actualizado correctamente"
+    },
+    "noteDeleted": {
+      "title": "Nota eliminada",
+      "message": "La nota se ha eliminado correctamente"
+    },
+    "noteError": {
+      "title": "Error al guardar",
+      "message": "No se pudo guardar la nota. Inténtalo de nuevo."
+    },
+    "deleteError": {
+      "title": "Error al eliminar",
+      "message": "No se pudo eliminar el elemento. Inténtalo de nuevo."
     }
   }
 }
