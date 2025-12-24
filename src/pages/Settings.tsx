@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { ToggleSwitch } from "../components/toggleSwitch";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
+import { useOnboarding } from "../context/OnboardingContext";
 import axios from "axios";
 import { API_URL } from "../config";
 
@@ -11,6 +12,7 @@ const Settings = () => {
   const { t } = useTranslation();
   const { isDarkMode, toggleDarkMode } = useTheme();
   const { user } = useAuth();
+  const { startTour, resetGuide } = useOnboarding();
 
   // Estados para los toggles (de momento solo visuales)
   const [showStartGuide, setShowStartGuide] = useState(false);
@@ -125,8 +127,12 @@ const Settings = () => {
             checked={showStartGuide}
             onChange={(checked) => {
               setShowStartGuide(checked);
-              // TODO: Implementar funcionalidad más adelante
-              console.log("Mostrar guía de inicio:", checked);
+              if (checked) {
+                // Reiniciar el tour: limpiar estado y empezar
+                resetGuide();
+                setShowStartGuide(false);
+                startTour();
+              }
             }}
             label={t("settings.startGuideLabel")}
             disabled={false}
