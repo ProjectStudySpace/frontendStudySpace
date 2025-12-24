@@ -1801,6 +1801,6 @@
       "skip": "Skip",
       "disableGuide": "Don't show startup guide"
     },
-    "progress": "Step {current} of {total}"
+    "stepProgress": "Step {current} of {total}"
   }
 }

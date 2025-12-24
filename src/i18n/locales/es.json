@@ -1805,6 +1805,6 @@
       "skip": "Omitir",
       "disableGuide": "No mostrar guía de inicio"
     },
-    "progress": "Paso {current} de {total}"
+    "stepProgress": "Paso {current} de {total}"
   }
 }
