@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,6 +9,13 @@ interface OnboardingStep {
   title: string;
   description: string;
   position: 'top' | 'bottom' | 'left' | 'right';
+}
+
+interface PageGuideStep {
+  id: string;
+  targetId: string;
+  title: string;
+  description: string;
 }
 
 interface OnboardingContextType {
@@ -26,6 +33,15 @@ interface OnboardingContextType {
   totalSteps: number;
   currentStepId: string | null;
   currentTargetId: string | null;
+  // Page guide specific
+  isPageGuideActive: boolean;
+  currentPageGuideStep: number;
+  pageGuideSteps: PageGuideStep[];
+  startPageGuide: () => void;
+  endPageGuide: () => void;
+  nextPageGuideStep: () => void;
+  prevPageGuideStep: () => void;
+  isPageGuideCompleted: boolean;
 }
 
 const ONBOARDING_STORAGE_KEY = 'memopal_onboarding_status';
@@ -46,9 +62,14 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [isGuideDisabled, setIsGuideDisabled] = useState(false);
   const [currentStepId, setCurrentStepId] = useState<string | null>(null);
   const [currentTargetId, setCurrentTargetId] = useState<string | null>(null);
+  
+  // Page guide state
+  const [isPageGuideActive, setIsPageGuideActive] = useState(false);
+  const [currentPageGuideStep, setCurrentPageGuideStep] = useState(0);
+  const [pageGuideCompleted, setPageGuideCompleted] = useState(false);
 
   // Initialize steps with translations - memoized to prevent recreation on every render
-  const steps = React.useMemo<OnboardingStep[]>(
+  const steps = useMemo<OnboardingStep[]>(
     () => [
       {
         id: 'welcome',
@@ -118,6 +139,49 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     [t]
   );
 
+  // Page guide steps for StudySessions
+  const pageGuideSteps = useMemo<PageGuideStep[]>(
+    () => [
+      {
+        id: 'start-review-button',
+        targetId: 'start-review-button',
+        title: t('guide.studySessions.page.startReviewButton.title'),
+        description: t('guide.studySessions.page.startReviewButton.description'),
+      },
+      {
+        id: 'stats-cards',
+        targetId: 'stats-cards',
+        title: t('guide.studySessions.page.statsCards.title'),
+        description: t('guide.studySessions.page.statsCards.description'),
+      },
+      {
+        id: 'pending-reviews',
+        targetId: 'pending-reviews',
+        title: t('guide.studySessions.page.pendingReviews.title'),
+        description: t('guide.studySessions.page.pendingReviews.description'),
+      },
+      {
+        id: 'calendar-widget',
+        targetId: 'calendar-widget',
+        title: t('guide.studySessions.page.calendarWidget.title'),
+        description: t('guide.studySessions.page.calendarWidget.description'),
+      },
+      {
+        id: 'progress-section',
+        targetId: 'progress-section',
+        title: t('guide.studySessions.page.progressSection.title'),
+        description: t('guide.studySessions.page.progressSection.description'),
+      },
+      {
+        id: 'reschedule-cards',
+        targetId: 'centered-tooltip',
+        title: t('guide.studySessions.page.rescheduleCards.title'),
+        description: t('guide.studySessions.page.rescheduleCards.description'),
+      },
+    ],
+    [t]
+  );
+
   const totalSteps = steps.length;
 
   // Check if guide is disabled on mount
@@ -148,6 +212,7 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     setIsActive(false);
     setCurrentStep(0);
     setCurrentStepId(null);
+    setCurrentTargetId(null);
     // Mark as seen
     const stored = localStorage.getItem(ONBOARDING_STORAGE_KEY);
     const parsed: OnboardingStorage = stored ? JSON.parse(stored) : { hasSeenTour: false, disabledAt: null, version: '1.0' };
@@ -156,6 +221,17 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   }, []);
 
   const nextStep = useCallback(() => {
+    const currentStepData = steps[currentStep];
+    
+    // Check if we're at the study-sessions step
+    if (currentStepData?.id === 'study-sessions') {
+      // Start the page guide instead of continuing the tour
+      setIsPageGuideActive(true);
+      setCurrentPageGuideStep(0);
+      // Don't end the main tour yet, just pause it
+      return;
+    }
+    
     if (currentStep < totalSteps - 1) {
       const next = currentStep + 1;
       setCurrentStep(next);
@@ -196,12 +272,53 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     localStorage.setItem(ONBOARDING_STORAGE_KEY, JSON.stringify(parsed));
     setIsGuideDisabled(true);
     endTour();
+    setIsPageGuideActive(false);
   }, [endTour]);
 
   const resetGuide = useCallback(() => {
     localStorage.removeItem(ONBOARDING_STORAGE_KEY);
     setIsGuideDisabled(false);
+    setPageGuideCompleted(false);
   }, []);
+
+  // Page guide methods
+  const startPageGuide = useCallback(() => {
+    if (!isGuideDisabled) {
+      setIsPageGuideActive(true);
+      setCurrentPageGuideStep(0);
+      setPageGuideCompleted(false);
+    }
+  }, [isGuideDisabled]);
+
+  const endPageGuide = useCallback(() => {
+    setIsPageGuideActive(false);
+    setCurrentPageGuideStep(0);
+    setPageGuideCompleted(true);
+  }, []);
+
+  const nextPageGuideStep = useCallback(() => {
+    if (currentPageGuideStep < pageGuideSteps.length - 1) {
+      setCurrentPageGuideStep(prev => prev + 1);
+    } else {
+      endPageGuide();
+      // After completing page guide, continue with main tour
+      setIsActive(true);
+      // Go to the next step in the main tour (skip study-sessions since we've shown page guide)
+      const next = currentStep + 1;
+      setCurrentStep(next);
+      setCurrentStepId(steps[next]?.id || null);
+      setCurrentTargetId(steps[next]?.targetId || null);
+      navigate(steps[next]?.route);
+    }
+  }, [currentPageGuideStep, pageGuideSteps.length, endPageGuide, currentStep, steps, navigate]);
+
+  const prevPageGuideStep = useCallback(() => {
+    if (currentPageGuideStep > 0) {
+      setCurrentPageGuideStep(prev => prev - 1);
+    }
+  }, [currentPageGuideStep]);
+
+  const isPageGuideCompleted = pageGuideCompleted;
 
   return (
     <OnboardingContext.Provider
@@ -220,6 +337,15 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         totalSteps,
         currentStepId,
         currentTargetId,
+        // Page guide
+        isPageGuideActive,
+        currentPageGuideStep,
+        pageGuideSteps,
+        startPageGuide,
+        endPageGuide,
+        nextPageGuideStep,
+        prevPageGuideStep,
+        isPageGuideCompleted,
       }}
     >
       {children}

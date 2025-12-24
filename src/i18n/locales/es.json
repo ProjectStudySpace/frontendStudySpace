@@ -1775,7 +1775,33 @@
     },
     "studySessions": {
       "title": "📖 Sesiones de Repaso",
-      "description": "Visualiza y gestiona tus sesiones de estudio programadas. El algoritmo de repaso espaciado programa automáticamente tus repasos para máxima retención."
+      "description": "Visualiza y gestiona tus sesiones de estudio programadas. El algoritmo de repaso espaciado programa automáticamente tus repasos para máxima retención.",
+      "page": {
+        "startReviewButton": {
+          "title": "Iniciar Repaso",
+          "description": "Haz clic en este botón cuando tengas tarjetas pendientes para comenzar tu sesión de estudio."
+        },
+        "statsCards": {
+          "title": "Resumen de Estadísticas",
+          "description": "Vista rápida de tus tarjetas pendientes, próximas sesiones para los próximos 7 y 30 días."
+        },
+        "pendingReviews": {
+          "title": "Repasos Pendientes",
+          "description": "Tus tarjetas programadas para hoy. Complétalas para mantener tu progreso."
+        },
+        "calendarWidget": {
+          "title": "Calendario",
+          "description": "Calendario visual que muestra tus sesiones programadas. El punto naranja indica los días con sesiones de estudio."
+        },
+        "progressSection": {
+          "title": "Progreso de Aprendizaje",
+          "description": "Sigue tu progreso de aprendizaje con estadísticas detalladas y métricas."
+        },
+        "rescheduleCards": {
+          "title": "Reprogramar Sesiones",
+          "description": "Las fechas de sesiones de repaso de cada tarjeta se pueden reprogramar mediante el botón de reprogramación. El algoritmo de repaso espaciado se ajustará automáticamente a la nueva fecha."
+        }
+      }
     },
     "calendar": {
       "title": "📅 Calendario",

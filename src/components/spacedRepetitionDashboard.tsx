@@ -162,7 +162,7 @@ const SpacedRepetitionDashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+      <div id="start-review-button" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div className="flex-1">
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
@@ -191,8 +191,8 @@ const SpacedRepetitionDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-          <div className="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-600">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6" id="stats-cards">
+          <div id="pending-reviews" className="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-600">
             <div className="flex items-center gap-3 sm:gap-4">
               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center bg-red-100 dark:bg-red-900/30">
                 <Clock
@@ -251,9 +251,11 @@ const SpacedRepetitionDashboard: React.FC = () => {
         </div>
       </div>
 
-      <ProgressSection />
+      <div id="progress-section">
+        <ProgressSection />
+      </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <div id="calendar-widget" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
@@ -264,14 +266,16 @@ const SpacedRepetitionDashboard: React.FC = () => {
         <CalendarWidget />
       </div>
 
-      <ReviewSessionList
-        sessions={groupedSessions}
-        onSessionsUpdate={handleSessionsUpdate}
-        upcomingPagination={upcomingPagination}
-        onUpcomingPageChange={handleUpcomingPageChange}
-        pendingPagination={pendingPagination}
-        onPendingPageChange={handlePendingPageChange}
-      />
+      <div id="review-session-list">
+        <ReviewSessionList
+          sessions={groupedSessions}
+          onSessionsUpdate={handleSessionsUpdate}
+          upcomingPagination={upcomingPagination}
+          onUpcomingPageChange={handleUpcomingPageChange}
+          pendingPagination={pendingPagination}
+          onPendingPageChange={handlePendingPageChange}
+        />
+      </div>
     </div>
   );
 };

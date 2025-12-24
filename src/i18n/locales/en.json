@@ -1771,7 +1771,33 @@
     },
     "studySessions": {
       "title": "📖 Study Sessions",
-      "description": "View and manage your scheduled study sessions. The spaced repetition algorithm automatically schedules your reviews for maximum retention."
+      "description": "View and manage your scheduled study sessions. The spaced repetition algorithm automatically schedules your reviews for maximum retention.",
+      "page": {
+        "startReviewButton": {
+          "title": "Start Review",
+          "description": "Click this button when you have pending cards to begin your study session."
+        },
+        "statsCards": {
+          "title": "Statistics Overview",
+          "description": "Quick view of your pending cards, upcoming sessions for the next 7 and 30 days."
+        },
+        "pendingReviews": {
+          "title": "Pending Reviews",
+          "description": "Your cards scheduled for today. Complete them to maintain your progress."
+        },
+        "calendarWidget": {
+          "title": "Calendar",
+          "description": "Visual calendar showing your scheduled sessions. The orange dot indicates days with study sessions."
+        },
+        "progressSection": {
+          "title": "Learning Progress",
+          "description": "Track your learning progress with detailed statistics and metrics."
+        },
+        "rescheduleCards": {
+          "title": "Reschedule Sessions",
+          "description": "The review session dates for each card can be rescheduled using the reschedule button. The spaced repetition algorithm will automatically adjust to the new date."
+        }
+      }
     },
     "calendar": {
       "title": "📅 Calendar",
