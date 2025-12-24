@@ -25,7 +25,10 @@ const LayoutContent = () => {
   const { t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [dashboardData, setDashboardData] = useState<any | null>(null);
-  const { startTour, isGuideDisabled, currentStepId, isActive } = useOnboarding();
+  const { startTour, isGuideDisabled, currentStepId, currentTargetId, isActive } = useOnboarding();
+
+  // Check if we're on desktop for sidebar highlighting
+  const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
 
   // Auto-start tour on first login
   useEffect(() => {
@@ -190,7 +193,8 @@ const LayoutContent = () => {
             <div className="flex flex-col gap-1">
               {navLinks.map((link) => {
                 const Icon = link.icon;
-                const isOnboardingActive = isActive && currentStepId === link.id;
+                // Only highlight on desktop since sidebar is visible only there
+                const isOnboardingActive = isDesktop && isActive && currentTargetId === link.id;
                 return (
                   <Link
                     key={link.label}
@@ -198,8 +202,8 @@ const LayoutContent = () => {
                     id={link.id}
                     className={`flex items-center gap-3 p-4 rounded-xl transition-all duration-200 font-medium active:scale-95 ${
                       isOnboardingActive
-                        ? 'bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 ring-2 ring-indigo-500 ring-offset-2 dark:ring-offset-gray-800'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 hover:text-indigo-600 dark:hover:text-indigo-400'
+                        ? 'bg-gradient-to-br from-indigo-500/25 to-purple-500/25 dark:from-indigo-500/30 dark:to-purple-500/30 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-500/50'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-indigo-400'
                     }`}
                     onClick={handleLinkClick}
                     title={link.label}
@@ -216,7 +220,7 @@ const LayoutContent = () => {
               {/* Secciones de usuario */}
               {userLinks.map((link) => {
                 const Icon = link.icon;
-                const isOnboardingActive = isActive && currentStepId === link.id;
+                const isOnboardingActive = isDesktop && isActive && currentTargetId === link.id;
                 return (
                   <Link
                     key={link.label}
@@ -224,8 +228,8 @@ const LayoutContent = () => {
                     id={link.id}
                     className={`flex items-center gap-3 p-4 rounded-xl transition-all duration-200 font-medium active:scale-95 ${
                       isOnboardingActive
-                        ? 'bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 ring-2 ring-indigo-500 ring-offset-2 dark:ring-offset-gray-800'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 hover:text-indigo-600 dark:hover:text-indigo-400'
+                        ? 'bg-gradient-to-br from-indigo-500/25 to-purple-500/25 dark:from-indigo-500/30 dark:to-purple-500/30 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-500/50'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-indigo-400'
                     }`}
                     onClick={handleLinkClick}
                     title={link.label}
@@ -274,15 +278,16 @@ const LayoutContent = () => {
           <nav className="flex-1 p-2 flex flex-col gap-2 overflow-hidden">
             {navLinks.map((link) => {
               const Icon = link.icon;
-              const isOnboardingActive = isActive && currentStepId === link.id;
+              // Only highlight on desktop since sidebar is visible only there
+              const isOnboardingActive = isDesktop && isActive && currentTargetId === link.id;
               return (
                 <Link
                   key={link.label}
                   to={link.to}
                   id={link.id}
-                  className={`flex items-center justify-center p-3 py-2.5 rounded-lg font-medium transition-colors flex-shrink-0 ${
+                  className={`flex items-center justify-center p-3 py-2.5 rounded-lg font-medium transition-all duration-300 flex-shrink-0 ${
                     isOnboardingActive
-                      ? 'bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 ring-2 ring-indigo-500 ring-offset-2 dark:ring-offset-gray-800'
+                      ? 'bg-gradient-to-br from-indigo-500/25 to-purple-500/25 dark:from-indigo-500/30 dark:to-purple-500/30 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-500/50'
                       : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-indigo-400'
                   }`}
                   title={link.label}
@@ -298,15 +303,15 @@ const LayoutContent = () => {
             {/* Secciones de usuario */}
             {userLinks.map((link) => {
               const Icon = link.icon;
-              const isOnboardingActive = isActive && currentStepId === link.id;
+              const isOnboardingActive = isDesktop && isActive && currentTargetId === link.id;
               return (
                 <Link
                   key={link.label}
                   to={link.to}
                   id={link.id}
-                  className={`flex items-center justify-center p-3 py-2.5 rounded-lg font-medium transition-colors flex-shrink-0 ${
+                  className={`flex items-center justify-center p-3 py-2.5 rounded-lg font-medium transition-all duration-300 flex-shrink-0 ${
                     isOnboardingActive
-                      ? 'bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 ring-2 ring-indigo-500 ring-offset-2 dark:ring-offset-gray-800'
+                      ? 'bg-gradient-to-br from-indigo-500/25 to-purple-500/25 dark:from-indigo-500/30 dark:to-purple-500/30 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-500/50'
                       : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-indigo-400'
                   }`}
                   title={link.label}

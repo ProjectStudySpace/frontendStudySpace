@@ -25,6 +25,7 @@ interface OnboardingContextType {
   isGuideDisabled: boolean;
   totalSteps: number;
   currentStepId: string | null;
+  currentTargetId: string | null;
 }
 
 const ONBOARDING_STORAGE_KEY = 'memopal_onboarding_status';
@@ -44,6 +45,7 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [currentStep, setCurrentStep] = useState(0);
   const [isGuideDisabled, setIsGuideDisabled] = useState(false);
   const [currentStepId, setCurrentStepId] = useState<string | null>(null);
+  const [currentTargetId, setCurrentTargetId] = useState<string | null>(null);
 
   // Initialize steps with translations - memoized to prevent recreation on every render
   const steps = React.useMemo<OnboardingStep[]>(
@@ -138,6 +140,7 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       setIsActive(true);
       setCurrentStep(0);
       setCurrentStepId(steps[0]?.id || null);
+      setCurrentTargetId(steps[0]?.targetId || null);
     }
   }, [isGuideDisabled, steps]);
 
@@ -157,6 +160,7 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       const next = currentStep + 1;
       setCurrentStep(next);
       setCurrentStepId(steps[next]?.id || null);
+      setCurrentTargetId(steps[next]?.targetId || null);
       // Navigate to the next step's route
       navigate(steps[next].route);
     } else {
@@ -169,6 +173,7 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       const prev = currentStep - 1;
       setCurrentStep(prev);
       setCurrentStepId(steps[prev]?.id || null);
+      setCurrentTargetId(steps[prev]?.targetId || null);
       // Navigate to the previous step's route
       navigate(steps[prev].route);
     }
@@ -178,6 +183,7 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     if (step >= 0 && step < totalSteps) {
       setCurrentStep(step);
       setCurrentStepId(steps[step]?.id || null);
+      setCurrentTargetId(steps[step]?.targetId || null);
       // Navigate to the route for this step
       navigate(steps[step].route);
     }
@@ -213,6 +219,7 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         isGuideDisabled,
         totalSteps,
         currentStepId,
+        currentTargetId,
       }}
     >
       {children}

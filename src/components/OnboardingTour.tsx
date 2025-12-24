@@ -20,7 +20,18 @@ const OnboardingTour: React.FC = () => {
   const [arrowPosition, setArrowPosition] = useState({ startX: 0, startY: 0, endX: 0, endY: 0 });
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
   const tooltipRef = useRef<HTMLDivElement>(null);
+
+  // Check if we're on desktop
+  useEffect(() => {
+    const checkDesktop = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+    };
+    checkDesktop();
+    window.addEventListener('resize', checkDesktop);
+    return () => window.removeEventListener('resize', checkDesktop);
+  }, []);
 
   // Calculate positions based on target element
   const calculatePositions = useCallback(() => {
@@ -34,6 +45,20 @@ const OnboardingTour: React.FC = () => {
     const tooltipWidth = tooltipEl ? Math.min(tooltipEl.offsetWidth, 320) : 320;
     const tooltipHeight = tooltipEl ? tooltipEl.offsetHeight : 180;
     const sidebarWidth = 64; // Width of desktop sidebar
+
+    // On mobile, always position tooltip in center of screen
+    if (!isDesktop) {
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      setTooltipPosition({
+        top: centerY - tooltipHeight / 2,
+        left: centerX - tooltipWidth / 2,
+      });
+      setTargetRect(null);
+      // Hide arrow by setting all positions to 0
+      setArrowPosition({ startX: 0, startY: 0, endX: 0, endY: 0 });
+      return;
+    }
 
     if (!targetElement) {
       // Fallback: position tooltip in center of main content area
@@ -101,7 +126,7 @@ const OnboardingTour: React.FC = () => {
       endX: targetRect.left + (currentStepData.position === 'left' ? targetRect.width : targetRect.width / 2),
       endY: targetRect.top + (currentStepData.position === 'top' ? targetRect.height : currentStepData.position === 'bottom' ? 0 : targetRect.height / 2),
     });
-  }, [isActive, currentStep, steps, isMounted]);
+  }, [isActive, currentStep, steps, isMounted, isDesktop]);
 
   // Set mounted state after initial render
   useEffect(() => {
@@ -113,14 +138,14 @@ const OnboardingTour: React.FC = () => {
       }, 50);
       return () => clearTimeout(timer);
     }
-  }, [isActive]);
+  }, [isActive, calculatePositions]);
 
   // Recalculate on step change
   useEffect(() => {
     if (isActive && isMounted) {
       calculatePositions();
     }
-  }, [isActive, currentStep, isMounted]);
+  }, [isActive, currentStep, isMounted, calculatePositions]);
 
   // Handle window resize and scroll
   useEffect(() => {
@@ -168,8 +193,8 @@ const OnboardingTour: React.FC = () => {
       {/* Overlay */}
       <div className="fixed inset-0 bg-black/50 dark:bg-black/70 z-40 transition-opacity duration-300" />
 
-      {/* Spotlight effect around target */}
-      {targetRect && (
+      {/* Spotlight effect around target - only on desktop */}
+      {targetRect && isDesktop && (
         <div
           className="fixed rounded-lg shadow-[0_0_0_9999px_rgba(0,0,0,0.5)] dark:shadow-[0_0_0_9999px_rgba(0,0,0,0.7)] transition-all duration-300"
           style={{
