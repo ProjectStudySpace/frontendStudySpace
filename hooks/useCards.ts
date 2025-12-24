@@ -5,7 +5,6 @@ import { api } from "../src/utils/axiosConfig";
 
 export const useCards = () => {
   const [cards, setCards] = useState<Card[]>([]);
-  const [allCards, setAllCards] = useState<Card[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentTopicId, setCurrentTopicId] = useState<number | null>(null);
@@ -53,19 +52,18 @@ export const useCards = () => {
 
       const pag = data.pagination || {};
       setPagination({
-        currentPage: pag.currentPage || page,
+        currentPage: pag.page || page,
         totalPages:
           pag.totalPages ||
           Math.ceil((pag.total || 0) / (pag.pageSize || pageSize)),
-        totalItems: pag.totalItems || 0,
-        pageSize: pag.pageSize || pageSize,
+        totalItems: pag.total || 0,
+        pageSize: pag.limit || pageSize,
       });
 
       return cardsWithTopic;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");
       setCards([]);
-      setAllCards([]);
       throw err;
     } finally {
       setLoading(false);
@@ -262,12 +260,10 @@ export const useCards = () => {
 
   const clearCards = () => {
     setCards([]);
-    setAllCards([]);
   };
 
   return {
     cards,
-    allCards,
     loading,
     error,
     pagination,
