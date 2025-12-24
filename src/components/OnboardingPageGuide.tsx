@@ -36,8 +36,19 @@ const OnboardingPageGuide: React.FC<OnboardingPageGuideProps> = ({
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [highlightClass, setHighlightClass] = useState('');
   const tooltipRef = useRef<HTMLDivElement>(null);
+
+  // Check if we're on mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Get the highlight class for desktop and mobile
   const getHighlightClass = useCallback(() => {
@@ -51,16 +62,61 @@ const OnboardingPageGuide: React.FC<OnboardingPageGuideProps> = ({
     const currentStepData = steps[currentStep];
     if (!currentStepData) return;
 
+    // Get tooltip dimensions
+    const tooltipEl = tooltipRef.current;
+    const tooltipWidth = tooltipEl ? Math.min(tooltipEl.offsetWidth, 320) : 320;
+    const tooltipHeight = tooltipEl ? tooltipEl.offsetHeight : 180;
+
+    // On mobile, always center the tooltip and scroll to target
+    if (isMobile) {
+      // Special case: if targetId is 'centered-tooltip', just center it
+      if (currentStepData.targetId === 'centered-tooltip') {
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+        setTooltipPosition({
+          top: centerY - tooltipHeight / 2,
+          left: centerX - tooltipWidth / 2,
+        });
+        setTargetRect(null);
+        return;
+      }
+
+      const targetElement = document.getElementById(currentStepData.targetId);
+
+      // Scroll to target element smoothly on mobile
+      if (targetElement) {
+        targetElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        });
+        // Small delay to allow scroll to complete before centering tooltip
+        setTimeout(() => {
+          const centerX = window.innerWidth / 2;
+          const centerY = window.innerHeight / 2;
+          setTooltipPosition({
+            top: centerY - tooltipHeight / 2,
+            left: centerX - tooltipWidth / 2,
+          });
+        }, 300);
+      } else {
+        // Fallback: center if target not found
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+        setTooltipPosition({
+          top: centerY - tooltipHeight / 2,
+          left: centerX - tooltipWidth / 2,
+        });
+      }
+      setTargetRect(null);
+      return;
+    }
+
+    // Desktop logic: position relative to target
     // Special case: if targetId is 'centered-tooltip', always position in center
     if (currentStepData.targetId === 'centered-tooltip') {
       const sidebarWidth = 64;
       const centerX = (sidebarWidth + window.innerWidth) / 2;
       const centerY = window.innerHeight / 2;
-      
-      // Get tooltip dimensions
-      const tooltipEl = tooltipRef.current;
-      const tooltipWidth = tooltipEl ? Math.min(tooltipEl.offsetWidth, 320) : 320;
-      const tooltipHeight = tooltipEl ? tooltipEl.offsetHeight : 180;
       
       setTooltipPosition({
         top: centerY - tooltipHeight / 2,
@@ -71,11 +127,6 @@ const OnboardingPageGuide: React.FC<OnboardingPageGuideProps> = ({
     }
 
     const targetElement = document.getElementById(currentStepData.targetId);
-
-    // Get tooltip dimensions
-    const tooltipEl = tooltipRef.current;
-    const tooltipWidth = tooltipEl ? Math.min(tooltipEl.offsetWidth, 320) : 320;
-    const tooltipHeight = tooltipEl ? tooltipEl.offsetHeight : 180;
 
     // Fallback: position tooltip in center of main content area if target not found
     if (!targetElement) {
@@ -103,7 +154,7 @@ const OnboardingPageGuide: React.FC<OnboardingPageGuideProps> = ({
       block: 'center',
     });
 
-    // Calculate center position for tooltip (same for desktop and mobile)
+    // Calculate center position for tooltip (desktop only)
     const centerX = targetRect.left + targetRect.width / 2;
     const centerY = targetRect.top + targetRect.height / 2;
 
@@ -120,7 +171,7 @@ const OnboardingPageGuide: React.FC<OnboardingPageGuideProps> = ({
     left = Math.max(16, Math.min(left, window.innerWidth - tooltipWidth - 16));
 
     setTooltipPosition({ top, left });
-  }, [isActive, currentStep, steps, isMounted, getHighlightClass]);
+  }, [isActive, currentStep, steps, isMounted, isMobile, getHighlightClass]);
 
   // Clear highlight from previous target
   const clearHighlight = useCallback(() => {
@@ -220,8 +271,8 @@ const OnboardingPageGuide: React.FC<OnboardingPageGuideProps> = ({
       {/* Overlay */}
       <div className="fixed inset-0 bg-black/50 dark:bg-black/70 z-40 transition-opacity duration-300" />
 
-      {/* Spotlight effect around target - creates a dark overlay except for the target */}
-      {targetRect && (
+      {/* Spotlight effect around target - only on desktop */}
+      {!isMobile && targetRect && (
         <div
           className="fixed rounded-lg shadow-[0_0_0_9999px_rgba(0,0,0,0.5)] dark:shadow-[0_0_0_9999px_rgba(0,0,0,0.7)] transition-all duration-300"
           style={{

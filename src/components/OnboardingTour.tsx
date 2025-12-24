@@ -14,6 +14,7 @@ const OnboardingTour: React.FC = () => {
     prevStep,
     endTour,
     disableGuide,
+    isPageGuideActive,
   } = useOnboarding();
 
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
@@ -182,7 +183,10 @@ const OnboardingTour: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isActive, nextStep, prevStep, endTour]);
 
-  if (!isActive) return null;
+  // Hide main tour overlay when page guide is active
+  const shouldShowOverlay = isActive && !isPageGuideActive;
+
+  if (!isActive || isPageGuideActive) return null;
 
   const currentStepData = steps[currentStep];
   const isFirstStep = currentStep === 0;
