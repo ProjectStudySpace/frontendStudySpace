@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import { Outlet, Link, useNavigate } from "react-router-dom";
 import {
   Bell,
@@ -13,16 +14,33 @@ import {
   Settings,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LanguageSelector } from "./LanguageSelector";
+import OnboardingTour from "./OnboardingTour";
+import { OnboardingProvider, useOnboarding } from "../context/OnboardingContext";
 
-const Layout = () => {
+const LayoutContent = () => {
   const { logout, user, getDashboard } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [dashboardData, setDashboardData] = useState<any | null>(null);
+  const { startTour, isGuideDisabled, currentStepId, currentTargetId, isActive } = useOnboarding();
+
+  // Check if we're on desktop for sidebar highlighting
+  const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
+
+  // Auto-start tour on first login
+  useEffect(() => {
+    const onboardingStatus = localStorage.getItem('memopal_onboarding_status');
+    if (!onboardingStatus && !isGuideDisabled) {
+      // First time user - start the tour after a short delay
+      const timer = setTimeout(() => {
+        startTour();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [startTour, isGuideDisabled]);
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -64,19 +82,20 @@ const Layout = () => {
   };
 
   const navLinks = [
-    { to: "/topics", icon: BookOpen, label: t("nav.topics") },
+    { to: "/topics", icon: BookOpen, label: t("nav.topics"), id: 'nav-topics' },
     {
       to: "/study-sessions",
       icon: GraduationCap,
       label: t("nav.studySessions"),
+      id: 'nav-study-sessions',
     },
-    { to: "/calendar", icon: Calendar, label: t("nav.calendar") },
-    { to: "/progress", icon: TrendingUp, label: t("nav.progress") },
+    { to: "/calendar", icon: Calendar, label: t("nav.calendar"), id: 'nav-calendar' },
+    { to: "/progress", icon: TrendingUp, label: t("nav.progress"), id: 'nav-progress' },
   ];
 
   const userLinks = [
-    { to: "/profile", icon: User, label: t("nav.profile") },
-    { to: "/settings", icon: Settings, label: t("nav.settings") },
+    { to: "/profile", icon: User, label: t("nav.profile"), id: 'nav-profile' },
+    { to: "/settings", icon: Settings, label: t("nav.settings"), id: 'nav-settings' },
   ];
 
   return (
@@ -174,11 +193,18 @@ const Layout = () => {
             <div className="flex flex-col gap-1">
               {navLinks.map((link) => {
                 const Icon = link.icon;
+                // Only highlight on desktop since sidebar is visible only there
+                const isOnboardingActive = isDesktop && isActive && currentTargetId === link.id;
                 return (
                   <Link
                     key={link.label}
                     to={link.to}
-                    className="flex items-center gap-3 p-4 rounded-xl transition-all duration-200 text-gray-700 dark:text-gray-300 font-medium hover:bg-indigo-50 dark:hover:bg-indigo-900/50 hover:text-indigo-600 dark:hover:text-indigo-400 active:scale-95"
+                    id={link.id}
+                    className={`flex items-center gap-3 p-4 rounded-xl transition-all duration-200 font-medium active:scale-95 ${
+                      isOnboardingActive
+                        ? 'bg-gradient-to-br from-indigo-500/25 to-purple-500/25 dark:from-indigo-500/30 dark:to-purple-500/30 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-500/50'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-indigo-400'
+                    }`}
                     onClick={handleLinkClick}
                     title={link.label}
                   >
@@ -194,11 +220,17 @@ const Layout = () => {
               {/* Secciones de usuario */}
               {userLinks.map((link) => {
                 const Icon = link.icon;
+                const isOnboardingActive = isDesktop && isActive && currentTargetId === link.id;
                 return (
                   <Link
                     key={link.label}
                     to={link.to}
-                    className="flex items-center gap-3 p-4 rounded-xl transition-all duration-200 text-gray-700 dark:text-gray-300 font-medium hover:bg-indigo-50 dark:hover:bg-indigo-900/50 hover:text-indigo-600 dark:hover:text-indigo-400 active:scale-95"
+                    id={link.id}
+                    className={`flex items-center gap-3 p-4 rounded-xl transition-all duration-200 font-medium active:scale-95 ${
+                      isOnboardingActive
+                        ? 'bg-gradient-to-br from-indigo-500/25 to-purple-500/25 dark:from-indigo-500/30 dark:to-purple-500/30 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-500/50'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-indigo-400'
+                    }`}
                     onClick={handleLinkClick}
                     title={link.label}
                   >
@@ -246,11 +278,18 @@ const Layout = () => {
           <nav className="flex-1 p-2 flex flex-col gap-2 overflow-hidden">
             {navLinks.map((link) => {
               const Icon = link.icon;
+              // Only highlight on desktop since sidebar is visible only there
+              const isOnboardingActive = isDesktop && isActive && currentTargetId === link.id;
               return (
                 <Link
                   key={link.label}
                   to={link.to}
-                  className="flex items-center justify-center p-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex-shrink-0"
+                  id={link.id}
+                  className={`flex items-center justify-center p-3 py-2.5 rounded-lg font-medium transition-all duration-300 flex-shrink-0 ${
+                    isOnboardingActive
+                      ? 'bg-gradient-to-br from-indigo-500/25 to-purple-500/25 dark:from-indigo-500/30 dark:to-purple-500/30 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-500/50'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-indigo-400'
+                  }`}
                   title={link.label}
                 >
                   <Icon size={24} />
@@ -264,11 +303,17 @@ const Layout = () => {
             {/* Secciones de usuario */}
             {userLinks.map((link) => {
               const Icon = link.icon;
+              const isOnboardingActive = isDesktop && isActive && currentTargetId === link.id;
               return (
                 <Link
                   key={link.label}
                   to={link.to}
-                  className="flex items-center justify-center p-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex-shrink-0"
+                  id={link.id}
+                  className={`flex items-center justify-center p-3 py-2.5 rounded-lg font-medium transition-all duration-300 flex-shrink-0 ${
+                    isOnboardingActive
+                      ? 'bg-gradient-to-br from-indigo-500/25 to-purple-500/25 dark:from-indigo-500/30 dark:to-purple-500/30 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-500/50'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-indigo-400'
+                  }`}
                   title={link.label}
                 >
                   <Icon size={24} />
@@ -330,6 +375,16 @@ const Layout = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+// Layout component that wraps content with OnboardingProvider
+const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return (
+    <OnboardingProvider>
+      <LayoutContent />
+      <OnboardingTour />
+    </OnboardingProvider>
   );
 };
 

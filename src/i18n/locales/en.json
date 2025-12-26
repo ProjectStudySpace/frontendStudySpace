@@ -1758,5 +1758,75 @@
       "title": "Error deleting",
       "message": "Could not delete the item. Please try again."
     }
+  },
+  "guide": {
+    "welcome": {
+      "title": "Welcome to MemoPal! 👋",
+      "description": "We'll show you how to navigate your new study platform. Discover all the tools you have to improve your learning.",
+      "start": "Start tour"
+    },
+    "topics": {
+      "title": "📚 My Topics",
+      "description": "Here you'll find all your subjects organized. Create study cards, notes, and organize everything by colors for more efficient learning."
+    },
+    "studySessions": {
+      "title": "📖 Study Sessions",
+      "description": "View and manage your scheduled study sessions. The spaced repetition algorithm automatically schedules your reviews for maximum retention.",
+      "page": {
+        "startReviewButton": {
+          "title": "Start Review",
+          "description": "Click this button when you have pending cards to begin your study session."
+        },
+        "statsCards": {
+          "title": "Statistics Overview",
+          "description": "Quick view of your pending cards, upcoming sessions for the next 7 and 30 days."
+        },
+        "pendingReviews": {
+          "title": "Pending Reviews",
+          "description": "Your cards scheduled for today. Complete them to maintain your progress."
+        },
+        "calendarWidget": {
+          "title": "Calendar",
+          "description": "Visual calendar showing your scheduled sessions. The orange dot indicates days with study sessions."
+        },
+        "progressSection": {
+          "title": "Learning Progress",
+          "description": "Track your learning progress with detailed statistics and metrics."
+        },
+        "rescheduleCards": {
+          "title": "Reschedule Sessions",
+          "description": "The review session dates for each card can be rescheduled using the reschedule button. The spaced repetition algorithm will automatically adjust to the new date."
+        }
+      }
+    },
+    "calendar": {
+      "title": "📅 Calendar",
+      "description": "See all your study sessions in a visual calendar. Sync with Google Calendar to receive automatic reminders."
+    },
+    "progress": {
+      "title": "📈 My Progress",
+      "description": "Observe your learning statistics: study streaks, cards reviewed, completed subjects and your overall progress."
+    },
+    "profile": {
+      "title": "👤 Profile",
+      "description": "Manage your personal information, view your user statistics and connect external services like Google Calendar."
+    },
+    "settings": {
+      "title": "⚙️ Settings",
+      "description": "Customize your experience: dark mode, language, integrations and advanced app options."
+    },
+    "finish": {
+      "title": "Ready to study! 🎉",
+      "description": "You now know all the main sections of MemoPal. It's time to create your first cards and start your learning journey!",
+      "done": "Got it"
+    },
+    "actions": {
+      "previous": "Previous",
+      "next": "Next",
+      "close": "Close",
+      "skip": "Skip",
+      "disableGuide": "Don't show startup guide"
+    },
+    "stepProgress": "Step {current} of {total}"
   }
 }

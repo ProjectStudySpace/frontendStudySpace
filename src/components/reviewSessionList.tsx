@@ -20,9 +20,9 @@ const ReviewSessionList: React.FC<ReviewSessionListProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" id="review-sessions-container">
       {groupedSessions.pending.length > 0 && (
-        <section>
+        <section id="pending-reviews">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-2 h-6 bg-red-500 rounded-full"></div>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
@@ -77,7 +77,7 @@ const ReviewSessionList: React.FC<ReviewSessionListProps> = ({
       )}
 
       {groupedSessions.upcoming.length > 0 && (
-        <section>
+        <section id="upcoming-reviews">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-2 h-6 bg-orange-500 rounded-full"></div>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
