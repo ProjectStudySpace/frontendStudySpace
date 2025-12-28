@@ -4,6 +4,8 @@ import { CardFormProps } from "../types/cards";
 import { ImagePreview } from "./imagePreview";
 import { Image as ImageIcon } from "lucide-react";
 
+const MAX_IMAGES = 10; // Backend limit per request
+
 export const CardForm: React.FC<CardFormProps> = ({
   onSubmit,
   onCancel,
@@ -13,8 +15,8 @@ export const CardForm: React.FC<CardFormProps> = ({
   const { t } = useTranslation();
   const [question, setQuestion] = useState(initialData?.question || "");
   const [answer, setAnswer] = useState(initialData?.answer || "");
-  const [questionImage, setQuestionImage] = useState<File | undefined>();
-  const [answerImage, setAnswerImage] = useState<File | undefined>();
+  const [questionImages, setQuestionImages] = useState<File[]>([]);
+  const [answerImages, setAnswerImages] = useState<File[]>([]);
   const [existingQuestionImageUrl, setExistingQuestionImageUrl] = useState<
     string | undefined
   >(initialData?.questionImageUrl);
@@ -35,56 +37,116 @@ export const CardForm: React.FC<CardFormProps> = ({
     }
   }, [initialData]);
 
+  // Calculate total images count
+  const getTotalImagesCount = () => {
+    let count = 0;
+    if (existingQuestionImageUrl) count++;
+    if (existingAnswerImageUrl) count++;
+    count += questionImages.length;
+    count += answerImages.length;
+    return count;
+  };
+
+  const canAddMoreImages = getTotalImagesCount() < MAX_IMAGES;
+
   const handleQuestionImageChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Validar tipo de archivo
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const newFilesArray = Array.from(files);
+    const remainingSlots = MAX_IMAGES - getTotalImagesCount();
+    
+    if (remainingSlots <= 0) {
+      alert(t("forms.maxImagesReached", { max: MAX_IMAGES }));
+      if (questionImageInputRef.current) questionImageInputRef.current.value = "";
+      return;
+    }
+
+    const validFiles: File[] = [];
+    for (let i = 0; i < Math.min(newFilesArray.length, remainingSlots); i++) {
+      const file = newFilesArray[i];
+      
+      // Validate file type
       if (!file.type.startsWith("image/")) {
         alert(t("forms.invalidImage"));
-        return;
+        continue;
       }
-      // Validar tamaño (máximo 5MB)
+      
+      // Validate size (5MB max)
       if (file.size > 5 * 1024 * 1024) {
         alert(t("forms.imageTooLarge"));
-        return;
+        continue;
       }
-      setQuestionImage(file);
-      setExistingQuestionImageUrl(undefined);
+      
+      validFiles.push(file);
     }
-  };
 
-  const handleAnswerImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (!file.type.startsWith("image/")) {
-        alert(t("forms.invalidImage"));
-        return;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        alert(t("forms.imageTooLarge"));
-        return;
-      }
-      setAnswerImage(file);
-      setExistingAnswerImageUrl(undefined);
+    if (validFiles.length > 0) {
+      setQuestionImages((prev) => [...prev, ...validFiles]);
     }
-  };
 
-  const removeQuestionImage = () => {
-    setQuestionImage(undefined);
-    setExistingQuestionImageUrl(undefined);
     if (questionImageInputRef.current) {
       questionImageInputRef.current.value = "";
     }
   };
 
-  const removeAnswerImage = () => {
-    setAnswerImage(undefined);
-    setExistingAnswerImageUrl(undefined);
+  const handleAnswerImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const newFilesArray = Array.from(files);
+    const remainingSlots = MAX_IMAGES - getTotalImagesCount();
+    
+    if (remainingSlots <= 0) {
+      alert(t("forms.maxImagesReached", { max: MAX_IMAGES }));
+      if (answerImageInputRef.current) answerImageInputRef.current.value = "";
+      return;
+    }
+
+    const validFiles: File[] = [];
+    for (let i = 0; i < Math.min(newFilesArray.length, remainingSlots); i++) {
+      const file = newFilesArray[i];
+      
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        alert(t("forms.invalidImage"));
+        continue;
+      }
+      
+      // Validate size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        alert(t("forms.imageTooLarge"));
+        continue;
+      }
+      
+      validFiles.push(file);
+    }
+
+    if (validFiles.length > 0) {
+      setAnswerImages((prev) => [...prev, ...validFiles]);
+    }
+
     if (answerImageInputRef.current) {
       answerImageInputRef.current.value = "";
     }
+  };
+
+  const removeQuestionImage = (index: number) => {
+    setQuestionImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeAnswerImage = (index: number) => {
+    setAnswerImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeExistingQuestionImage = () => {
+    setExistingQuestionImageUrl(undefined);
+  };
+
+  const removeExistingAnswerImage = () => {
+    setExistingAnswerImageUrl(undefined);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -92,17 +154,19 @@ export const CardForm: React.FC<CardFormProps> = ({
     if (question.trim() && answer.trim()) {
       setIsSubmitting(true);
       try {
+        // For now, we pass the first image for backward compatibility
+        // Backend needs to be updated to accept multiple images
         await onSubmit({
           question,
           answer,
-          questionImage,
-          answerImage,
+          questionImage: questionImages[0],
+          answerImage: answerImages[0],
         });
         if (!isEditing) {
           setQuestion("");
           setAnswer("");
-          setQuestionImage(undefined);
-          setAnswerImage(undefined);
+          setQuestionImages([]);
+          setAnswerImages([]);
           setExistingQuestionImageUrl(undefined);
           setExistingAnswerImageUrl(undefined);
           if (questionImageInputRef.current)
@@ -147,34 +211,50 @@ export const CardForm: React.FC<CardFormProps> = ({
           <button
             type="button"
             onClick={() => questionImageInputRef.current?.click()}
-            className="flex items-center gap-2 px-3 py-2 text-sm bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-md hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
+            disabled={!canAddMoreImages || isSubmitting}
+            className="flex items-center gap-2 px-3 py-2 text-sm bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-md hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ImageIcon size={16} />
-            {questionImage || existingQuestionImageUrl
-              ? t("forms.changeImage")
-              : t("forms.addImage")}
+            {t("forms.addImage")}
           </button>
           <input
             ref={questionImageInputRef}
             type="file"
             accept="image/*"
+            multiple
             onChange={handleQuestionImageChange}
             className="hidden"
+            disabled={!canAddMoreImages || isSubmitting}
           />
           <span className="text-xs text-gray-500 dark:text-gray-400">
             {t("forms.optional")} - {t("forms.maxSize")}
+            {" - "}
+            {getTotalImagesCount()}/{MAX_IMAGES} {t("forms.images")}
           </span>
         </div>
 
-        {/* Preview de imagen de pregunta */}
-        {(questionImage || existingQuestionImageUrl) && (
+        {/* Preview de imagen existente de pregunta */}
+        {existingQuestionImageUrl && (
           <div className="mt-3">
             <ImagePreview
-              file={questionImage}
               existingUrl={existingQuestionImageUrl}
-              onRemove={removeQuestionImage}
+              onRemove={removeExistingQuestionImage}
               label={t("forms.questionImage")}
             />
+          </div>
+        )}
+
+        {/* Preview de imágenes nuevas de pregunta */}
+        {questionImages.length > 0 && (
+          <div className="mt-3 space-y-2">
+            {questionImages.map((file, index) => (
+              <ImagePreview
+                key={index}
+                file={file}
+                onRemove={() => removeQuestionImage(index)}
+                label={`${t("forms.questionImage")} ${index + 1}`}
+              />
+            ))}
           </div>
         )}
       </div>
@@ -203,34 +283,48 @@ export const CardForm: React.FC<CardFormProps> = ({
           <button
             type="button"
             onClick={() => answerImageInputRef.current?.click()}
-            className="flex items-center gap-2 px-3 py-2 text-sm bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-md hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
+            disabled={!canAddMoreImages || isSubmitting}
+            className="flex items-center gap-2 px-3 py-2 text-sm bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-md hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ImageIcon size={16} />
-            {answerImage || existingAnswerImageUrl
-              ? t("forms.changeImage")
-              : t("forms.addImage")}
+            {t("forms.addImage")}
           </button>
           <input
             ref={answerImageInputRef}
             type="file"
             accept="image/*"
+            multiple
             onChange={handleAnswerImageChange}
             className="hidden"
+            disabled={!canAddMoreImages || isSubmitting}
           />
           <span className="text-xs text-gray-500 dark:text-gray-400">
             {t("forms.optional")} - {t("forms.maxSize")}
           </span>
         </div>
 
-        {/* Preview de imagen de respuesta */}
-        {(answerImage || existingAnswerImageUrl) && (
+        {/* Preview de imagen existente de respuesta */}
+        {existingAnswerImageUrl && (
           <div className="mt-3">
             <ImagePreview
-              file={answerImage}
               existingUrl={existingAnswerImageUrl}
-              onRemove={removeAnswerImage}
+              onRemove={removeExistingAnswerImage}
               label={t("forms.answerImage")}
             />
+          </div>
+        )}
+
+        {/* Preview de imágenes nuevas de respuesta */}
+        {answerImages.length > 0 && (
+          <div className="mt-3 space-y-2">
+            {answerImages.map((file, index) => (
+              <ImagePreview
+                key={index}
+                file={file}
+                onRemove={() => removeAnswerImage(index)}
+                label={`${t("forms.answerImage")} ${index + 1}`}
+              />
+            ))}
           </div>
         )}
       </div>

@@ -290,6 +290,8 @@
     "answerPlaceholder": "Escribe tu respuesta aquí...",
     "addImage": "Agregar imagen",
     "changeImage": "Cambiar imagen",
+    "images": "imágenes",
+    "maxImagesReached": "Has alcanzado el límite máximo de {{max}} imágenes",
     "optional": "Opcional",
     "maxSize": "Máximo 5MB",
     "saving": "Guardando...",
