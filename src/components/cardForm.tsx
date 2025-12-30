@@ -57,29 +57,30 @@ export const CardForm: React.FC<CardFormProps> = ({
 
     const newFilesArray = Array.from(files);
     const remainingSlots = MAX_IMAGES - getTotalImagesCount();
-    
+
     if (remainingSlots <= 0) {
       alert(t("forms.maxImagesReached", { max: MAX_IMAGES }));
-      if (questionImageInputRef.current) questionImageInputRef.current.value = "";
+      if (questionImageInputRef.current)
+        questionImageInputRef.current.value = "";
       return;
     }
 
     const validFiles: File[] = [];
     for (let i = 0; i < Math.min(newFilesArray.length, remainingSlots); i++) {
       const file = newFilesArray[i];
-      
+
       // Validate file type
       if (!file.type.startsWith("image/")) {
         alert(t("forms.invalidImage"));
         continue;
       }
-      
+
       // Validate size (5MB max)
       if (file.size > 5 * 1024 * 1024) {
         alert(t("forms.imageTooLarge"));
         continue;
       }
-      
+
       validFiles.push(file);
     }
 
@@ -98,7 +99,7 @@ export const CardForm: React.FC<CardFormProps> = ({
 
     const newFilesArray = Array.from(files);
     const remainingSlots = MAX_IMAGES - getTotalImagesCount();
-    
+
     if (remainingSlots <= 0) {
       alert(t("forms.maxImagesReached", { max: MAX_IMAGES }));
       if (answerImageInputRef.current) answerImageInputRef.current.value = "";
@@ -108,19 +109,19 @@ export const CardForm: React.FC<CardFormProps> = ({
     const validFiles: File[] = [];
     for (let i = 0; i < Math.min(newFilesArray.length, remainingSlots); i++) {
       const file = newFilesArray[i];
-      
+
       // Validate file type
       if (!file.type.startsWith("image/")) {
         alert(t("forms.invalidImage"));
         continue;
       }
-      
+
       // Validate size (5MB max)
       if (file.size > 5 * 1024 * 1024) {
         alert(t("forms.imageTooLarge"));
         continue;
       }
-      
+
       validFiles.push(file);
     }
 
@@ -159,8 +160,8 @@ export const CardForm: React.FC<CardFormProps> = ({
         await onSubmit({
           question,
           answer,
-          questionImage: questionImages[0],
-          answerImage: answerImages[0],
+          questionImage: questionImages,
+          answerImage: answerImages,
         });
         if (!isEditing) {
           setQuestion("");
