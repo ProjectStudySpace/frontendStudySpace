@@ -61,7 +61,7 @@ export const NoteForm: React.FC<NoteFormProps> = ({
 
     const newFilesArray = Array.from(files);
     const remainingSlots = MAX_IMAGES - getTotalImagesCount();
-    
+
     if (remainingSlots <= 0) {
       alert(t("forms.maxImagesReached", { max: MAX_IMAGES }));
       if (leftImageInputRef.current) leftImageInputRef.current.value = "";
@@ -71,7 +71,7 @@ export const NoteForm: React.FC<NoteFormProps> = ({
     const validFiles: File[] = [];
     for (let i = 0; i < Math.min(newFilesArray.length, remainingSlots); i++) {
       const file = newFilesArray[i];
-      
+
       if (!file.type.startsWith("image/")) {
         alert(t("forms.invalidImage"));
         continue;
@@ -98,7 +98,7 @@ export const NoteForm: React.FC<NoteFormProps> = ({
 
     const newFilesArray = Array.from(files);
     const remainingSlots = MAX_IMAGES - getTotalImagesCount();
-    
+
     if (remainingSlots <= 0) {
       alert(t("forms.maxImagesReached", { max: MAX_IMAGES }));
       if (rightImageInputRef.current) rightImageInputRef.current.value = "";
@@ -108,7 +108,7 @@ export const NoteForm: React.FC<NoteFormProps> = ({
     const validFiles: File[] = [];
     for (let i = 0; i < Math.min(newFilesArray.length, remainingSlots); i++) {
       const file = newFilesArray[i];
-      
+
       if (!file.type.startsWith("image/")) {
         alert(t("forms.invalidImage"));
         continue;
@@ -160,14 +160,11 @@ export const NoteForm: React.FC<NoteFormProps> = ({
 
     setIsSubmitting(true);
     try {
-      // For now, we pass the first image for backward compatibility
-      // Backend needs to be updated to accept multiple images
       await onSubmit({
-        title: title.trim(),
         leftContent,
         rightContent,
-        leftImage: leftImages[0],
-        rightImage: rightImages[0],
+        leftImages: leftImages,
+        rightImages: rightImages,
       });
       if (!isEditing) {
         setTitle("");
@@ -197,13 +194,18 @@ export const NoteForm: React.FC<NoteFormProps> = ({
       <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-green-100 dark:from-blue-900/50 dark:to-green-900/50 rounded-lg flex items-center justify-center">
-            <BookOpen className="text-indigo-600 dark:text-indigo-400" size={20} />
+            <BookOpen
+              className="text-indigo-600 dark:text-indigo-400"
+              size={20}
+            />
           </div>
           <div>
             <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
               {isEditing ? t("notes.edit") : t("notes.new")}
             </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">{t("forms.bookFormat")}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {t("forms.bookFormat")}
+            </p>
           </div>
         </div>
         <button
@@ -223,8 +225,7 @@ export const NoteForm: React.FC<NoteFormProps> = ({
           htmlFor="title"
           className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
         >
-          {t("forms.titleLabel")}{" "}
-          <span className="text-red-500">*</span>
+          {t("forms.titleLabel")} <span className="text-red-500">*</span>
         </label>
         <input
           id="title"

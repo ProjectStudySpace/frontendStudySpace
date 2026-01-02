@@ -18,7 +18,7 @@ export const NoteItem: React.FC<NoteItemProps> = ({
   } | null>(null);
 
   const topicColor = note.topic?.color || "#60A5FA";
-  
+
   // Convertir título vacío a null para mejor manejo
   const displayTitle = note.title && note.title.trim() ? note.title : null;
 
@@ -46,9 +46,11 @@ export const NoteItem: React.FC<NoteItemProps> = ({
         <div
           className="px-4 py-3"
           style={{
-            backgroundColor: typeof window !== 'undefined' && document.documentElement.classList.contains('dark') 
-              ? `${topicColor}` 
-              : `${topicColor}80`,
+            backgroundColor:
+              typeof window !== "undefined" &&
+              document.documentElement.classList.contains("dark")
+                ? `${topicColor}`
+                : `${topicColor}80`,
           }}
         >
           <div className="flex items-center justify-center gap-2">
@@ -72,8 +74,6 @@ export const NoteItem: React.FC<NoteItemProps> = ({
         <div className="flex-1 flex min-h-[400px] max-h-[500px]">
           {/* Página izquierda */}
           <div className="flex-1 p-6 border-r border-gray-200 dark:border-gray-700 flex flex-col bg-gradient-to-br from-blue-50/30 to-white dark:from-blue-900/10 dark:to-gray-800">
-
-
             <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800">
               {note.leftContent ? (
                 <div className="pt-2">
@@ -88,28 +88,29 @@ export const NoteItem: React.FC<NoteItemProps> = ({
               )}
             </div>
 
-            {/* Imagen página izquierda */}
-            {note.leftImageUrl && (
-              <div className="mt-4 pt-4 border-t border-blue-100 dark:border-blue-800 flex justify-center">
-                <img
-                  src={note.leftImageUrl}
-                  alt="Imagen página izquierda"
-                  className="max-w-full max-h-40 object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity shadow-sm"
-                  onClick={() =>
-                    handleImageClick(
-                      note.leftImageUrl!,
-                      "Imagen página izquierda"
-                    )
-                  }
-                />
+            {/* Imagenes página izquierda */}
+            {note.leftImageUrls && note.leftImageUrls.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-blue-100 dark:border-blue-800 flex flex-wrap gap-2 justify-center">
+                {note.leftImageUrls.map((url, index) => (
+                  <img
+                    key={index}
+                    src={url}
+                    alt={`Imagen página izquierda ${index + 1}`}
+                    className="max-w-[45%] max-h-32 object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity shadow-sm"
+                    onClick={() =>
+                      handleImageClick(
+                        url,
+                        `Imagen página izquierda ${index + 1}`
+                      )
+                    }
+                  />
+                ))}
               </div>
             )}
           </div>
 
           {/* Página derecha */}
           <div className="flex-1 p-6 flex flex-col bg-gradient-to-bl from-green-50/30 to-white dark:from-green-900/10 dark:to-gray-800">
-
-
             <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800">
               {note.rightContent ? (
                 <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">
@@ -122,20 +123,23 @@ export const NoteItem: React.FC<NoteItemProps> = ({
               )}
             </div>
 
-            {/* Imagen página derecha */}
-            {note.rightImageUrl && (
-              <div className="mt-4 pt-4 border-t border-green-100 dark:border-green-800 flex justify-center">
-                <img
-                  src={note.rightImageUrl}
-                  alt="Imagen página derecha"
-                  className="max-w-full max-h-40 object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity shadow-sm"
-                  onClick={() =>
-                    handleImageClick(
-                      note.rightImageUrl!,
-                      "Imagen página derecha"
-                    )
-                  }
-                />
+            {/* Imagenes página derecha */}
+            {note.rightImageUrls && note.rightImageUrls.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-green-100 dark:border-green-800 flex flex-wrap gap-2 justify-center">
+                {note.rightImageUrls.map((url, index) => (
+                  <img
+                    key={index}
+                    src={url}
+                    alt={`Imagen página derecha ${index + 1}`}
+                    className="max-w-[45%] max-h-32 object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity shadow-sm"
+                    onClick={() =>
+                      handleImageClick(
+                        url,
+                        `Imagen página derecha ${index + 1}`
+                      )
+                    }
+                  />
+                ))}
               </div>
             )}
           </div>

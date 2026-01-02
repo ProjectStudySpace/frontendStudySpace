@@ -155,7 +155,14 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
   const handleSubmit = async (noteData: CreateNoteData | UpdateNoteData) => {
     try {
       if (editingNote) {
-        await updateNote(editingNote.id, noteData as UpdateNoteData);
+        const updateData: UpdateNoteData = {
+          title: (noteData as any).title,
+          leftContent: (noteData as any).leftContent,
+          rightContent: (noteData as any).rightContent,
+          leftImages: (noteData as any).leftImages,
+          rightImages: (noteData as any).rightImages,
+        };
+        await updateNote(editingNote.id, updateData);
         showSuccess(
           t("notifications.noteUpdated.title"),
           t("notifications.noteUpdated.message")
@@ -168,8 +175,8 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
           rightContent: (noteData as any).rightContent || "",
           type: "explanation",
           topicId,
-          leftImage: noteData.leftImage,
-          rightImage: noteData.rightImage,
+          leftImages: (noteData as any).leftImages,
+          rightImages: (noteData as any).rightImages,
         };
         await addNote(createData);
         showSuccess(
