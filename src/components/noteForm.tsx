@@ -161,6 +161,7 @@ export const NoteForm: React.FC<NoteFormProps> = ({
     setIsSubmitting(true);
     try {
       await onSubmit({
+        title: title.trim() || undefined,
         leftContent,
         rightContent,
         leftImages: leftImages,

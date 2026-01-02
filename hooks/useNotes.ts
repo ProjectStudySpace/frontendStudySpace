@@ -5,19 +5,26 @@ import { api, deduplicateRequest } from "../src/utils/axiosConfig";
 
 //funcion auxiliar para mapear card del bacekend a nota del frontend
 const mapCardToNote = (card: any, topicId?: number): Note => {
-  const questionParts = (card.question || "").split("\n\n");
-  const title =
-    questionParts.length > 1
-      ? questionParts[0].trim()
-      : (card.question || "").trim();
-  const leftContent =
-    questionParts.length > 1
-      ? questionParts.slice(1).join("\n\n").trim()
-      : card.question || "";
+  let title: string | undefined;
+  let leftContent: string;
+
+  if (card.title) {
+    title = card.title;
+    leftContent = card.question || "";
+  } else {
+    const questionParts = (card.question || "").split("\n\n");
+    title = questionParts.length > 1 ? questionParts[0].trim() : undefined;
+    leftContent =
+      questionParts.length > 1
+        ? questionParts.slice(1).join("\n\n").trim()
+        : card.question || "";
+  }
 
   // Obtener TODAS las imágenes por tipo
-  const leftImages = card.images?.filter((img: any) => img.imageType === "question") || [];
-  const rightImages = card.images?.filter((img: any) => img.imageType === "answer") || [];
+  const leftImages =
+    card.images?.filter((img: any) => img.imageType === "question") || [];
+  const rightImages =
+    card.images?.filter((img: any) => img.imageType === "answer") || [];
 
   return {
     id: card.id,
@@ -181,12 +188,13 @@ export const useNotes = () => {
     try {
       const formData = new FormData();
       // Mapear campos de nota a los campos que espera el backend
-      // Enviar title como question (título de la nota) y leftContent como contenido adicional
-      const questionWithTitle = noteData.title
-        ? `${noteData.title}\n\n${noteData.leftContent || ""}`.trim()
-        : noteData.leftContent || "";
+      //enviar title como campo separado
 
-      formData.append("question", questionWithTitle || "Sin título");
+      if (noteData.title) {
+        formData.append("title", noteData.title.trim());
+      }
+
+      formData.append("question", noteData.leftContent || "");
       formData.append("answer", noteData.rightContent || "Sin contenido");
       formData.append("type", (noteData.type || "explanation").toUpperCase());
       formData.append("topicId", noteData.topicId.toString());
@@ -237,11 +245,11 @@ export const useNotes = () => {
     try {
       const formData = new FormData();
       // Mapear campos de nota a los campos que espera el backend
-      if (updates.title !== undefined || updates.leftContent !== undefined) {
-        const questionWithTitle = updates.title
-          ? `${updates.title}\n\n${updates.leftContent || ""}`.trim()
-          : updates.leftContent || "";
-        formData.append("question", questionWithTitle);
+      if (updates.title !== undefined) {
+        formData.append("title", updates.title.trim() || "");
+      }
+      if (updates.leftContent !== undefined) {
+        formData.append("question", updates.leftContent);
       }
       if (updates.rightContent !== undefined) {
         formData.append("answer", updates.rightContent);

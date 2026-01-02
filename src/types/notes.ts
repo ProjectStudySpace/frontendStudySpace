@@ -41,6 +41,7 @@ export interface UpdateNoteData {
 
 export interface NoteFormProps {
   onSubmit: (data: {
+    title?: string;
     leftContent?: string;
     rightContent?: string;
     leftImages?: File[];
