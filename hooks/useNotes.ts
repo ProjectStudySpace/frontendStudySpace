@@ -15,6 +15,10 @@ const mapCardToNote = (card: any, topicId?: number): Note => {
       ? questionParts.slice(1).join("\n\n").trim()
       : card.question || "";
 
+  // Obtener TODAS las imágenes por tipo
+  const leftImages = card.images?.filter((img: any) => img.imageType === "question") || [];
+  const rightImages = card.images?.filter((img: any) => img.imageType === "answer") || [];
+
   return {
     id: card.id,
     title,
@@ -22,10 +26,12 @@ const mapCardToNote = (card: any, topicId?: number): Note => {
     rightContent: card.answer || "",
     type: card.type,
     topicId: card.topicId || topicId,
-    leftImageUrl: card.images?.find((img: any) => img.imageType === "question")
-      ?.imageUrl,
-    rightImageUrl: card.images?.find((img: any) => img.imageType === "answer")
-      ?.imageUrl,
+    // Mantener compatibilidad con una sola imagen
+    leftImageUrl: leftImages[0]?.imageUrl,
+    rightImageUrl: rightImages[0]?.imageUrl,
+    // Arrays de URLs para múltiples imágenes
+    leftImageUrls: leftImages.map((img: any) => img.imageUrl),
+    rightImageUrls: rightImages.map((img: any) => img.imageUrl),
     createdAt: card.createdAt,
     updatedAt: card.updatedAt,
     topic: card.topic,
@@ -186,11 +192,15 @@ export const useNotes = () => {
       formData.append("topicId", noteData.topicId.toString());
 
       // Mapear imágenes de nota a los campos que espera el backend
-      if (noteData.leftImage) {
-        formData.append("questionImage", noteData.leftImage);
+      if (noteData.leftImages && noteData.leftImages.length > 0) {
+        noteData.leftImages.forEach((file) => {
+          formData.append("questionImage", file);
+        });
       }
-      if (noteData.rightImage) {
-        formData.append("answerImage", noteData.rightImage);
+      if (noteData.rightImages && noteData.rightImages.length > 0) {
+        noteData.rightImages.forEach((file) => {
+          formData.append("answerImage", file);
+        });
       }
 
       const { data } = await api.post(`/cards`, formData);
@@ -240,11 +250,15 @@ export const useNotes = () => {
       formData.append("type", "EXPLANATION");
 
       // Mapear imágenes de nota a los campos que espera el backend
-      if (updates.leftImage) {
-        formData.append("questionImage", updates.leftImage);
+      if (updates.leftImages && updates.leftImages.length > 0) {
+        updates.leftImages.forEach((file) => {
+          formData.append("questionImage", file);
+        });
       }
-      if (updates.rightImage) {
-        formData.append("answerImage", updates.rightImage);
+      if (updates.rightImages && updates.rightImages.length > 0) {
+        updates.rightImages.forEach((file) => {
+          formData.append("answerImage", file);
+        });
       }
 
       const { data } = await api.put(`/cards/${id}`, formData);

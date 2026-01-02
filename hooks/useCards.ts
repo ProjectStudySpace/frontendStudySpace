@@ -131,11 +131,15 @@ export const useCards = () => {
       formData.append("topicId", cardData.topicId.toString());
 
       // Agregar imágenes si existen
-      if (cardData.questionImage) {
-        formData.append("questionImage", cardData.questionImage);
+      if (cardData.questionImage && cardData.questionImage.length > 0) {
+        cardData.questionImage.forEach((file) => {
+          formData.append("questionImage", file);
+        });
       }
-      if (cardData.answerImage) {
-        formData.append("answerImage", cardData.answerImage);
+      if (cardData.answerImage && cardData.answerImage.length > 0) {
+        cardData.answerImage.forEach((file) => {
+          formData.append("answerImage", file);
+        });
       }
 
       const { data: newCard } = await api.post(`/cards`, formData);
@@ -179,13 +183,16 @@ export const useCards = () => {
       if (updates.type) formData.append("type", updates.type.toUpperCase());
 
       // Agregar imágenes si existen
-      if (updates.questionImage) {
-        formData.append("questionImage", updates.questionImage);
+      if (updates.questionImage && updates.questionImage.length > 0) {
+        updates.questionImage.forEach((file) => {
+          formData.append("questionImage", file);
+        });
       }
-      if (updates.answerImage) {
-        formData.append("answerImage", updates.answerImage);
+      if (updates.answerImage && updates.answerImage.length > 0) {
+        updates.answerImage.forEach((file) => {
+          formData.append("answerImage", file);
+        });
       }
-
       const { data: updatedCard } = await api.put(`/cards/${id}`, formData);
 
       if (!updatedCard) throw new Error("Error al actualizar tarjeta");

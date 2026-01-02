@@ -36,8 +36,8 @@ export interface CardFormProps {
   onSubmit: (card: {
     question: string;
     answer: string;
-    questionImage?: File; // NUEVO
-    answerImage?: File; // NUEVO
+    questionImage?: File[]; // antes era File
+    answerImage?: File[]; // antes era File
   }) => void;
   onCancel: () => void;
   initialData?: {
@@ -75,8 +75,8 @@ export type CreateCardData = {
   question: string;
   answer: string;
   type: "flashcard" | "explanation";
-  questionImage?: File;
-  answerImage?: File;
+  questionImage?: File[]; //antes era File
+  answerImage?: File[]; //antes era File
 };
 
 export type UpdateCardData = Partial<Omit<CreateCardData, "topicId">>;
