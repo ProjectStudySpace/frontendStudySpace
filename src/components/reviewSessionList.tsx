@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { ReviewSession, ReviewSessionListProps } from "../types/reviews";
+import { ReviewSessionListProps } from "../types/reviews";
 import ReviewSessionCard from "./reviewSessionCard";
 import { BookOpen } from "lucide-react";
 
@@ -20,9 +20,9 @@ const ReviewSessionList: React.FC<ReviewSessionListProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" id="review-sessions-container">
       {groupedSessions.pending.length > 0 && (
-        <section>
+        <section id="pending-reviews">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-2 h-6 bg-red-500 rounded-full"></div>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
@@ -77,7 +77,7 @@ const ReviewSessionList: React.FC<ReviewSessionListProps> = ({
       )}
 
       {groupedSessions.upcoming.length > 0 && (
-        <section>
+        <section id="upcoming-reviews">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-2 h-6 bg-orange-500 rounded-full"></div>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
@@ -156,7 +156,9 @@ const ReviewSessionList: React.FC<ReviewSessionListProps> = ({
           <p className="text-gray-500 dark:text-gray-400 text-lg mb-2">
             {t("sessions.noSessions")}
           </p>
-          <p className="text-gray-400 dark:text-gray-500">{t("sessions.createCards")}</p>
+          <p className="text-gray-400 dark:text-gray-500">
+            {t("sessions.createCards")}
+          </p>
         </div>
       )}
     </div>

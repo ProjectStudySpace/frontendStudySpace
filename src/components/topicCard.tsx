@@ -1,5 +1,5 @@
 import React from "react";
-import { Topic, TopicCardProps } from "../types/topics";
+import { TopicCardProps } from "../types/topics";
 import { useTranslation } from "react-i18next";
 
 export const TopicCard: React.FC<TopicCardProps> = ({
@@ -15,9 +15,11 @@ export const TopicCard: React.FC<TopicCardProps> = ({
       <div
         className="p-1 cursor-pointer"
         style={{
-          backgroundColor: typeof window !== 'undefined' && document.documentElement.classList.contains('dark') 
-            ? `${topic.color}` 
-            : `${topic.color}80`,
+          backgroundColor:
+            typeof window !== "undefined" &&
+            document.documentElement.classList.contains("dark")
+              ? `${topic.color}`
+              : `${topic.color}80`,
         }}
         onClick={() => onSelect(topic.id)}
       >

@@ -24,9 +24,9 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
   const [isSearching, setIsSearching] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
 
-  // Dynamic pagination for notes - 2x2 grid on large screens (3 notes + 1 button)
+  // Dynamic pagination for notes - same pattern as flashcards
   const { pageSize: dynamicPageSize } = useDynamicPagination({
-    cols: { mobile: 1, md: 2, lg: 2, xl: 2 },
+    cols: { mobile: 1, md: 2, lg: 3, xl: 4 },
     mobileLimit: 4, // 3 notes + 1 button on mobile
     rows: 2,
   });
@@ -34,7 +34,6 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
   const {
     notes,
     loading,
-    error,
     pagination,
     fetchNotesByTopic,
     searchNotes,
@@ -54,15 +53,15 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
     async (page: number, searchQuery: string) => {
       try {
         if (searchQuery.trim() && searchQuery.length >= 2) {
-          await searchNotes(searchQuery, page);
+          await searchNotes(searchQuery, page, dynamicPageSize, topicId);
         } else if (!searchQuery.trim()) {
-          changePage(page);
+          await changePage(page, dynamicPageSize);
         }
       } catch (error) {
         console.error("Error loading notes:", error);
       }
     },
-    [searchNotes, changePage]
+    [searchNotes, changePage, topicId, dynamicPageSize]
   );
 
   // Efecto para cargar notas cuando cambia el tema
@@ -135,11 +134,11 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
     }
   }, [debouncedTerm, topicId, initialLoadDone, isSearching]);
 
-  const handlePageChange = (page: number) => {
-    if (debouncedTerm.trim()) {
-      loadNotes(page, debouncedTerm);
+  const handlePageChange = async (page: number) => {
+    if (debouncedTerm.trim() && debouncedTerm.length >= 2) {
+      await loadNotes(page, debouncedTerm);
     } else {
-      changePage(page, dynamicPageSize);
+      await changePage(page, dynamicPageSize);
     }
   };
 
@@ -156,8 +155,18 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
   const handleSubmit = async (noteData: CreateNoteData | UpdateNoteData) => {
     try {
       if (editingNote) {
-        await updateNote(editingNote.id, noteData as UpdateNoteData);
-        showSuccess("Nota actualizada", "La nota se ha actualizado correctamente");
+        const updateData: UpdateNoteData = {
+          title: (noteData as any).title,
+          leftContent: (noteData as any).leftContent,
+          rightContent: (noteData as any).rightContent,
+          leftImages: (noteData as any).leftImages,
+          rightImages: (noteData as any).rightImages,
+        };
+        await updateNote(editingNote.id, updateData);
+        showSuccess(
+          t("notifications.noteUpdated.title"),
+          t("notifications.noteUpdated.message")
+        );
       } else {
         // Para crear, construir con todos los campos
         const createData: CreateNoteData = {
@@ -166,11 +175,14 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
           rightContent: (noteData as any).rightContent || "",
           type: "explanation",
           topicId,
-          leftImage: noteData.leftImage,
-          rightImage: noteData.rightImage,
+          leftImages: (noteData as any).leftImages,
+          rightImages: (noteData as any).rightImages,
         };
         await addNote(createData);
-        showSuccess("Nota creada", "La nota se ha creado correctamente");
+        showSuccess(
+          t("notifications.noteCreated.title"),
+          t("notifications.noteCreated.message")
+        );
       }
       setShowForm(false);
       setEditingNote(undefined);
@@ -187,7 +199,10 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
       }
     } catch (error) {
       console.error("Error al guardar nota:", error);
-      showError("Error al guardar", "No se pudo guardar la nota. Inténtalo de nuevo.");
+      showError(
+        t("notifications.noteError.title"),
+        t("notifications.noteError.message")
+      );
       throw error; // Re-lanzar para que el form lo maneje
     }
   };
@@ -195,7 +210,10 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
   const handleDeleteNote = async (noteId: number) => {
     try {
       await deleteNote(noteId);
-      showSuccess("Nota eliminada", "La nota se ha eliminado correctamente");
+      showSuccess(
+        t("notifications.noteDeleted.title"),
+        t("notifications.noteDeleted.message")
+      );
 
       // Recargar si estamos buscando
       if (debouncedTerm.trim()) {
@@ -203,7 +221,10 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
       }
     } catch (error) {
       console.error("Error al eliminar nota:", error);
-      showError("Error al eliminar", "No se pudo eliminar la nota. Inténtalo de nuevo.");
+      showError(
+        t("notifications.deleteError.title"),
+        t("notifications.deleteError.message")
+      );
     }
   };
 
@@ -270,9 +291,17 @@ export const NotesManager: React.FC<NotesManagerProps> = ({
                   {t("components.notesManager.minCharacters")}
                 </p>
               )}
-              {isSearching && (
+              {loading && isSearching && (
                 <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-1 ml-10">
                   {t("components.notesManager.searching")} "{debouncedTerm}"...
+                </p>
+              )}
+              {isSearching && !loading && (
+                <p className="text-xs text-text-green-600 dark:text-green-400 mt-1 ml-10">
+                  {pagination.totalItems}{" "}
+                  {pagination.totalItems !== 1
+                    ? t("components.notesManager.resultsFound")
+                    : t("components.notesManager.resultFound")}
                 </p>
               )}
             </div>

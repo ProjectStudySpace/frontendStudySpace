@@ -7,7 +7,6 @@ export const CardList: React.FC<CardListProps> = ({
   cards,
   onEdit,
   onDelete,
-  topicId,
   pagination,
   onPageChange,
   onCreateCard,

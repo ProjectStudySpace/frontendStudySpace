@@ -74,6 +74,10 @@
       "invalid_params": "Parámetros de autenticación inválidos",
       "invalid_state": "Estado de autenticación inválido",
       "callback_failed": "Error en el callback de autenticación"
+    },
+    "sessionExpired": {
+      "title": "Sesión expirada",
+      "message": "Tu sesión ha expirado. Serás redirigido al login en unos segundos."
     }
   },
   "topics": {
@@ -286,6 +290,8 @@
     "answerPlaceholder": "Escribe tu respuesta aquí...",
     "addImage": "Agregar imagen",
     "changeImage": "Cambiar imagen",
+    "images": "imágenes",
+    "maxImagesReached": "Has alcanzado el límite máximo de {{max}} imágenes",
     "optional": "Opcional",
     "maxSize": "Máximo 5MB",
     "saving": "Guardando...",
@@ -1623,6 +1629,15 @@
       "topicCards": "Tarjetas del tema",
       "newCard": "Nueva tarjeta"
     },
+    "cardsManager": {
+      "searchPlaceholder": "Buscar en tarjetas por pregunta o respuesta...",
+      "minCharacters": "Mínimo 2 caracteres para buscar",
+      "searching": "Buscando",
+      "resultsFound": "resultados encontrados",
+      "resultFound": "resultado encontrado",
+      "errorLoading": "Error al cargar las tarjetas",
+      "retry": "Reintentar"
+    },
     "colorSelector": {
       "themeColor": "Color del tema",
       "colors": {
@@ -1695,6 +1710,8 @@
       "searchPlaceholder": "Buscar en notas por título o contenido...",
       "minCharacters": "Escribe al menos 2 caracteres para buscar",
       "searching": "Buscando",
+      "resultsFound": "resultados encontrados",
+      "resultFound": "resultado encontrado",
       "errorLoading": "Error al cargar notas",
       "retry": "Reintentar"
     },
@@ -1709,5 +1726,113 @@
       "viewAllTopics": "Ver todos los temas",
       "searchSubjects": "Buscar materias..."
     }
+  },
+  "notifications": {
+    "cardCreated": {
+      "title": "Tarjeta creada",
+      "message": "La tarjeta se ha creado correctamente"
+    },
+    "cardUpdated": {
+      "title": "Tarjeta actualizada",
+      "message": "La tarjeta se ha actualizado correctamente"
+    },
+    "cardDeleted": {
+      "title": "Tarjeta eliminada",
+      "message": "La tarjeta se ha eliminado correctamente"
+    },
+    "cardError": {
+      "title": "Error al guardar",
+      "message": "No se pudo guardar la tarjeta. Inténtalo de nuevo."
+    },
+    "noteCreated": {
+      "title": "Nota creada",
+      "message": "La nota se ha creado correctamente"
+    },
+    "noteUpdated": {
+      "title": "Nota actualizada",
+      "message": "La nota se ha actualizado correctamente"
+    },
+    "noteDeleted": {
+      "title": "Nota eliminada",
+      "message": "La nota se ha eliminado correctamente"
+    },
+    "noteError": {
+      "title": "Error al guardar",
+      "message": "No se pudo guardar la nota. Inténtalo de nuevo."
+    },
+    "deleteError": {
+      "title": "Error al eliminar",
+      "message": "No se pudo eliminar el elemento. Inténtalo de nuevo."
+    }
+  },
+  "guide": {
+    "welcome": {
+      "title": "¡Bienvenido a MemoPal! 👋",
+      "description": "Te mostraremos cómo navegar por tu nueva plataforma de estudio. Descubre todas las herramientas que tienes para mejorar tu aprendizaje.",
+      "start": "Comenzar tour"
+    },
+    "topics": {
+      "title": "📚 Mis Temas",
+      "description": "Aquí encontrarás todas tus materias organizadas. Crea tarjetas de estudio, notas y organiza todo por colores para un aprendizaje más eficiente."
+    },
+    "studySessions": {
+      "title": "📖 Sesiones de Repaso",
+      "description": "Visualiza y gestiona tus sesiones de estudio programadas. El algoritmo de repaso espaciado programa automáticamente tus repasos para máxima retención.",
+      "page": {
+        "startReviewButton": {
+          "title": "Iniciar Repaso",
+          "description": "Haz clic en este botón cuando tengas tarjetas pendientes para comenzar tu sesión de estudio."
+        },
+        "statsCards": {
+          "title": "Resumen de Estadísticas",
+          "description": "Vista rápida de tus tarjetas pendientes, próximas sesiones para los próximos 7 y 30 días."
+        },
+        "pendingReviews": {
+          "title": "Repasos Pendientes",
+          "description": "Tus tarjetas programadas para hoy. Complétalas para mantener tu progreso."
+        },
+        "calendarWidget": {
+          "title": "Calendario",
+          "description": "Calendario visual que muestra tus sesiones programadas. El punto naranja indica los días con sesiones de estudio."
+        },
+        "progressSection": {
+          "title": "Progreso de Aprendizaje",
+          "description": "Sigue tu progreso de aprendizaje con estadísticas detalladas y métricas."
+        },
+        "rescheduleCards": {
+          "title": "Reprogramar Sesiones",
+          "description": "Las fechas de sesiones de repaso de cada tarjeta se pueden reprogramar mediante el botón de reprogramación. El algoritmo de repaso espaciado se ajustará automáticamente a la nueva fecha."
+        }
+      }
+    },
+    "calendar": {
+      "title": "📅 Calendario",
+      "description": "Ve todas tus sesiones de estudio en un calendario visual. Sincroniza con Google Calendar para recibir recordatorios automáticos."
+    },
+    "progress": {
+      "title": "📈 Mi Progreso",
+      "description": "Observa tus estadísticas de aprendizaje: rachas de estudio, tarjetas repasadas, temas completados y tu progreso general."
+    },
+    "profile": {
+      "title": "👤 Perfil",
+      "description": "Gestiona tu información personal, ve tus estadísticas de usuario y conecta servicios externos como Google Calendar."
+    },
+    "settings": {
+      "title": "⚙️ Configuración",
+      "description": "Personaliza tu experiencia: modo oscuro, idioma, integraciones y opciones avanzadas de la aplicación."
+    },
+    "finish": {
+      "title": "¡Listo para estudiar! 🎉",
+      "description": "Ya conoces todas las secciones principales de MemoPal. ¡Es hora de crear tus primeras tarjetas y comenzar tu viaje de aprendizaje!",
+      "done": "Entendido"
+    },
+    "actions": {
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "close": "Cerrar",
+      "skip": "Omitir",
+      "disableGuide": "No mostrar guía de inicio"
+    },
+    "stepProgress": "Paso {current} de {total}"
   }
 }

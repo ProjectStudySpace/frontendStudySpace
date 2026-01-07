@@ -5,9 +5,9 @@ import { api } from "../src/utils/axiosConfig";
 
 export const useCards = () => {
   const [cards, setCards] = useState<Card[]>([]);
-  const [allCards, setAllCards] = useState<Card[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentTopicId, setCurrentTopicId] = useState<number | null>(null);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -16,31 +16,26 @@ export const useCards = () => {
   });
   const { user } = useAuth();
 
-  //funcion para obtener token
-  const getToken = () => {
-    const token = localStorage.getItem("token");
-    if (!token)
-      throw new Error("No se encontró token. Por favor inicia sesión.");
-    return token;
-  };
-
-  const fetchCardsByTopic = async (topicId: number, page: number = 1, pageSize: number = 5): Promise<Card[]> => {
+  const fetchCardsByTopic = async (
+    topicId: number,
+    page: number = 1,
+    pageSize: number = 10
+  ): Promise<Card[]> => {
     if (!user) throw new Error("Usuario no autenticado");
 
     setLoading(true);
     setError(null);
+    setCurrentTopicId(topicId);
     try {
-      const { data } = await api.get(`/cards/topic/${topicId}`);
+      const { data } = await api.get(`/cards/topic/${topicId}`, {
+        params: { page, limit: pageSize, type: "FLASHCARD" },
+      });
 
       if (!data) throw new Error("Error al obtener tarjetas");
 
-      const allCardsArray: Card[] = data.cards || [];
-      
-      // Filtrar solo las cards de tipo "flashcard" (tarjetas)
-      const cardsArray: Card[] = allCardsArray.filter(card =>
-        card.type && card.type.toUpperCase() === "FLASHCARD"
-      );
+      const cardsArray: Card[] = data.cards || [];
 
+      //agregar informacion del topic a cada card
       const cardsWithTopic: Card[] = cardsArray.map((card) => ({
         ...card,
         topic: {
@@ -51,22 +46,24 @@ export const useCards = () => {
         },
       }));
 
-      setAllCards(cardsWithTopic);
-      const totalPages = Math.ceil(cardsWithTopic.length / pageSize);
-      const start = (page - 1) * pageSize;
-      const end = start + pageSize;
+      setCards(cardsWithTopic);
+
+      //usar metadata de paginacion del backend
+
+      const pag = data.pagination || {};
       setPagination({
-        currentPage: page,
-        totalPages,
-        totalItems: cardsWithTopic.length,
-        pageSize,
+        currentPage: pag.page || page,
+        totalPages:
+          pag.totalPages ||
+          Math.ceil((pag.total || 0) / (pag.pageSize || pageSize)),
+        totalItems: pag.total || 0,
+        pageSize: pag.limit || pageSize,
       });
-      setCards(cardsWithTopic.slice(start, end));
+
       return cardsWithTopic;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");
       setCards([]);
-      setAllCards([]);
       throw err;
     } finally {
       setLoading(false);
@@ -76,29 +73,37 @@ export const useCards = () => {
   const searchCards = async (
     searchTerm: string,
     page: number = 1,
-    limit: number = 10
+    limit: number = 10,
+    topicId?: number
   ): Promise<Card[]> => {
     if (!user) throw new Error("Usuario no autenticado");
 
     setLoading(true);
     setError(null);
     try {
-      const { data } = await api.get(`/cards/search`, {
-        params: { search: searchTerm, page, limit },
-      });
+      const params: Record<string, any> = {
+        search: searchTerm,
+        page,
+        limit,
+        type: "FLASHCARD",
+      };
+
+      if (topicId) {
+        params.topicId = topicId;
+      }
+
+      const { data } = await api.get(`/cards/search`, { params });
       if (!data) throw new Error("Error al buscar tarjetas");
 
-      const allCardsArray: Card[] = data.cards || [];
-      // Filtrar solo las cards de tipo "flashcard" (tarjetas)
-      const cardsArray: Card[] = allCardsArray.filter(card =>
-        card.type && card.type.toUpperCase() === "FLASHCARD"
-      );
+      const cardsArray: Card[] = data.cards || [];
+
       setCards(cardsArray);
+
+      //usar metadata de paginacion del backend
       const pag = data.pagination || {};
       setPagination({
         currentPage: pag.page || page,
-        totalPages:
-          pag.totalPages || Math.ceil((pag.total || 0) / (pag.limit || limit)),
+        totalPages: pag.totalPages || Math.ceil((pag.total || 0) / limit),
         totalItems: pag.total || 0,
         pageSize: pag.limit || limit,
       });
@@ -126,27 +131,34 @@ export const useCards = () => {
       formData.append("topicId", cardData.topicId.toString());
 
       // Agregar imágenes si existen
-      if (cardData.questionImage) {
-        formData.append("questionImage", cardData.questionImage);
+      if (cardData.questionImage && cardData.questionImage.length > 0) {
+        cardData.questionImage.forEach((file) => {
+          formData.append("questionImage", file);
+        });
       }
-      if (cardData.answerImage) {
-        formData.append("answerImage", cardData.answerImage);
+      if (cardData.answerImage && cardData.answerImage.length > 0) {
+        cardData.answerImage.forEach((file) => {
+          formData.append("answerImage", file);
+        });
       }
 
       const { data: newCard } = await api.post(`/cards`, formData);
 
       if (!newCard) throw new Error("Error al crear tarjeta");
 
-      setAllCards((prev) => [...prev, newCard.card]);
-      setCards((prev) => [...prev, newCard.card]);
+      //la nueca card aparece primero (order by createdAt desc)
+      //insertamos al incio y remosvemos extras si hay mas del pageSize
+      setCards((prev) => {
+        const updated = [newCard.card, ...prev];
+        return updated.slice(0, pagination.pageSize);
+      });
 
-      const newTotal = allCards.length + 1;
-      const newTotalPages = Math.ceil(newTotal / pagination.pageSize);
       setPagination((prev) => ({
         ...prev,
-        totalItems: newTotal,
-        totalPages: newTotalPages,
+        totalItems: prev.totalItems + 1,
+        totalPages: Math.ceil((prev.totalItems + 1) / prev.pageSize),
       }));
+
       return newCard.card;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");
@@ -162,6 +174,7 @@ export const useCards = () => {
   ): Promise<Card> => {
     setLoading(true);
     setError(null);
+    ///marcado-----> aqui debe resolverse la tarjeta tipo carrusel
     try {
       // Crear FormData para enviar archivos
       const formData = new FormData();
@@ -170,20 +183,20 @@ export const useCards = () => {
       if (updates.type) formData.append("type", updates.type.toUpperCase());
 
       // Agregar imágenes si existen
-      if (updates.questionImage) {
-        formData.append("questionImage", updates.questionImage);
+      if (updates.questionImage && updates.questionImage.length > 0) {
+        updates.questionImage.forEach((file) => {
+          formData.append("questionImage", file);
+        });
       }
-      if (updates.answerImage) {
-        formData.append("answerImage", updates.answerImage);
+      if (updates.answerImage && updates.answerImage.length > 0) {
+        updates.answerImage.forEach((file) => {
+          formData.append("answerImage", file);
+        });
       }
-
       const { data: updatedCard } = await api.put(`/cards/${id}`, formData);
 
       if (!updatedCard) throw new Error("Error al actualizar tarjeta");
 
-      setAllCards((prev) =>
-        prev.map((card) => (card.id === id ? updatedCard.card : card))
-      );
       setCards((prev) =>
         prev.map((card) => (card.id === id ? updatedCard.card : card))
       );
@@ -202,23 +215,38 @@ export const useCards = () => {
     try {
       await api.delete(`/cards/${id}`);
 
-      setAllCards((prev) => prev.filter((card) => card.id !== id));
-      setCards((prev) => prev.filter((card) => card.id !== id));
-      // Update pagination
-      const newTotal = allCards.length - 1;
-      const newTotalPages = Math.ceil(newTotal / pagination.pageSize);
-      setPagination((prev) => {
-        const newPag = {
+      const newTotal = pagination.totalItems - 1;
+      const newTotalPages = Math.max(
+        1,
+        Math.ceil(newTotal / pagination.pageSize)
+      );
+      const currentCardsCount = cards.length;
+
+      //caso 1 la paginacion queda vacia y no es la primera -> ir a pagaina anterior
+      if (currentCardsCount === 1 && pagination.currentPage > 1) {
+        await fetchCardsByTopic(
+          currentTopicId!,
+          pagination.currentPage - 1,
+          pagination.pageSize
+        );
+      }
+      //caso 2 hay mas cards en otras paginas > traer una para llenar el hueco
+      else if (currentCardsCount === 1 && newTotal > 0) {
+        await fetchCardsByTopic(
+          currentTopicId!,
+          pagination.currentPage,
+          pagination.pageSize
+        );
+      }
+      //caso 3 quedan cards en la pagina actual -> solo remover localmente
+      else {
+        setCards((prev) => prev.filter((card) => card.id !== id));
+        setPagination((prev) => ({
           ...prev,
           totalItems: newTotal,
           totalPages: newTotalPages,
-        };
-        // If current page is now empty and not first, go to previous
-        if (prev.currentPage > 1 && prev.currentPage > newTotalPages) {
-          setTimeout(() => changePage(newTotalPages, prev.pageSize), 0); // Delay to after state update
-        }
-        return newPag;
-      });
+        }));
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");
       throw err;
@@ -227,22 +255,18 @@ export const useCards = () => {
     }
   };
 
-  const changePage = (page: number, pageSize?: number) => {
-    const currentPageSize = pageSize || pagination.pageSize;
-    const start = (page - 1) * currentPageSize;
-    const end = start + currentPageSize;
-    setCards(allCards.slice(start, end));
-    setPagination((prev) => ({
-      ...prev,
-      currentPage: page,
-      pageSize: currentPageSize,
-      totalPages: Math.ceil(allCards.length / currentPageSize)
-    }));
+  const changePage = async (page: number, pageSize?: number) => {
+    if (currentTopicId === null) {
+      console.warn("No se ha seleccionado un tema para cambiar de página.");
+      return;
+    }
+
+    const size = pageSize || pagination.pageSize;
+    await fetchCardsByTopic(currentTopicId, page, size);
   };
 
   const clearCards = () => {
     setCards([]);
-    setAllCards([]);
   };
 
   return {
@@ -250,6 +274,7 @@ export const useCards = () => {
     loading,
     error,
     pagination,
+    currentTopicId,
     fetchCardsByTopic,
     searchCards,
     changePage,

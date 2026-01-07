@@ -20,7 +20,7 @@ export const useDynamicPagination = ({
   mobileLimit,
   rows = 2,
 }: UseDynamicPaginationOptions) => {
-  const [pageSize, setPageSize] = useState<number>(mobileLimit - 1);
+  const [pageSize, setPageSize] = useState<number>(mobileLimit);
   const [isMobile, setIsMobile] = useState<boolean>(true);
 
   useEffect(() => {
@@ -49,11 +49,11 @@ export const useDynamicPagination = ({
       setIsMobile(mobile);
       
       if (mobile) {
-        // En mobile, usar el límite fijo menos 1 (para el botón)
-        setPageSize(mobileLimit - 1);
+        // En mobile, usar el límite fijo
+        setPageSize(mobileLimit);
       } else {
-        // En desktop, calcular basado en 2 filas menos 1 (para el botón)
-        const itemsPerPage = (columns * rows) - 1;
+        // En desktop, calcular basado en filas × columnas
+        const itemsPerPage = columns * rows;
         setPageSize(itemsPerPage);
       }
     };

@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { Settings as SettingsIcon, Eye, Moon, Shield, Calendar } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Settings as Eye, Moon, Shield, Calendar } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { ToggleSwitch } from "../components/toggleSwitch";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
+import { useOnboarding } from "../context/OnboardingContext";
 import axios from "axios";
 import { API_URL } from "../config";
 
@@ -11,13 +12,16 @@ const Settings = () => {
   const { t } = useTranslation();
   const { isDarkMode, toggleDarkMode } = useTheme();
   const { user } = useAuth();
-  
+  const { startTour, resetGuide } = useOnboarding();
+
   // Estados para los toggles (de momento solo visuales)
   const [showStartGuide, setShowStartGuide] = useState(false);
   const [blockExternalApps, setBlockExternalApps] = useState(false);
 
   // Google Calendar integration state
-  const [isGoogleCalendarConnected, setIsGoogleCalendarConnected] = useState<boolean | null>(null);
+  const [isGoogleCalendarConnected, setIsGoogleCalendarConnected] = useState<
+    boolean | null
+  >(null);
   const [isGoogleCalendarLoading, setIsGoogleCalendarLoading] = useState(true);
 
   // Configure axios instance for API calls
@@ -79,7 +83,9 @@ const Settings = () => {
           return;
         }
 
-        const url = `${API_URL}/auth/google/connect?token=${encodeURIComponent(token)}`;
+        const url = `${API_URL}/auth/google/connect?token=${encodeURIComponent(
+          token
+        )}`;
         window.location.href = url;
       } else {
         // Disconnect from Google Calendar - API call
@@ -121,8 +127,12 @@ const Settings = () => {
             checked={showStartGuide}
             onChange={(checked) => {
               setShowStartGuide(checked);
-              // TODO: Implementar funcionalidad más adelante
-              console.log("Mostrar guía de inicio:", checked);
+              if (checked) {
+                // Reiniciar el tour: limpiar estado y empezar
+                resetGuide();
+                setShowStartGuide(false);
+                startTour();
+              }
             }}
             label={t("settings.startGuideLabel")}
             disabled={false}
@@ -176,17 +186,21 @@ const Settings = () => {
             checked={isGoogleCalendarConnected === true}
             onChange={handleGoogleCalendarToggle}
             label={t("settings.googleCalendarLabel")}
-            disabled={isGoogleCalendarLoading || isGoogleCalendarConnected === null}
+            disabled={
+              isGoogleCalendarLoading || isGoogleCalendarConnected === null
+            }
           />
           <p className="text-sm text-gray-500 dark:text-gray-400 ml-4">
             {t("settings.googleCalendarDescription")}
           </p>
-          
+
           {/* Status indicator */}
           {isGoogleCalendarLoading ? (
             <div className="ml-4 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-              <span>{t("components.googleCalendarAuth.verifyingConnection")}</span>
+              <span>
+                {t("components.googleCalendarAuth.verifyingConnection")}
+              </span>
             </div>
           ) : isGoogleCalendarConnected ? (
             <div className="ml-4 flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
@@ -206,7 +220,10 @@ const Settings = () => {
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-purple-100 dark:bg-purple-900">
-            <Shield size={20} className="text-purple-600 dark:text-purple-400" />
+            <Shield
+              size={20}
+              className="text-purple-600 dark:text-purple-400"
+            />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             {t("settings.blockApps")}

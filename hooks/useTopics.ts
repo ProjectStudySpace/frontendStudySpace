@@ -15,13 +15,6 @@ export const useTopics = () => {
   });
   const { user } = useAuth();
 
-  const getToken = () => {
-    const token = localStorage.getItem("token");
-    if (!token)
-      throw new Error("No se encontró token. Por favor inicia sesión.");
-    return token;
-  };
-
   const fetchUserTopics = useCallback(
     async (page: number = 1, limit: number = 10): Promise<Topic[]> => {
       if (!user) throw new Error("Usuario no autenticado");
@@ -47,16 +40,22 @@ export const useTopics = () => {
         setPagination({
           currentPage: pag.page || page,
           totalPages:
-            pag.totalPages || Math.ceil((pag.total || 0) / (pag.limit || limit)),
+            pag.totalPages ||
+            Math.ceil((pag.total || 0) / (pag.limit || limit)),
           totalItems: pag.total || 0,
           pageSize: pag.limit || limit,
         });
         return data.topics || [];
       } catch (err: any) {
         // Handle specific network errors
-        if (err.code === 'ERR_INSUFFICIENT_RESOURCES' || err.code === 'ERR_NETWORK') {
-          setError("Error de conexión. Verifica tu internet e inténtalo de nuevo.");
-        } else if (err.code === 'ECONNABORTED') {
+        if (
+          err.code === "ERR_INSUFFICIENT_RESOURCES" ||
+          err.code === "ERR_NETWORK"
+        ) {
+          setError(
+            "Error de conexión. Verifica tu internet e inténtalo de nuevo."
+          );
+        } else if (err.code === "ECONNABORTED") {
           setError("La solicitud tardó demasiado. Inténtalo de nuevo.");
         } else {
           setError(err.message || "Error desconocido al obtener temas");
