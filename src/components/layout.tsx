@@ -17,7 +17,10 @@ import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
 import { LanguageSelector } from "./LanguageSelector";
 import OnboardingTour from "./OnboardingTour";
-import { OnboardingProvider, useOnboarding } from "../context/OnboardingContext";
+import {
+  OnboardingProvider,
+  useOnboarding,
+} from "../context/OnboardingContext";
 
 const LayoutContent = () => {
   const { logout, user, getDashboard } = useAuth();
@@ -25,16 +28,36 @@ const LayoutContent = () => {
   const { t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [dashboardData, setDashboardData] = useState<any | null>(null);
-  const { startTour, isGuideDisabled, currentStepId, currentTargetId, isActive } = useOnboarding();
+  const {
+    startTour,
+    isGuideDisabled,
+    currentStepId,
+    currentTargetId,
+    isActive,
+  } = useOnboarding();
 
   // Check if we're on desktop for sidebar highlighting
-  const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
+  const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
 
   // Auto-start tour on first login
   useEffect(() => {
-    const onboardingStatus = localStorage.getItem('memopal_onboarding_status');
-    if (!onboardingStatus && !isGuideDisabled) {
-      // First time user - start the tour after a short delay
+    // Check if this is a newly registered user
+    const isNewUser = localStorage.getItem("memopal_new_user");
+    const onboardingStatus = localStorage.getItem("memopal_onboarding_status");
+
+    if (isNewUser === "true") {
+      // Clear the new user flag immediately
+      localStorage.removeItem("memopal_new_user");
+
+      // Start the tour for new users
+      if (!isGuideDisabled) {
+        const timer = setTimeout(() => {
+          startTour();
+        }, 500); // Shorter delay for better UX
+        return () => clearTimeout(timer);
+      }
+    } else if (!onboardingStatus && !isGuideDisabled) {
+      // Fallback: First time on this device/browser
       const timer = setTimeout(() => {
         startTour();
       }, 1000);
@@ -82,20 +105,35 @@ const LayoutContent = () => {
   };
 
   const navLinks = [
-    { to: "/topics", icon: BookOpen, label: t("nav.topics"), id: 'nav-topics' },
+    { to: "/topics", icon: BookOpen, label: t("nav.topics"), id: "nav-topics" },
     {
       to: "/study-sessions",
       icon: GraduationCap,
       label: t("nav.studySessions"),
-      id: 'nav-study-sessions',
+      id: "nav-study-sessions",
     },
-    { to: "/calendar", icon: Calendar, label: t("nav.calendar"), id: 'nav-calendar' },
-    { to: "/progress", icon: TrendingUp, label: t("nav.progress"), id: 'nav-progress' },
+    {
+      to: "/calendar",
+      icon: Calendar,
+      label: t("nav.calendar"),
+      id: "nav-calendar",
+    },
+    {
+      to: "/progress",
+      icon: TrendingUp,
+      label: t("nav.progress"),
+      id: "nav-progress",
+    },
   ];
 
   const userLinks = [
-    { to: "/profile", icon: User, label: t("nav.profile"), id: 'nav-profile' },
-    { to: "/settings", icon: Settings, label: t("nav.settings"), id: 'nav-settings' },
+    { to: "/profile", icon: User, label: t("nav.profile"), id: "nav-profile" },
+    {
+      to: "/settings",
+      icon: Settings,
+      label: t("nav.settings"),
+      id: "nav-settings",
+    },
   ];
 
   return (
@@ -172,14 +210,15 @@ const LayoutContent = () => {
           <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
-                {user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "U"}
+                {user?.name?.[0]?.toUpperCase() ||
+                  user?.email?.[0]?.toUpperCase() ||
+                  "U"}
               </div>
               <div>
                 <p className="font-semibold text-gray-900 dark:text-gray-100">
-                  {user?.name 
+                  {user?.name
                     ? `${t("auth.welcomeBackName")}${user.name}! 👋`
-                    : t("auth.welcomeBack")
-                  }
+                    : t("auth.welcomeBack")}
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400 truncate max-w-[200px]">
                   {user?.email || t("landing.hero.activeStudents")}
@@ -194,7 +233,8 @@ const LayoutContent = () => {
               {navLinks.map((link) => {
                 const Icon = link.icon;
                 // Only highlight on desktop since sidebar is visible only there
-                const isOnboardingActive = isDesktop && isActive && currentTargetId === link.id;
+                const isOnboardingActive =
+                  isDesktop && isActive && currentTargetId === link.id;
                 return (
                   <Link
                     key={link.label}
@@ -202,8 +242,8 @@ const LayoutContent = () => {
                     id={link.id}
                     className={`flex items-center gap-3 p-4 rounded-xl transition-all duration-200 font-medium active:scale-95 ${
                       isOnboardingActive
-                        ? 'bg-gradient-to-br from-indigo-500/25 to-purple-500/25 dark:from-indigo-500/30 dark:to-purple-500/30 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-500/50'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-indigo-400'
+                        ? "bg-gradient-to-br from-indigo-500/25 to-purple-500/25 dark:from-indigo-500/30 dark:to-purple-500/30 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-500/50"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-indigo-400"
                     }`}
                     onClick={handleLinkClick}
                     title={link.label}
@@ -220,7 +260,8 @@ const LayoutContent = () => {
               {/* Secciones de usuario */}
               {userLinks.map((link) => {
                 const Icon = link.icon;
-                const isOnboardingActive = isDesktop && isActive && currentTargetId === link.id;
+                const isOnboardingActive =
+                  isDesktop && isActive && currentTargetId === link.id;
                 return (
                   <Link
                     key={link.label}
@@ -228,8 +269,8 @@ const LayoutContent = () => {
                     id={link.id}
                     className={`flex items-center gap-3 p-4 rounded-xl transition-all duration-200 font-medium active:scale-95 ${
                       isOnboardingActive
-                        ? 'bg-gradient-to-br from-indigo-500/25 to-purple-500/25 dark:from-indigo-500/30 dark:to-purple-500/30 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-500/50'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-indigo-400'
+                        ? "bg-gradient-to-br from-indigo-500/25 to-purple-500/25 dark:from-indigo-500/30 dark:to-purple-500/30 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-500/50"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-indigo-400"
                     }`}
                     onClick={handleLinkClick}
                     title={link.label}
@@ -249,7 +290,9 @@ const LayoutContent = () => {
                 🔥 {t("stats.currentStreak")}:{" "}
                 {dashboardData?.stats?.currentStreak || 0} {t("stats.days")}
               </p>
-              <p className="text-xs text-gray-600 dark:text-gray-400">{t("stats.keepGoing")}</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                {t("stats.keepGoing")}
+              </p>
             </div>
             <button
               onClick={handleLogout}
@@ -279,7 +322,8 @@ const LayoutContent = () => {
             {navLinks.map((link) => {
               const Icon = link.icon;
               // Only highlight on desktop since sidebar is visible only there
-              const isOnboardingActive = isDesktop && isActive && currentTargetId === link.id;
+              const isOnboardingActive =
+                isDesktop && isActive && currentTargetId === link.id;
               return (
                 <Link
                   key={link.label}
@@ -287,8 +331,8 @@ const LayoutContent = () => {
                   id={link.id}
                   className={`flex items-center justify-center p-3 py-2.5 rounded-lg font-medium transition-all duration-300 flex-shrink-0 ${
                     isOnboardingActive
-                      ? 'bg-gradient-to-br from-indigo-500/25 to-purple-500/25 dark:from-indigo-500/30 dark:to-purple-500/30 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-500/50'
-                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-indigo-400'
+                      ? "bg-gradient-to-br from-indigo-500/25 to-purple-500/25 dark:from-indigo-500/30 dark:to-purple-500/30 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-500/50"
+                      : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-indigo-400"
                   }`}
                   title={link.label}
                 >
@@ -303,7 +347,8 @@ const LayoutContent = () => {
             {/* Secciones de usuario */}
             {userLinks.map((link) => {
               const Icon = link.icon;
-              const isOnboardingActive = isDesktop && isActive && currentTargetId === link.id;
+              const isOnboardingActive =
+                isDesktop && isActive && currentTargetId === link.id;
               return (
                 <Link
                   key={link.label}
@@ -311,8 +356,8 @@ const LayoutContent = () => {
                   id={link.id}
                   className={`flex items-center justify-center p-3 py-2.5 rounded-lg font-medium transition-all duration-300 flex-shrink-0 ${
                     isOnboardingActive
-                      ? 'bg-gradient-to-br from-indigo-500/25 to-purple-500/25 dark:from-indigo-500/30 dark:to-purple-500/30 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-500/50'
-                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-indigo-400'
+                      ? "bg-gradient-to-br from-indigo-500/25 to-purple-500/25 dark:from-indigo-500/30 dark:to-purple-500/30 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-500/50"
+                      : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-indigo-400"
                   }`}
                   title={link.label}
                 >
@@ -339,10 +384,9 @@ const LayoutContent = () => {
       <header className="hidden lg:block bg-white dark:bg-gray-800 shadow-sm fixed top-0 left-16 right-0 z-20">
         <div className="p-4 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 gap-3 flex items-center">
-            {user?.name 
+            {user?.name
               ? `${t("auth.welcomeBackName")}${user.name}! 👋`
-              : t("auth.welcomeBack")
-            }
+              : t("auth.welcomeBack")}
           </h2>
           <div className="flex items-center gap-4">
             <LanguageSelector />
@@ -360,10 +404,9 @@ const LayoutContent = () => {
           {/* Welcome message mobile */}
           <div className="lg:hidden mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
             <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100">
-              {user?.name 
+              {user?.name
                 ? `${t("auth.welcomeBackName")}${user.name}! 👋`
-                : t("auth.welcomeBack")
-              }
+                : t("auth.welcomeBack")}
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
               {user?.email || "Estudiante"}

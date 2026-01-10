@@ -62,7 +62,12 @@ const GoogleCallback: React.FC = () => {
         // 1. Guardar token en localStorage
         localStorage.setItem("token", token);
 
-        // 2. Verificar que el token funciona obteniendo el perfil
+        // 2. Set new user flag for onboarding if this is a new user
+        if (isNewUser) {
+          localStorage.setItem("memopal_new_user", "true");
+        }
+
+        // 3. Verificar que el token funciona obteniendo el perfil
         const { data } = await api.get("/users/profile");
 
         if (data?.user) {

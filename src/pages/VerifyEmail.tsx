@@ -32,6 +32,10 @@ const VerifyEmail: React.FC = () => {
 
       try {
         await verifyEmail(token);
+
+        // Set new user flag for onboarding trigger
+        localStorage.setItem("memopal_new_user", "true");
+
         setStatus("success");
 
         // Auto-redirect to topics after 1 second
