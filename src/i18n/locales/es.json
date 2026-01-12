@@ -322,7 +322,12 @@
     "answerImage": "Imagen de respuesta",
     "leftPageImage": "Imagen página izquierda",
     "rightPageImage": "Imagen página derecha",
-    "bookFormat": "Formato de libro abierto con dos páginas"
+    "bookFormat": "Formato de libro abierto con dos páginas",
+    "ebookFormat": "Formato de libro electrónico",
+    "contentLabel": "Contenido",
+    "contentPlaceholder": "Escribe aquí tu contenido...",
+    "contentRequired": "El contenido es obligatorio",
+    "image": "Imagen"
   },
   "studySession": {
     "title": "Sesión de Estudio",

@@ -133,72 +133,70 @@ const StudySession: React.FC<StudySessionProps> = ({
             {/* Content display */}
             {isNote ? (
               <>
-                {/* Mostrar solo el título encima del botón "Ver respuesta" */}
-                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-xl p-4 sm:p-6 border border-indigo-200 dark:border-indigo-800 mb-4">
-                  <h3 className="text-xs sm:text-sm font-semibold text-indigo-800 dark:text-indigo-200 uppercase tracking-wide mb-2 text-center">
+                {/* Título de la nota */}
+                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-600 mb-4">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2 text-center">
                     {t("studySession.noteTitle")}
-                  </h3>
-                  <p className="text-lg sm:text-xl text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed text-center font-semibold">
+                  </p>
+                  <p className="text-xl sm:text-2xl text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed text-center font-semibold">
                     {noteTitle}
                   </p>
                 </div>
 
                 {showAnswer ? (
                   <>
-                    {/* Diseño de libro abierto - dos páginas */}
-                    <div className="flex flex-col lg:flex-row gap-4">
-                      {/* Página izquierda */}
-                      <div className="flex-1 bg-gradient-to-br from-blue-50/30 to-white dark:from-blue-900/10 dark:to-gray-800 rounded-xl p-4 sm:p-6 border border-indigo-200 dark:border-indigo-800 overflow-y-auto max-h-[50vh] lg:max-h-[60vh]">
-                        <div className="text-sm sm:text-base text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">
+                    {/* Página única estilo ebook */}
+                    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 sm:p-8 lg:p-12 border border-gray-200 dark:border-gray-700 min-h-[400px] max-h-[60vh] lg:max-h-[70vh] overflow-y-auto">
+                      <div className="prose prose-lg dark:prose-invert max-w-none">
+                        {/* Combinar contenido izquierdo y derecho */}
+                        <div className="text-lg sm:text-xl text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-loose text-justify">
                           {noteLeftContent}
-                        </div>
-                        {questionImages.length > 0 && (
-                          <div className="mt-4 pt-4 border-t border-blue-100 dark:border-blue-800 flex gap-2 justify-center flex-wrap">
-                            {questionImages.map((img) => (
-                              <img
-                                key={img.id}
-                                src={img.imageUrl}
-                                alt={img.altText || "Imagen"}
-                                className="max-w-full max-h-40 object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity shadow-sm"
-                                onClick={() =>
-                                  handleImageClick(img.imageUrl, img.altText)
-                                }
-                              />
-                            ))}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Página derecha */}
-                      <div className="flex-1 bg-gradient-to-bl from-green-50/30 to-white dark:from-green-900/10 dark:to-gray-800 rounded-xl p-4 sm:p-6 border border-green-200 dark:border-green-800 overflow-y-auto max-h-[50vh] lg:max-h-[60vh]">
-                        <div className="text-sm sm:text-base text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">
+                          {noteLeftContent && noteRightContent && "\n\n"}
                           {noteRightContent}
                         </div>
-                        {answerImages.length > 0 && (
-                          <div className="mt-4 pt-4 border-t border-green-100 dark:border-green-800 flex gap-2 justify-center flex-wrap">
-                            {answerImages.map((img) => (
-                              <img
-                                key={img.id}
-                                src={img.imageUrl}
-                                alt={img.altText || "Imagen"}
-                                className="max-w-full max-h-40 object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity shadow-sm"
-                                onClick={() =>
-                                  handleImageClick(img.imageUrl, img.altText)
-                                }
-                              />
-                            ))}
-                          </div>
-                        )}
                       </div>
+
+                      {/* Todas las imágenes */}
+                      {questionImages.length > 0 && (
+                        <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex gap-2 justify-center flex-wrap">
+                          {questionImages.map((img) => (
+                            <img
+                              key={img.id}
+                              src={img.imageUrl}
+                              alt={img.altText || "Imagen"}
+                              className="max-w-full max-h-48 object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity shadow-sm"
+                              onClick={() =>
+                                handleImageClick(img.imageUrl, img.altText)
+                              }
+                            />
+                          ))}
+                        </div>
+                      )}
+
+                      {answerImages.length > 0 && (
+                        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex gap-2 justify-center flex-wrap">
+                          {answerImages.map((img) => (
+                            <img
+                              key={img.id}
+                              src={img.imageUrl}
+                              alt={img.altText || "Imagen"}
+                              className="max-w-full max-h-48 object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity shadow-sm"
+                              onClick={() =>
+                                handleImageClick(img.imageUrl, img.altText)
+                              }
+                            />
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </>
                 ) : (
                   <div className="flex justify-center">
                     <button
                       onClick={handleShowAnswer}
-                      className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-all"
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-medium transition-all"
                     >
-                      Ver Respuesta
+                      {t("studySession.viewAnswer")}
                     </button>
                   </div>
                 )}
