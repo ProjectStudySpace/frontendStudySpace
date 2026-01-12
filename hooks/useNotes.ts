@@ -3,11 +3,19 @@ import { Note, CreateNoteData, UpdateNoteData } from "../src/types/notes";
 import { useAuth } from "../src/context/AuthContext";
 import { api, deduplicateRequest } from "../src/utils/axiosConfig";
 
+// Marcador visual para el final de la nota (línea divisoria)
+const NOTE_END_MARKER = "___NOTE_END___";
+
+export { NOTE_END_MARKER };
+
 //funcion auxiliar para mapear card del bacekend a nota del frontend
 const mapCardToNote = (card: any, topicId?: number): Note => {
   let title: string | undefined;
   let leftContent: string;
+  let rightContent: string;
 
+  // Para notas de una página (estilo ebook), el contenido viene de question
+  // y answer contiene el marcador de fin de nota
   if (card.title) {
     title = card.title;
     leftContent = card.question || "";
@@ -20,6 +28,10 @@ const mapCardToNote = (card: any, topicId?: number): Note => {
         : card.question || "";
   }
 
+  // Verificar si answer contiene el marcador de fin de nota
+  const hasEndMarker = card.answer === NOTE_END_MARKER;
+  rightContent = hasEndMarker ? NOTE_END_MARKER : (card.answer || "");
+
   // Obtener TODAS las imágenes por tipo
   const leftImages =
     card.images?.filter((img: any) => img.imageType === "question") || [];
@@ -30,7 +42,7 @@ const mapCardToNote = (card: any, topicId?: number): Note => {
     id: card.id,
     title,
     leftContent,
-    rightContent: card.answer || "",
+    rightContent,
     type: card.type,
     topicId: card.topicId || topicId,
     // Mantener compatibilidad con una sola imagen
@@ -194,8 +206,10 @@ export const useNotes = () => {
         formData.append("title", noteData.title.trim());
       }
 
+      // Enviar contenido en 'question' y marcador de fin en 'answer'
+      // El marcador se usará para mostrar una línea visual
       formData.append("question", noteData.leftContent || "");
-      formData.append("answer", noteData.rightContent || "Sin contenido");
+      formData.append("answer", NOTE_END_MARKER);
       formData.append("type", (noteData.type || "explanation").toUpperCase());
       formData.append("topicId", noteData.topicId.toString());
 
@@ -251,9 +265,8 @@ export const useNotes = () => {
       if (updates.leftContent !== undefined) {
         formData.append("question", updates.leftContent);
       }
-      if (updates.rightContent !== undefined) {
-        formData.append("answer", updates.rightContent);
-      }
+      // Enviar marcador de fin en answer
+      formData.append("answer", NOTE_END_MARKER);
       // Siempre enviar el type en mayúsculas para asegurar consistencia
       formData.append("type", "EXPLANATION");
 

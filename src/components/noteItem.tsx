@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NoteItemProps } from "../types/notes";
+import { NOTE_END_MARKER } from "../../hooks/useNotes";
 
 import { ImageModal } from "./ImageModal";
 import { BookOpen, Edit2, Trash2 } from "lucide-react";
@@ -22,9 +23,11 @@ export const NoteItem: React.FC<NoteItemProps> = ({
   // Convertir título vacío a null para mejor manejo
   const displayTitle = note.title && note.title.trim() ? note.title : null;
 
-  // Combinar contenido izquierdo y derecho en una sola página de libro
-  const displayContent = note.leftContent || note.rightContent ?
-    [note.leftContent, note.rightContent].filter(Boolean).join("\n\n") : null;
+  // Verificar si rightContent es el marcador de fin de nota
+  const hasEndMarker = note.rightContent === NOTE_END_MARKER;
+  
+  // Mostrar solo leftContent (el contenido real), no combinar con rightContent si es marcador
+  const displayContent = note.leftContent || "";
 
   // Combinar todas las imágenes
   const allImages = [
@@ -99,7 +102,7 @@ export const NoteItem: React.FC<NoteItemProps> = ({
               <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 text-center mb-3">
                 {displayTitle}
               </h3>
-              {/* Línea fina gris separadora */}
+              {/* Línea fina gray separadora */}
               <div className="h-px bg-gray-200 dark:bg-gray-600 w-full"></div>
             </div>
           )}
@@ -138,6 +141,9 @@ export const NoteItem: React.FC<NoteItemProps> = ({
               </div>
             )}
           </div>
+
+          {/* Línea divisoria al final de la nota (reemplaza el contenido duplicado) */}
+          <div className="mt-4 pt-2 h-px bg-gray-200 dark:bg-gray-600 w-full"></div>
         </div>
       </div>
 
