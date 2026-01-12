@@ -255,16 +255,6 @@ export const NoteForm: React.FC<NoteFormProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Página izquierda */}
         <div className="bg-gradient-to-br from-blue-50/30 to-white dark:from-blue-900/20 dark:to-gray-800 p-5 rounded-xl border border-blue-100 dark:border-blue-800">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full"></div>
-            <label
-              htmlFor="leftContent"
-              className="block text-sm font-semibold text-blue-700 dark:text-blue-300"
-            >
-              {t("forms.leftPage")}
-            </label>
-          </div>
-
           <textarea
             id="leftContent"
             value={leftContent}
@@ -328,16 +318,6 @@ export const NoteForm: React.FC<NoteFormProps> = ({
 
         {/* Página derecha */}
         <div className="bg-gradient-to-bl from-green-50/30 to-white dark:from-green-900/20 dark:to-gray-800 p-5 rounded-xl border border-green-100 dark:border-green-800">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full"></div>
-            <label
-              htmlFor="rightContent"
-              className="block text-sm font-semibold text-green-700 dark:text-green-300"
-            >
-              {t("forms.rightPage")}
-            </label>
-          </div>
-
           <textarea
             id="rightContent"
             value={rightContent}
