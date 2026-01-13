@@ -119,16 +119,16 @@ export const NoteItem: React.FC<NoteItemProps> = ({
             {/* Imagenes */}
             {allImages.length > 0 && (
               <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex flex-wrap gap-2 justify-center">
-                {allImages.map((url, index) => (
+                {allImages.map((url) => (
                   <img
-                    key={index}
+                    key={url}
                     src={url}
-                    alt={`Imagen ${index + 1}`}
+                    alt={url}
                     className="w-24 h-24 object-cover rounded-md border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity"
                     onClick={() =>
                       handleImageClick(
                         url,
-                        `Imagen ${index + 1}`
+                        url
                       )
                     }
                   />

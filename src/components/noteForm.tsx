@@ -17,41 +17,34 @@ export const NoteForm: React.FC<NoteFormProps> = ({
   const [leftContent, setLeftContent] = useState(initialData?.leftContent || "");
   // rightContent = answer = contenido de la nota
   const [rightContent, setRightContent] = useState(initialData?.rightContent || "");
+  // Todas las imágenes van a leftImages (questionImage)
   const [leftImages, setLeftImages] = useState<File[]>([]);
-  const [rightImages, setRightImages] = useState<File[]>([]);
-  const [existingLeftImageUrl, setExistingLeftImageUrl] = useState<
+  const [existingImageUrl, setExistingImageUrl] = useState<
     string | undefined
-  >(initialData?.leftImageUrl);
-  const [existingRightImageUrl, setExistingRightImageUrl] = useState<
-    string | undefined
-  >(initialData?.rightImageUrl);
+  >(initialData?.leftImageUrl || initialData?.rightImageUrl);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const leftImageInputRef = useRef<HTMLInputElement>(null);
-  const rightImageInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (initialData) {
       setLeftContent(initialData.leftContent || "");
       setRightContent(initialData.rightContent || "");
-      setExistingLeftImageUrl(initialData.leftImageUrl);
-      setExistingRightImageUrl(initialData.rightImageUrl);
+      setExistingImageUrl(initialData.leftImageUrl || initialData.rightImageUrl);
     }
   }, [initialData]);
 
   // Calculate total images count
   const getTotalImagesCount = () => {
     let count = 0;
-    if (existingLeftImageUrl) count++;
-    if (existingRightImageUrl) count++;
+    if (existingImageUrl) count++;
     count += leftImages.length;
-    count += rightImages.length;
     return count;
   };
 
   const canAddMoreImages = getTotalImagesCount() < MAX_IMAGES;
 
-  const handleLeftImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
@@ -60,7 +53,7 @@ export const NoteForm: React.FC<NoteFormProps> = ({
 
     if (remainingSlots <= 0) {
       alert(t("forms.maxImagesReached", { max: MAX_IMAGES }));
-      if (leftImageInputRef.current) leftImageInputRef.current.value = "";
+      if (imageInputRef.current) imageInputRef.current.value = "";
       return;
     }
 
@@ -83,62 +76,17 @@ export const NoteForm: React.FC<NoteFormProps> = ({
       setLeftImages((prev) => [...prev, ...validFiles]);
     }
 
-    if (leftImageInputRef.current) {
-      leftImageInputRef.current.value = "";
+    if (imageInputRef.current) {
+      imageInputRef.current.value = "";
     }
   };
 
-  const handleRightImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    const newFilesArray = Array.from(files);
-    const remainingSlots = MAX_IMAGES - getTotalImagesCount();
-
-    if (remainingSlots <= 0) {
-      alert(t("forms.maxImagesReached", { max: MAX_IMAGES }));
-      if (rightImageInputRef.current) rightImageInputRef.current.value = "";
-      return;
-    }
-
-    const validFiles: File[] = [];
-    for (let i = 0; i < Math.min(newFilesArray.length, remainingSlots); i++) {
-      const file = newFilesArray[i];
-
-      if (!file.type.startsWith("image/")) {
-        alert(t("forms.invalidImage"));
-        continue;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        alert(t("forms.imageTooLarge"));
-        continue;
-      }
-      validFiles.push(file);
-    }
-
-    if (validFiles.length > 0) {
-      setRightImages((prev) => [...prev, ...validFiles]);
-    }
-
-    if (rightImageInputRef.current) {
-      rightImageInputRef.current.value = "";
-    }
-  };
-
-  const removeLeftImage = (index: number) => {
+  const removeImage = (index: number) => {
     setLeftImages((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const removeRightImage = (index: number) => {
-    setRightImages((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const removeExistingLeftImage = () => {
-    setExistingLeftImageUrl(undefined);
-  };
-
-  const removeExistingRightImage = () => {
-    setExistingRightImageUrl(undefined);
+  const removeExistingImage = () => {
+    setExistingImageUrl(undefined);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -160,17 +108,14 @@ export const NoteForm: React.FC<NoteFormProps> = ({
         leftContent: leftContent.trim(),
         rightContent: rightContent.trim(),
         leftImages: leftImages,
-        rightImages: rightImages,
+        rightImages: [],
       });
       if (!isEditing) {
         setLeftContent("");
         setRightContent("");
         setLeftImages([]);
-        setRightImages([]);
-        setExistingLeftImageUrl(undefined);
-        setExistingRightImageUrl(undefined);
-        if (leftImageInputRef.current) leftImageInputRef.current.value = "";
-        if (rightImageInputRef.current) rightImageInputRef.current.value = "";
+        setExistingImageUrl(undefined);
+        if (imageInputRef.current) imageInputRef.current.value = "";
       }
     } catch (error) {
       console.error("Error al guardar nota:", error);
@@ -266,11 +211,11 @@ export const NoteForm: React.FC<NoteFormProps> = ({
           />
         </div>
 
-        {/* Imagen del título - Botón azul con placeholder */}
+        {/* Imagen - Botón azul con placeholder */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
           <button
             type="button"
-            onClick={() => leftImageInputRef.current?.click()}
+            onClick={() => imageInputRef.current?.click()}
             disabled={!canAddMoreImages || isSubmitting}
             className="flex items-center gap-2 px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -278,11 +223,11 @@ export const NoteForm: React.FC<NoteFormProps> = ({
             {t("forms.addImage")}
           </button>
           <input
-            ref={leftImageInputRef}
+            ref={imageInputRef}
             type="file"
             accept="image/*"
             multiple
-            onChange={handleLeftImageChange}
+            onChange={handleImageChange}
             disabled={!canAddMoreImages || isSubmitting}
             className="hidden"
           />
@@ -291,75 +236,25 @@ export const NoteForm: React.FC<NoteFormProps> = ({
           </span>
         </div>
 
-        {/* Preview imagen existente del título */}
-        {existingLeftImageUrl && (
+        {/* Preview imagen existente */}
+        {existingImageUrl && (
           <div>
             <ImagePreview
-              existingUrl={existingLeftImageUrl}
-              onRemove={removeExistingLeftImage}
+              existingUrl={existingImageUrl}
+              onRemove={removeExistingImage}
               label={t("forms.image")}
             />
           </div>
         )}
 
-        {/* Preview imagen nueva del título */}
+        {/* Preview imagen nueva */}
         {leftImages.length > 0 && (
           <div className="space-y-2">
             {leftImages.map((file, index) => (
               <ImagePreview
-                key={index}
+                key={`new-${index}`}
                 file={file}
-                onRemove={() => removeLeftImage(index)}
-                label={`${t("forms.image")} ${index + 1}`}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Imagen del contenido - Botón azul con placeholder */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
-          <button
-            type="button"
-            onClick={() => rightImageInputRef.current?.click()}
-            disabled={!canAddMoreImages || isSubmitting}
-            className="flex items-center gap-2 px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <ImageIcon size={18} />
-            {t("forms.addImage")}
-          </button>
-          <input
-            ref={rightImageInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleRightImageChange}
-            disabled={!canAddMoreImages || isSubmitting}
-            className="hidden"
-          />
-          <span className="text-sm text-gray-500 dark:text-gray-400">
-            {t("forms.optional")} - {t("forms.maxSize")}
-          </span>
-        </div>
-
-        {/* Preview imagen existente del contenido */}
-        {existingRightImageUrl && (
-          <div>
-            <ImagePreview
-              existingUrl={existingRightImageUrl}
-              onRemove={removeExistingRightImage}
-              label={t("forms.image")}
-            />
-          </div>
-        )}
-
-        {/* Preview imagen nueva del contenido */}
-        {rightImages.length > 0 && (
-          <div className="space-y-2">
-            {rightImages.map((file, index) => (
-              <ImagePreview
-                key={index}
-                file={file}
-                onRemove={() => removeRightImage(index)}
+                onRemove={() => removeImage(index)}
                 label={`${t("forms.image")} ${index + 1}`}
               />
             ))}
