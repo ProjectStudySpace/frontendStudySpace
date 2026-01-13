@@ -99,7 +99,7 @@ export const NoteItem: React.FC<NoteItemProps> = ({
           {/* Título de la nota - negrita, centrado y más grande */}
           {displayTitle && (
             <div className="mb-4">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 text-center mb-3">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 text-center mb-3">
                 {displayTitle}
               </h3>
               {/* Línea fina gray separadora */}

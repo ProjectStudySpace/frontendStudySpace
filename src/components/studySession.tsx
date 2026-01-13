@@ -138,7 +138,7 @@ const StudySession: React.FC<StudySessionProps> = ({
                   <p className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2 text-center">
                     {t("studySession.noteTitle")}
                   </p>
-                  <p className="text-xl sm:text-2xl text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed text-center font-semibold">
+                  <p className="text-lg sm:text-xl text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed text-center font-semibold">
                     {noteTitle}
                   </p>
                 </div>
@@ -147,9 +147,9 @@ const StudySession: React.FC<StudySessionProps> = ({
                   <>
                     {/* Página única estilo ebook */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl p-6 sm:p-8 lg:p-12 border border-gray-200 dark:border-gray-700 min-h-[400px] max-h-[60vh] lg:max-h-[70vh] overflow-y-auto">
-                      <div className="prose prose-lg dark:prose-invert max-w-none">
-                        {/* Combinar contenido izquierdo y derecho */}
-                        <div className="text-lg sm:text-xl text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-loose text-justify">
+                      <div className="prose prose-sm dark:prose-invert max-w-none">
+                        {/* Contenido de la nota - tamaño reducido */}
+                        <div className="text-sm sm:text-base text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed text-justify">
                           {noteLeftContent}
                           {noteLeftContent && noteRightContent && "\n\n"}
                           {noteRightContent}
