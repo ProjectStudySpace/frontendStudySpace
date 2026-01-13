@@ -24,10 +24,10 @@ export const NoteItem: React.FC<NoteItemProps> = ({
   // rightContent = answer = contenido de la nota
   const displayContent = note.rightContent || "";
 
-  // Combinar todas las imágenes
+  // Combinar todas las imágenes con índices únicos
   const allImages = [
-    ...(note.leftImageUrls || []),
-    ...(note.rightImageUrls || [])
+    ...(note.leftImageUrls || []).map((url, i) => ({ url, index: `left-${i}` })),
+    ...(note.rightImageUrls || []).map((url, i) => ({ url, index: `right-${i}` }))
   ];
 
   const handleDelete = async () => {
@@ -119,16 +119,16 @@ export const NoteItem: React.FC<NoteItemProps> = ({
             {/* Imagenes */}
             {allImages.length > 0 && (
               <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex flex-wrap gap-2 justify-center">
-                {allImages.map((url) => (
+                {allImages.map((img) => (
                   <img
-                    key={url}
-                    src={url}
-                    alt={url}
+                    key={img.index}
+                    src={img.url}
+                    alt={img.url}
                     className="w-24 h-24 object-cover rounded-md border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity"
                     onClick={() =>
                       handleImageClick(
-                        url,
-                        url
+                        img.url,
+                        img.url
                       )
                     }
                   />

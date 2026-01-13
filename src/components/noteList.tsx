@@ -57,9 +57,9 @@ export const NoteList: React.FC<NoteListProps> = ({
 
       {/* Lista de notas - full width vertical */}
       <div className="space-y-6">
-        {notes.map((note) => (
+        {notes.map((note, index) => (
           <NoteItem
-            key={note.id}
+            key={note.id ?? `${note.createdAt}-${index}`}
             note={note}
             onEdit={onEdit}
             onDelete={onDelete}
