@@ -13,37 +13,45 @@ export const NoteForm: React.FC<NoteFormProps> = ({
   isEditing = false,
 }) => {
   const { t } = useTranslation();
-  const [title, setTitle] = useState(initialData?.title || "");
-  const [content, setContent] = useState(
-    initialData?.leftContent || initialData?.rightContent || ""
-  );
-  const [images, setImages] = useState<File[]>([]);
-  const [existingImageUrl, setExistingImageUrl] = useState<
+  // leftContent = question = título de la nota
+  const [leftContent, setLeftContent] = useState(initialData?.leftContent || "");
+  // rightContent = answer = contenido de la nota
+  const [rightContent, setRightContent] = useState(initialData?.rightContent || "");
+  const [leftImages, setLeftImages] = useState<File[]>([]);
+  const [rightImages, setRightImages] = useState<File[]>([]);
+  const [existingLeftImageUrl, setExistingLeftImageUrl] = useState<
     string | undefined
-  >(initialData?.leftImageUrl || initialData?.rightImageUrl);
+  >(initialData?.leftImageUrl);
+  const [existingRightImageUrl, setExistingRightImageUrl] = useState<
+    string | undefined
+  >(initialData?.rightImageUrl);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const imageInputRef = useRef<HTMLInputElement>(null);
+  const leftImageInputRef = useRef<HTMLInputElement>(null);
+  const rightImageInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (initialData) {
-      setTitle(initialData.title || "");
-      setContent(initialData.leftContent || initialData.rightContent || "");
-      setExistingImageUrl(initialData.leftImageUrl || initialData.rightImageUrl);
+      setLeftContent(initialData.leftContent || "");
+      setRightContent(initialData.rightContent || "");
+      setExistingLeftImageUrl(initialData.leftImageUrl);
+      setExistingRightImageUrl(initialData.rightImageUrl);
     }
   }, [initialData]);
 
   // Calculate total images count
   const getTotalImagesCount = () => {
     let count = 0;
-    if (existingImageUrl) count++;
-    count += images.length;
+    if (existingLeftImageUrl) count++;
+    if (existingRightImageUrl) count++;
+    count += leftImages.length;
+    count += rightImages.length;
     return count;
   };
 
   const canAddMoreImages = getTotalImagesCount() < MAX_IMAGES;
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLeftImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
@@ -52,7 +60,7 @@ export const NoteForm: React.FC<NoteFormProps> = ({
 
     if (remainingSlots <= 0) {
       alert(t("forms.maxImagesReached", { max: MAX_IMAGES }));
-      if (imageInputRef.current) imageInputRef.current.value = "";
+      if (leftImageInputRef.current) leftImageInputRef.current.value = "";
       return;
     }
 
@@ -72,31 +80,76 @@ export const NoteForm: React.FC<NoteFormProps> = ({
     }
 
     if (validFiles.length > 0) {
-      setImages((prev) => [...prev, ...validFiles]);
+      setLeftImages((prev) => [...prev, ...validFiles]);
     }
 
-    if (imageInputRef.current) {
-      imageInputRef.current.value = "";
+    if (leftImageInputRef.current) {
+      leftImageInputRef.current.value = "";
     }
   };
 
-  const removeImage = (index: number) => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
+  const handleRightImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const newFilesArray = Array.from(files);
+    const remainingSlots = MAX_IMAGES - getTotalImagesCount();
+
+    if (remainingSlots <= 0) {
+      alert(t("forms.maxImagesReached", { max: MAX_IMAGES }));
+      if (rightImageInputRef.current) rightImageInputRef.current.value = "";
+      return;
+    }
+
+    const validFiles: File[] = [];
+    for (let i = 0; i < Math.min(newFilesArray.length, remainingSlots); i++) {
+      const file = newFilesArray[i];
+
+      if (!file.type.startsWith("image/")) {
+        alert(t("forms.invalidImage"));
+        continue;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        alert(t("forms.imageTooLarge"));
+        continue;
+      }
+      validFiles.push(file);
+    }
+
+    if (validFiles.length > 0) {
+      setRightImages((prev) => [...prev, ...validFiles]);
+    }
+
+    if (rightImageInputRef.current) {
+      rightImageInputRef.current.value = "";
+    }
   };
 
-  const removeExistingImage = () => {
-    setExistingImageUrl(undefined);
+  const removeLeftImage = (index: number) => {
+    setLeftImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeRightImage = (index: number) => {
+    setRightImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeExistingLeftImage = () => {
+    setExistingLeftImageUrl(undefined);
+  };
+
+  const removeExistingRightImage = () => {
+    setExistingRightImageUrl(undefined);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!title.trim()) {
+    if (!leftContent.trim()) {
       alert(t("forms.titleRequired"));
       return;
     }
 
-    if (!content.trim()) {
+    if (!rightContent.trim()) {
       alert(t("forms.contentRequired"));
       return;
     }
@@ -104,18 +157,20 @@ export const NoteForm: React.FC<NoteFormProps> = ({
     setIsSubmitting(true);
     try {
       await onSubmit({
-        title: title.trim() || undefined,
-        leftContent: content,
-        rightContent: "",
-        leftImages: images,
-        rightImages: [],
+        leftContent: leftContent.trim(),
+        rightContent: rightContent.trim(),
+        leftImages: leftImages,
+        rightImages: rightImages,
       });
       if (!isEditing) {
-        setTitle("");
-        setContent("");
-        setImages([]);
-        setExistingImageUrl(undefined);
-        if (imageInputRef.current) imageInputRef.current.value = "";
+        setLeftContent("");
+        setRightContent("");
+        setLeftImages([]);
+        setRightImages([]);
+        setExistingLeftImageUrl(undefined);
+        setExistingRightImageUrl(undefined);
+        if (leftImageInputRef.current) leftImageInputRef.current.value = "";
+        if (rightImageInputRef.current) rightImageInputRef.current.value = "";
       }
     } catch (error) {
       console.error("Error al guardar nota:", error);
@@ -160,7 +215,7 @@ export const NoteForm: React.FC<NoteFormProps> = ({
       </div>
 
       <div className="p-6 lg:p-8 space-y-6">
-        {/* Título obligatorio */}
+        {/* Título obligatorio - se mapea a leftContent (question) */}
         <div>
           <label
             htmlFor="title"
@@ -171,8 +226,8 @@ export const NoteForm: React.FC<NoteFormProps> = ({
           <input
             id="title"
             type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            value={leftContent}
+            onChange={(e) => setLeftContent(e.target.value)}
             disabled={isSubmitting}
             required
             className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-600 disabled:text-gray-500 dark:disabled:text-gray-400 text-base"
@@ -180,7 +235,7 @@ export const NoteForm: React.FC<NoteFormProps> = ({
             maxLength={200}
           />
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            {title.length}/200 {t("forms.characters")}
+            {leftContent.length}/200 {t("forms.characters")}
           </p>
         </div>
 
@@ -191,7 +246,7 @@ export const NoteForm: React.FC<NoteFormProps> = ({
           </span>
         </div>
 
-        {/* Contenido - Página única estilo ebook */}
+        {/* Contenido - se mapea a rightContent (answer) */}
         <div>
           <label
             htmlFor="content"
@@ -201,8 +256,8 @@ export const NoteForm: React.FC<NoteFormProps> = ({
           </label>
           <textarea
             id="content"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
+            value={rightContent}
+            onChange={(e) => setRightContent(e.target.value)}
             rows={16}
             disabled={isSubmitting}
             required
@@ -211,11 +266,11 @@ export const NoteForm: React.FC<NoteFormProps> = ({
           />
         </div>
 
-        {/* Imagen - Botón azul con placeholder */}
+        {/* Imagen del título - Botón azul con placeholder */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
           <button
             type="button"
-            onClick={() => imageInputRef.current?.click()}
+            onClick={() => leftImageInputRef.current?.click()}
             disabled={!canAddMoreImages || isSubmitting}
             className="flex items-center gap-2 px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -223,11 +278,11 @@ export const NoteForm: React.FC<NoteFormProps> = ({
             {t("forms.addImage")}
           </button>
           <input
-            ref={imageInputRef}
+            ref={leftImageInputRef}
             type="file"
             accept="image/*"
             multiple
-            onChange={handleImageChange}
+            onChange={handleLeftImageChange}
             disabled={!canAddMoreImages || isSubmitting}
             className="hidden"
           />
@@ -236,25 +291,75 @@ export const NoteForm: React.FC<NoteFormProps> = ({
           </span>
         </div>
 
-        {/* Preview imagen existente */}
-        {existingImageUrl && (
+        {/* Preview imagen existente del título */}
+        {existingLeftImageUrl && (
           <div>
             <ImagePreview
-              existingUrl={existingImageUrl}
-              onRemove={removeExistingImage}
+              existingUrl={existingLeftImageUrl}
+              onRemove={removeExistingLeftImage}
               label={t("forms.image")}
             />
           </div>
         )}
 
-        {/* Preview imagen nueva */}
-        {images.length > 0 && (
+        {/* Preview imagen nueva del título */}
+        {leftImages.length > 0 && (
           <div className="space-y-2">
-            {images.map((file, index) => (
+            {leftImages.map((file, index) => (
               <ImagePreview
                 key={index}
                 file={file}
-                onRemove={() => removeImage(index)}
+                onRemove={() => removeLeftImage(index)}
+                label={`${t("forms.image")} ${index + 1}`}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Imagen del contenido - Botón azul con placeholder */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+          <button
+            type="button"
+            onClick={() => rightImageInputRef.current?.click()}
+            disabled={!canAddMoreImages || isSubmitting}
+            className="flex items-center gap-2 px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ImageIcon size={18} />
+            {t("forms.addImage")}
+          </button>
+          <input
+            ref={rightImageInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleRightImageChange}
+            disabled={!canAddMoreImages || isSubmitting}
+            className="hidden"
+          />
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            {t("forms.optional")} - {t("forms.maxSize")}
+          </span>
+        </div>
+
+        {/* Preview imagen existente del contenido */}
+        {existingRightImageUrl && (
+          <div>
+            <ImagePreview
+              existingUrl={existingRightImageUrl}
+              onRemove={removeExistingRightImage}
+              label={t("forms.image")}
+            />
+          </div>
+        )}
+
+        {/* Preview imagen nueva del contenido */}
+        {rightImages.length > 0 && (
+          <div className="space-y-2">
+            {rightImages.map((file, index) => (
+              <ImagePreview
+                key={index}
+                file={file}
+                onRemove={() => removeRightImage(index)}
                 label={`${t("forms.image")} ${index + 1}`}
               />
             ))}

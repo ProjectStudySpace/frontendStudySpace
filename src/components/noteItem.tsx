@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NoteItemProps } from "../types/notes";
-import { NOTE_END_MARKER } from "../../hooks/useNotes";
 
 import { ImageModal } from "./ImageModal";
 import { BookOpen, Edit2, Trash2 } from "lucide-react";
@@ -20,14 +19,10 @@ export const NoteItem: React.FC<NoteItemProps> = ({
 
   const topicColor = note.topic?.color || "#60A5FA";
 
-  // Convertir título vacío a null para mejor manejo
-  const displayTitle = note.title && note.title.trim() ? note.title : null;
-
-  // Verificar si rightContent es el marcador de fin de nota
-  const hasEndMarker = note.rightContent === NOTE_END_MARKER;
-  
-  // Mostrar solo leftContent (el contenido real), no combinar con rightContent si es marcador
-  const displayContent = note.leftContent || "";
+  // leftContent = question = título de la nota
+  const displayTitle = note.leftContent || null;
+  // rightContent = answer = contenido de la nota
+  const displayContent = note.rightContent || "";
 
   // Combinar todas las imágenes
   const allImages = [
@@ -141,9 +136,6 @@ export const NoteItem: React.FC<NoteItemProps> = ({
               </div>
             )}
           </div>
-
-          {/* Línea divisoria al final de la nota (reemplaza el contenido duplicado) */}
-          <div className="mt-4 pt-2 h-px bg-gray-200 dark:bg-gray-600 w-full"></div>
         </div>
       </div>
 

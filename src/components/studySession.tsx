@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { StudySessionProps } from "../types/reviews";
 import DifficultySelector from "./difficultySelector";
@@ -18,7 +18,6 @@ const StudySession: React.FC<StudySessionProps> = ({
   topicName, // Add optional topicName prop
 }) => {
   const { t } = useTranslation();
-  const [showAnswer, setShowAnswer] = useState(false);
   const [selectedDifficulty, setSelectedDifficulty] = useState<
     1 | 2 | 3 | null
   >(null);
@@ -31,33 +30,9 @@ const StudySession: React.FC<StudySessionProps> = ({
   const isNote =
     review.card.contentType === "note" || review.card.type === "EXPLANATION";
 
-  // Extraer título y contenido izquierdo del question para notas
-  const { noteTitle, noteLeftContent, noteRightContent } = useMemo(() => {
-    if (isNote) {
-      // Normalizar saltos de línea (Windows usa \r\n, Unix usa \n)
-      const normalizedQuestion = (review.card.question || "").replace(
-        /\r\n/g,
-        "\n"
-      );
-      // Buscar doble salto de línea para separar título de contenido izquierdo
-      const questionParts = normalizedQuestion.split("\n\n");
-      const title =
-        questionParts.length > 1
-          ? questionParts[0].trim()
-          : normalizedQuestion.trim();
-      const leftContent =
-        questionParts.length > 1
-          ? questionParts.slice(1).join("\n\n").trim()
-          : "";
-      const rightContent = review.card.answer || "";
-      return {
-        noteTitle: title,
-        noteLeftContent: leftContent,
-        noteRightContent: rightContent,
-      };
-    }
-    return { noteTitle: "", noteLeftContent: "", noteRightContent: "" };
-  }, [isNote, review.card.question, review.card.answer]);
+  // Para notas: question = leftContent (título), answer = rightContent (contenido)
+  const noteTitle = review.card.question || "";
+  const noteContent = review.card.answer || "";
 
   const questionImages =
     review.card.images?.filter((img) => img.imageType === "question") || [];
@@ -68,10 +43,6 @@ const StudySession: React.FC<StudySessionProps> = ({
     setSelectedImage({ url: imageUrl, alt: altText });
   };
 
-  const handleShowAnswer = () => {
-    setShowAnswer(true);
-  };
-
   const handleDifficultySelect = (difficulty: 1 | 2 | 3) => {
     setSelectedDifficulty(difficulty);
     onComplete(difficulty);
@@ -79,7 +50,6 @@ const StudySession: React.FC<StudySessionProps> = ({
 
   const handleNext = () => {
     if (canGoNext) {
-      setShowAnswer(false);
       setSelectedDifficulty(null);
       onNext();
     }
@@ -87,7 +57,6 @@ const StudySession: React.FC<StudySessionProps> = ({
 
   const handlePrevious = () => {
     if (canGoPrevious) {
-      setShowAnswer(false);
       setSelectedDifficulty(null);
       onPrevious();
     }
@@ -134,72 +103,68 @@ const StudySession: React.FC<StudySessionProps> = ({
             {isNote ? (
               <>
                 {/* Título de la nota */}
-                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-600 mb-4">
-                  <p className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2 text-center">
-                    {t("studySession.noteTitle")}
-                  </p>
-                  <p className="text-lg sm:text-xl text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed text-center font-semibold">
-                    {noteTitle}
-                  </p>
-                </div>
-
-                {showAnswer ? (
-                  <>
-                    {/* Página única estilo ebook */}
-                    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 sm:p-8 lg:p-12 border border-gray-200 dark:border-gray-700 min-h-[400px] max-h-[60vh] lg:max-h-[70vh] overflow-y-auto">
-                      <div className="prose prose-sm dark:prose-invert max-w-none">
-                        {/* Contenido de la nota - tamaño reducido */}
-                        <div className="text-sm sm:text-base text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed text-justify">
-                          {noteLeftContent}
-                          {noteLeftContent && noteRightContent && "\n\n"}
-                          {noteRightContent}
-                        </div>
-                      </div>
-
-                      {/* Todas las imágenes */}
-                      {questionImages.length > 0 && (
-                        <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex gap-2 justify-center flex-wrap">
-                          {questionImages.map((img) => (
-                            <img
-                              key={img.id}
-                              src={img.imageUrl}
-                              alt={img.altText || "Imagen"}
-                              className="max-w-full max-h-48 object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity shadow-sm"
-                              onClick={() =>
-                                handleImageClick(img.imageUrl, img.altText)
-                              }
-                            />
-                          ))}
-                        </div>
-                      )}
-
-                      {answerImages.length > 0 && (
-                        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex gap-2 justify-center flex-wrap">
-                          {answerImages.map((img) => (
-                            <img
-                              key={img.id}
-                              src={img.imageUrl}
-                              alt={img.altText || "Imagen"}
-                              className="max-w-full max-h-48 object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity shadow-sm"
-                              onClick={() =>
-                                handleImageClick(img.imageUrl, img.altText)
-                              }
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex justify-center">
-                    <button
-                      onClick={handleShowAnswer}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-medium transition-all"
-                    >
-                      {t("studySession.viewAnswer")}
-                    </button>
+                {noteTitle && (
+                  <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-600 mb-4">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2 text-center">
+                      {t("studySession.noteTitle")}
+                    </p>
+                    <p className="text-lg sm:text-xl text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed text-center font-semibold">
+                      {noteTitle}
+                    </p>
                   </div>
                 )}
+
+                {/* Contenido de la nota - siempre visible */}
+                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 sm:p-8 lg:p-12 border border-gray-200 dark:border-gray-700 min-h-[300px] max-h-[60vh] lg:max-h-[65vh] overflow-y-auto">
+                  <div className="prose prose-sm dark:prose-invert max-w-none">
+                    <div className="text-sm sm:text-base text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed text-justify">
+                      {noteContent || (
+                        <span className="text-gray-400 dark:text-gray-500 italic">
+                          {t("content.noContent")}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Todas las imágenes */}
+                  {questionImages.length > 0 && (
+                    <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex gap-2 justify-center flex-wrap">
+                      {questionImages.map((img) => (
+                        <img
+                          key={img.id}
+                          src={img.imageUrl}
+                          alt={img.altText || "Imagen"}
+                          className="max-w-full max-h-48 object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity shadow-sm"
+                          onClick={() =>
+                            handleImageClick(img.imageUrl, img.altText)
+                          }
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {answerImages.length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex gap-2 justify-center flex-wrap">
+                      {answerImages.map((img) => (
+                        <img
+                          key={img.id}
+                          src={img.imageUrl}
+                          alt={img.altText || "Imagen"}
+                          className="max-w-full max-h-48 object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity shadow-sm"
+                          onClick={() =>
+                            handleImageClick(img.imageUrl, img.altText)
+                          }
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Selector de dificultad siempre visible para notas */}
+                <DifficultySelector
+                  selectedDifficulty={selectedDifficulty}
+                  onSelect={handleDifficultySelect}
+                />
               </>
             ) : (
               <>
@@ -228,7 +193,8 @@ const StudySession: React.FC<StudySessionProps> = ({
                   )}
                 </div>
 
-                {showAnswer ? (
+                {/* Mostrar answer solo después de hacer click */}
+                {review.card.answer ? (
                   <div className="bg-green-50 dark:bg-green-900/30 rounded-xl p-4 sm:p-6 border border-green-200 dark:border-green-800 max-h-[60vh] overflow-y-auto">
                     <h3 className="text-xs sm:text-sm font-semibold text-green-800 dark:text-green-200 uppercase tracking-wide mb-3">
                       {t("studySession.answer")}
@@ -256,21 +222,26 @@ const StudySession: React.FC<StudySessionProps> = ({
                 ) : (
                   <div className="flex justify-center">
                     <button
-                      onClick={handleShowAnswer}
+                      onClick={() => {
+                        // Crear un evento simulado para mostrar la respuesta
+                        const event = new CustomEvent('showAnswer');
+                        window.dispatchEvent(event);
+                      }}
                       className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-all"
                     >
                       {t("studySession.viewAnswer")}
                     </button>
                   </div>
                 )}
-              </>
-            )}
 
-            {showAnswer && (
-              <DifficultySelector
-                selectedDifficulty={selectedDifficulty}
-                onSelect={handleDifficultySelect}
-              />
+                {/* Selector de dificultad después de mostrar answer */}
+                {review.card.answer && (
+                  <DifficultySelector
+                    selectedDifficulty={selectedDifficulty}
+                    onSelect={handleDifficultySelect}
+                  />
+                )}
+              </>
             )}
 
             {/* Side navigation buttons */}
