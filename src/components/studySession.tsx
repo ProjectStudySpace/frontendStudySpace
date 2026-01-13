@@ -25,6 +25,7 @@ const StudySession: React.FC<StudySessionProps> = ({
     url: string;
     alt?: string;
   } | null>(null);
+  const [showAnswer, setShowAnswer] = useState(false); // State to control answer visibility for notes
 
   // Check if this is a note or a card
   const isNote =
@@ -51,6 +52,7 @@ const StudySession: React.FC<StudySessionProps> = ({
   const handleNext = () => {
     if (canGoNext) {
       setSelectedDifficulty(null);
+      setShowAnswer(false); // Reset showAnswer for notes
       onNext();
     }
   };
@@ -58,6 +60,7 @@ const StudySession: React.FC<StudySessionProps> = ({
   const handlePrevious = () => {
     if (canGoPrevious) {
       setSelectedDifficulty(null);
+      setShowAnswer(false); // Reset showAnswer for notes
       onPrevious();
     }
   };
@@ -102,7 +105,7 @@ const StudySession: React.FC<StudySessionProps> = ({
             {/* Content display */}
             {isNote ? (
               <>
-                {/* Título de la nota */}
+                {/* Question (title) - always visible */}
                 {noteTitle && (
                   <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-600 mb-4">
                     <p className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2 text-center">
@@ -111,60 +114,72 @@ const StudySession: React.FC<StudySessionProps> = ({
                     <p className="text-lg sm:text-xl text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed text-center font-semibold">
                       {noteTitle}
                     </p>
+
+                    {questionImages.length > 0 && (
+                      <div className="mt-4 flex gap-2 justify-center flex-wrap">
+                        {questionImages.map((img) => (
+                          <img
+                            key={img.id}
+                            src={img.imageUrl}
+                            alt={img.altText || "Imagen"}
+                            className="max-w-full max-h-48 object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity shadow-sm"
+                            onClick={() =>
+                              handleImageClick(img.imageUrl, img.altText)
+                            }
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
 
-                {/* Contenido de la nota - siempre visible */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 sm:p-8 lg:p-12 border border-gray-200 dark:border-gray-700 min-h-[300px] max-h-[60vh] lg:max-h-[65vh] overflow-y-auto">
-                  <div className="prose prose-sm dark:prose-invert max-w-none">
-                    <div className="text-sm sm:text-base text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed text-justify">
-                      {noteContent || (
-                        <span className="text-gray-400 dark:text-gray-500 italic">
-                          {t("content.noContent")}
-                        </span>
-                      )}
+                {/* Show answer button or answer content */}
+                {showAnswer ? (
+                  <div className="bg-white dark:bg-gray-800 rounded-xl p-6 sm:p-8 lg:p-12 border border-gray-200 dark:border-gray-700 min-h-[300px] max-h-[60vh] lg:max-h-[65vh] overflow-y-auto">
+                    <div className="prose prose-sm dark:prose-invert max-w-none">
+                      <div className="text-sm sm:text-base text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed text-justify">
+                        {noteContent || (
+                          <span className="text-gray-400 dark:text-gray-500 italic">
+                            {t("content.noContent")}
+                          </span>
+                        )}
+                      </div>
                     </div>
+
+                    {answerImages.length > 0 && (
+                      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex gap-2 justify-center flex-wrap">
+                        {answerImages.map((img) => (
+                          <img
+                            key={img.id}
+                            src={img.imageUrl}
+                            alt={img.altText || "Imagen"}
+                            className="max-w-full max-h-48 object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity shadow-sm"
+                            onClick={() =>
+                              handleImageClick(img.imageUrl, img.altText)
+                            }
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
+                ) : (
+                  <div className="flex justify-center py-4">
+                    <button
+                      onClick={() => setShowAnswer(true)}
+                      className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-all"
+                    >
+                      {t("studySession.viewAnswer")}
+                    </button>
+                  </div>
+                )}
 
-                  {/* Todas las imágenes */}
-                  {questionImages.length > 0 && (
-                    <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex gap-2 justify-center flex-wrap">
-                      {questionImages.map((img) => (
-                        <img
-                          key={img.id}
-                          src={img.imageUrl}
-                          alt={img.altText || "Imagen"}
-                          className="max-w-full max-h-48 object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity shadow-sm"
-                          onClick={() =>
-                            handleImageClick(img.imageUrl, img.altText)
-                          }
-                        />
-                      ))}
-                    </div>
-                  )}
-
-                  {answerImages.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex gap-2 justify-center flex-wrap">
-                      {answerImages.map((img) => (
-                        <img
-                          key={img.id}
-                          src={img.imageUrl}
-                          alt={img.altText || "Imagen"}
-                          className="max-w-full max-h-48 object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity shadow-sm"
-                          onClick={() =>
-                            handleImageClick(img.imageUrl, img.altText)
-                          }
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Selector de dificultad siempre visible para notas */}
-                <DifficultySelector
-                  selectedDifficulty={selectedDifficulty}
-                  onSelect={handleDifficultySelect}
-                />
+                {/* Difficulty selector after showing answer */}
+                {showAnswer && (
+                  <DifficultySelector
+                    selectedDifficulty={selectedDifficulty}
+                    onSelect={handleDifficultySelect}
+                  />
+                )}
               </>
             ) : (
               <>

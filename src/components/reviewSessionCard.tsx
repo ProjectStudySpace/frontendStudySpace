@@ -26,34 +26,13 @@ const ReviewSessionCard: React.FC<ReviewSessionCardProps> = ({
     setCurrentSession(session);
   }, [session]);
 
-  const generateTimeOptions = () => {
+  const getAvailableTimes = () => {
     const times = [];
     for (let hour = 0; hour < 24; hour++) {
       const timeString = `${hour.toString().padStart(2, "0")}:00`;
       times.push(timeString);
     }
     return times;
-  };
-
-  const getAvailableTimes = () => {
-    const allTimes = generateTimeOptions();
-
-    if (!selectedDate) {
-      return allTimes;
-    }
-
-    const today = new Date();
-    const isToday = selectedDate.toDateString() === today.toDateString();
-
-    if (!isToday) {
-      return allTimes;
-    }
-
-    const currentHour = today.getHours();
-    return allTimes.filter((time) => {
-      const hour = parseInt(time.split(":")[0]);
-      return hour > currentHour;
-    });
   };
 
   const getStatusConfig = (type: string) => {
