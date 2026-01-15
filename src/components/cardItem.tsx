@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { CardItemProps } from "../types/cards";
 
 import { ImageModal } from "./ImageModal";
+import { BookOpen, Edit2, Trash2 } from "lucide-react";
 
 export const CardItem: React.FC<CardItemProps> = ({
   card,
@@ -54,9 +55,34 @@ export const CardItem: React.FC<CardItemProps> = ({
               : `${topicColor}80`,
           }}
         >
-          <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-700 text-center uppercase tracking-wide">
-            {card.topic?.name || t("content.noTopic")}
-          </h4>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <BookOpen size={16} className="text-gray-700 dark:text-gray-700" />
+              <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-700 uppercase tracking-wide">
+                {card.topic?.name || t("content.noTopic")}
+              </h4>
+            </div>
+            {/* Botones de acción */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => onEdit(card)}
+                className="p-1.5 rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors"
+                style={{ color: '#666' }}
+                title={t("common.edit")}
+              >
+                <Edit2 size={14} />
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors disabled:opacity-50"
+                style={{ color: '#dc2626' }}
+                title={t("common.delete")}
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Contenido principal */}
@@ -83,16 +109,6 @@ export const CardItem: React.FC<CardItemProps> = ({
             )}
           </div>
 
-          {/* Botón Ver respuesta - Centrado */}
-          <div className="flex justify-center mb-3">
-            <button
-              onClick={() => setShowAnswer(!showAnswer)}
-              className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all"
-            >
-              {showAnswer ? t("reviews.hide") : t("reviews.viewAnswer")}
-            </button>
-          </div>
-
           {/* Respuesta - NO centrada */}
           {showAnswer && (
             <div className="mb-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm flex-1 overflow-auto">
@@ -117,20 +133,13 @@ export const CardItem: React.FC<CardItemProps> = ({
             </div>
           )}
 
-          {/* Botones de acción */}
-          <div className="flex gap-2 justify-end mt-auto">
+          {/* Botón Ver respuesta - Discreto, abajo a la derecha */}
+          <div className="mt-auto pt-3 flex justify-end">
             <button
-              onClick={() => onEdit(card)}
-              className="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+              onClick={() => setShowAnswer(!showAnswer)}
+              className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-all shadow-sm"
             >
-              {t("common.edit")}
-            </button>
-            <button
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-800/30 text-red-600 dark:text-red-400 px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:text-gray-400 dark:disabled:text-gray-500 disabled:cursor-not-allowed"
-            >
-              {isDeleting ? t("cards.deleting") : t("common.delete")}
+              {showAnswer ? t("reviews.hide") : t("reviews.viewAnswer")}
             </button>
           </div>
         </div>
