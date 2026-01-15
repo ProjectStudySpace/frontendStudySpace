@@ -19,7 +19,7 @@ const ImageCarousel: React.FC<{
   images: CardImageType[];
   onImageClick: (url: string, alt?: string) => void;
   maxWidth?: string;
-}> = ({ images, onImageClick, maxWidth = "400px" }) => {
+}> = ({ images, onImageClick, maxWidth = "280px" }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   if (images.length === 0) return null;
@@ -110,7 +110,7 @@ const StudySession: React.FC<StudySessionProps> = ({
     url: string;
     alt?: string;
   } | null>(null);
-  const [showAnswer, setShowAnswer] = useState(false); // State to control answer visibility for notes
+  const [showAnswer, setShowAnswer] = useState(false); // State to control answer visibility
 
   // Check if this is a note or a card
   const isNote =
@@ -278,45 +278,41 @@ const StudySession: React.FC<StudySessionProps> = ({
 
                   {/* Imágenes de pregunta - Carrusel */}
                   {questionImages.length > 0 && (
-                    <div className="mt-4 flex justify-center">
+                    <div className="mt-4 flex justify-center max-w-[280px] mx-auto">
                       <ImageCarousel
                         images={questionImages}
                         onImageClick={handleImageClick}
-                        maxWidth="400px"
+                        maxWidth="280px"
                       />
                     </div>
                   )}
                 </div>
 
                 {/* Mostrar answer solo después de hacer click */}
-                {review.card.answer ? (
-                  <div className="bg-green-50 dark:bg-green-900/30 rounded-xl p-4 sm:p-6 border border-green-200 dark:border-green-800 max-h-[60vh] overflow-y-auto">
-                    <h3 className="text-xs sm:text-sm font-semibold text-green-800 dark:text-green-200 uppercase tracking-wide mb-3">
+                {showAnswer ? (
+                  <div className="bg-green-50 dark:bg-green-900/30 rounded-xl p-4 sm:p-6 border border-green-200 dark:border-green-800 max-h-[50vh] overflow-y-auto">
+                    <h3 className="text-xs sm:text-sm font-semibold text-green-800 dark:text-green-200 uppercase tracking-wide mb-3 text-center">
                       {t("studySession.answer")}
                     </h3>
-                    <p className="text-base sm:text-lg text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed">
+                    <p className="text-base sm:text-lg text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed text-center">
                       {review.card.answer}
                     </p>
 
                     {/* Imágenes de respuesta - Carrusel */}
                     {answerImages.length > 0 && (
-                      <div className="mt-4 flex justify-center">
+                      <div className="mt-4 flex justify-center max-w-[280px] mx-auto">
                         <ImageCarousel
                           images={answerImages}
                           onImageClick={handleImageClick}
-                          maxWidth="400px"
+                          maxWidth="280px"
                         />
                       </div>
                     )}
                   </div>
                 ) : (
-                  <div className="flex justify-center">
+                  <div className="flex justify-center py-4">
                     <button
-                      onClick={() => {
-                        // Crear un evento simulado para mostrar la respuesta
-                        const event = new CustomEvent('showAnswer');
-                        window.dispatchEvent(event);
-                      }}
+                      onClick={() => setShowAnswer(true)}
                       className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-all"
                     >
                       {t("studySession.viewAnswer")}
@@ -325,7 +321,7 @@ const StudySession: React.FC<StudySessionProps> = ({
                 )}
 
                 {/* Selector de dificultad después de mostrar answer */}
-                {review.card.answer && (
+                {showAnswer && (
                   <DifficultySelector
                     selectedDifficulty={selectedDifficulty}
                     onSelect={handleDifficultySelect}
