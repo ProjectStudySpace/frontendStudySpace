@@ -1,9 +1,85 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { CardItemProps } from "../types/cards";
+import { CardItemProps, CardImage } from "../types/cards";
 
 import { ImageModal } from "./ImageModal";
-import { BookOpen, Edit2, Trash2 } from "lucide-react";
+import { BookOpen, Edit2, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+
+// Componente de carrusel de imágenes
+const ImageCarousel: React.FC<{
+  images: CardImage[];
+  onImageClick: (url: string, alt?: string) => void;
+  maxWidth?: string;
+}> = ({ images, onImageClick, maxWidth = "280px" }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  if (images.length === 0) return null;
+  if (images.length === 1) {
+    return (
+      <img
+        src={images[0].imageUrl}
+        alt={images[0].altText || "Imagen"}
+        className={`w-full max-w-[${maxWidth}] h-auto object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity`}
+        onClick={() => onImageClick(images[0].imageUrl, images[0].altText)}
+      />
+    );
+  }
+
+  const goToPrevious = () => {
+    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const goToNext = () => {
+    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
+  return (
+    <div className={`relative inline-block w-full max-w-[${maxWidth}]`}>
+      <img
+        src={images[currentIndex].imageUrl}
+        alt={images[currentIndex].altText || `Imagen ${currentIndex + 1}`}
+        className="w-full h-auto object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity"
+        onClick={() => onImageClick(images[currentIndex].imageUrl, images[currentIndex].altText)}
+      />
+      
+      {/* Flecha izquierda */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          goToPrevious();
+        }}
+        className="absolute left-2 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-md transition-colors"
+        aria-label="Imagen anterior"
+      >
+        <ChevronLeft size={20} className="text-gray-700" />
+      </button>
+      
+      {/* Flecha derecha */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          goToNext();
+        }}
+        className="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-md transition-colors"
+        aria-label="Imagen siguiente"
+      >
+        <ChevronRight size={20} className="text-gray-700" />
+      </button>
+      
+      {/* Indicadores de posición */}
+      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
+        {images.map((_, index) => (
+          <div
+            key={index}
+            className={`w-2 h-2 rounded-full transition-colors ${
+              index === currentIndex ? "bg-white" : "bg-white/50"
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
 
 export const CardItem: React.FC<CardItemProps> = ({
   card,
@@ -93,18 +169,14 @@ export const CardItem: React.FC<CardItemProps> = ({
               {card.question}
             </h3>
 
-            {/* Imágenes de pregunta - Centradas */}
+            {/* Imágenes de pregunta - Carrusel */}
             {questionImages.length > 0 && (
-              <div className="mt-3 flex gap-2 justify-center flex-wrap">
-                {questionImages.map((img) => (
-                  <img
-                    key={img.id}
-                    src={img.imageUrl}
-                    alt={img.altText || "Imagen de pregunta"}
-                    className="w-24 h-24 object-cover rounded-md border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity"
-                    onClick={() => handleImageClick(img.imageUrl, img.altText)}
-                  />
-                ))}
+              <div className="mt-3 flex justify-center">
+                <ImageCarousel
+                  images={questionImages}
+                  onImageClick={handleImageClick}
+                  maxWidth="280px"
+                />
               </div>
             )}
           </div>
@@ -114,20 +186,14 @@ export const CardItem: React.FC<CardItemProps> = ({
             <div className="mb-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm flex-1 overflow-auto">
               <p className="whitespace-pre-wrap mb-2">{card.answer}</p>
 
-              {/* Imágenes de respuesta - Centradas */}
+              {/* Imágenes de respuesta - Carrusel */}
               {answerImages.length > 0 && (
-                <div className="mt-3 flex gap-2 justify-center flex-wrap">
-                  {answerImages.map((img) => (
-                    <img
-                      key={img.id}
-                      src={img.imageUrl}
-                      alt={img.altText || "Imagen de respuesta"}
-                      className="w-24 h-24 object-cover rounded-md border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity"
-                      onClick={() =>
-                        handleImageClick(img.imageUrl, img.altText)
-                      }
-                    />
-                  ))}
+                <div className="mt-3 flex justify-center">
+                  <ImageCarousel
+                    images={answerImages}
+                    onImageClick={handleImageClick}
+                    maxWidth="280px"
+                  />
                 </div>
               )}
             </div>

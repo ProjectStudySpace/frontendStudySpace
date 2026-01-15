@@ -5,6 +5,91 @@ import DifficultySelector from "./difficultySelector";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { ImageModal } from "./ImageModal";
 
+// Tipo de imagen definido localmente
+type CardImageType = {
+  id: number;
+  imageUrl: string;
+  imageType: "question" | "answer";
+  order: number;
+  altText?: string;
+};
+
+// Componente de carrusel de imágenes
+const ImageCarousel: React.FC<{
+  images: CardImageType[];
+  onImageClick: (url: string, alt?: string) => void;
+  maxWidth?: string;
+}> = ({ images, onImageClick, maxWidth = "400px" }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  if (images.length === 0) return null;
+  if (images.length === 1) {
+    return (
+      <img
+        src={images[0].imageUrl}
+        alt={images[0].altText || "Imagen"}
+        className={`w-full max-w-[${maxWidth}] h-auto object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity`}
+        onClick={() => onImageClick(images[0].imageUrl, images[0].altText)}
+      />
+    );
+  }
+
+  const goToPrevious = () => {
+    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const goToNext = () => {
+    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
+  return (
+    <div className={`relative inline-block w-full max-w-[${maxWidth}]`}>
+      <img
+        src={images[currentIndex].imageUrl}
+        alt={images[currentIndex].altText || `Imagen ${currentIndex + 1}`}
+        className="w-full h-auto object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity"
+        onClick={() => onImageClick(images[currentIndex].imageUrl, images[currentIndex].altText)}
+      />
+      
+      {/* Flecha izquierda */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          goToPrevious();
+        }}
+        className="absolute left-2 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-md transition-colors"
+        aria-label="Imagen anterior"
+      >
+        <ChevronLeft size={24} className="text-gray-700" />
+      </button>
+      
+      {/* Flecha derecha */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          goToNext();
+        }}
+        className="absolute right-2 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-md transition-colors"
+        aria-label="Imagen siguiente"
+      >
+        <ChevronRight size={24} className="text-gray-700" />
+      </button>
+      
+      {/* Indicadores de posición */}
+      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
+        {images.map((_, index) => (
+          <div
+            key={index}
+            className={`w-2 h-2 rounded-full transition-colors ${
+              index === currentIndex ? "bg-white" : "bg-white/50"
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const StudySession: React.FC<StudySessionProps> = ({
   review,
   currentCard,
@@ -191,19 +276,14 @@ const StudySession: React.FC<StudySessionProps> = ({
                     {review.card.question}
                   </p>
 
+                  {/* Imágenes de pregunta - Carrusel */}
                   {questionImages.length > 0 && (
-                    <div className="mt-4 flex gap-2 justify-center flex-wrap">
-                      {questionImages.map((img) => (
-                        <img
-                          key={img.id}
-                          src={img.imageUrl}
-                          alt={img.altText || "Imagen de pregunta"}
-                          className="max-w-[200px] max-h-[200px] object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity"
-                          onClick={() =>
-                            handleImageClick(img.imageUrl, img.altText)
-                          }
-                        />
-                      ))}
+                    <div className="mt-4 flex justify-center">
+                      <ImageCarousel
+                        images={questionImages}
+                        onImageClick={handleImageClick}
+                        maxWidth="400px"
+                      />
                     </div>
                   )}
                 </div>
@@ -218,19 +298,14 @@ const StudySession: React.FC<StudySessionProps> = ({
                       {review.card.answer}
                     </p>
 
+                    {/* Imágenes de respuesta - Carrusel */}
                     {answerImages.length > 0 && (
-                      <div className="mt-4 flex gap-2 justify-center flex-wrap">
-                        {answerImages.map((img) => (
-                          <img
-                            key={img.id}
-                            src={img.imageUrl}
-                            alt={img.altText || "Imagen de respuesta"}
-                            className="max-w-[200px] max-h-[200px] object-contain rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity"
-                            onClick={() =>
-                              handleImageClick(img.imageUrl, img.altText)
-                            }
-                          />
-                        ))}
+                      <div className="mt-4 flex justify-center">
+                        <ImageCarousel
+                          images={answerImages}
+                          onImageClick={handleImageClick}
+                          maxWidth="400px"
+                        />
                       </div>
                     )}
                   </div>
