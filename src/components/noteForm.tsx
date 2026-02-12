@@ -13,49 +13,38 @@ export const NoteForm: React.FC<NoteFormProps> = ({
   isEditing = false,
 }) => {
   const { t } = useTranslation();
-  const [title, setTitle] = useState(initialData?.title || "");
-  const [leftContent, setLeftContent] = useState(
-    initialData?.leftContent || ""
-  );
-  const [rightContent, setRightContent] = useState(
-    initialData?.rightContent || ""
-  );
+  // leftContent = question = título de la nota
+  const [leftContent, setLeftContent] = useState(initialData?.leftContent || "");
+  // rightContent = answer = contenido de la nota
+  const [rightContent, setRightContent] = useState(initialData?.rightContent || "");
+  // Todas las imágenes van a leftImages (questionImage)
   const [leftImages, setLeftImages] = useState<File[]>([]);
-  const [rightImages, setRightImages] = useState<File[]>([]);
-  const [existingLeftImageUrl, setExistingLeftImageUrl] = useState<
+  const [existingImageUrl, setExistingImageUrl] = useState<
     string | undefined
-  >(initialData?.leftImageUrl);
-  const [existingRightImageUrl, setExistingRightImageUrl] = useState<
-    string | undefined
-  >(initialData?.rightImageUrl);
+  >(initialData?.leftImageUrl || initialData?.rightImageUrl);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const leftImageInputRef = useRef<HTMLInputElement>(null);
-  const rightImageInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (initialData) {
-      setTitle(initialData.title || "");
-      setLeftContent(initialData.leftContent);
-      setRightContent(initialData.rightContent);
-      setExistingLeftImageUrl(initialData.leftImageUrl);
-      setExistingRightImageUrl(initialData.rightImageUrl);
+      setLeftContent(initialData.leftContent || "");
+      setRightContent(initialData.rightContent || "");
+      setExistingImageUrl(initialData.leftImageUrl || initialData.rightImageUrl);
     }
   }, [initialData]);
 
   // Calculate total images count
   const getTotalImagesCount = () => {
     let count = 0;
-    if (existingLeftImageUrl) count++;
-    if (existingRightImageUrl) count++;
+    if (existingImageUrl) count++;
     count += leftImages.length;
-    count += rightImages.length;
     return count;
   };
 
   const canAddMoreImages = getTotalImagesCount() < MAX_IMAGES;
 
-  const handleLeftImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
@@ -64,7 +53,7 @@ export const NoteForm: React.FC<NoteFormProps> = ({
 
     if (remainingSlots <= 0) {
       alert(t("forms.maxImagesReached", { max: MAX_IMAGES }));
-      if (leftImageInputRef.current) leftImageInputRef.current.value = "";
+      if (imageInputRef.current) imageInputRef.current.value = "";
       return;
     }
 
@@ -87,96 +76,46 @@ export const NoteForm: React.FC<NoteFormProps> = ({
       setLeftImages((prev) => [...prev, ...validFiles]);
     }
 
-    if (leftImageInputRef.current) {
-      leftImageInputRef.current.value = "";
+    if (imageInputRef.current) {
+      imageInputRef.current.value = "";
     }
   };
 
-  const handleRightImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    const newFilesArray = Array.from(files);
-    const remainingSlots = MAX_IMAGES - getTotalImagesCount();
-
-    if (remainingSlots <= 0) {
-      alert(t("forms.maxImagesReached", { max: MAX_IMAGES }));
-      if (rightImageInputRef.current) rightImageInputRef.current.value = "";
-      return;
-    }
-
-    const validFiles: File[] = [];
-    for (let i = 0; i < Math.min(newFilesArray.length, remainingSlots); i++) {
-      const file = newFilesArray[i];
-
-      if (!file.type.startsWith("image/")) {
-        alert(t("forms.invalidImage"));
-        continue;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        alert(t("forms.imageTooLarge"));
-        continue;
-      }
-      validFiles.push(file);
-    }
-
-    if (validFiles.length > 0) {
-      setRightImages((prev) => [...prev, ...validFiles]);
-    }
-
-    if (rightImageInputRef.current) {
-      rightImageInputRef.current.value = "";
-    }
-  };
-
-  const removeLeftImage = (index: number) => {
+  const removeImage = (index: number) => {
     setLeftImages((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const removeRightImage = (index: number) => {
-    setRightImages((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const removeExistingLeftImage = () => {
-    setExistingLeftImageUrl(undefined);
-  };
-
-  const removeExistingRightImage = () => {
-    setExistingRightImageUrl(undefined);
+  const removeExistingImage = () => {
+    setExistingImageUrl(undefined);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!title.trim()) {
+    if (!leftContent.trim()) {
       alert(t("forms.titleRequired"));
       return;
     }
 
-    if (!leftContent.trim() && !rightContent.trim()) {
-      alert(t("forms.atLeastOnePage"));
+    if (!rightContent.trim()) {
+      alert(t("forms.contentRequired"));
       return;
     }
 
     setIsSubmitting(true);
     try {
       await onSubmit({
-        title: title.trim() || undefined,
-        leftContent,
-        rightContent,
+        leftContent: leftContent.trim(),
+        rightContent: rightContent.trim(),
         leftImages: leftImages,
-        rightImages: rightImages,
+        rightImages: [],
       });
       if (!isEditing) {
-        setTitle("");
         setLeftContent("");
         setRightContent("");
         setLeftImages([]);
-        setRightImages([]);
-        setExistingLeftImageUrl(undefined);
-        setExistingRightImageUrl(undefined);
-        if (leftImageInputRef.current) leftImageInputRef.current.value = "";
-        if (rightImageInputRef.current) rightImageInputRef.current.value = "";
+        setExistingImageUrl(undefined);
+        if (imageInputRef.current) imageInputRef.current.value = "";
       }
     } catch (error) {
       console.error("Error al guardar nota:", error);
@@ -189,14 +128,14 @@ export const NoteForm: React.FC<NoteFormProps> = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-gray-700 max-w-6xl mx-auto"
+      className="bg-white dark:bg-gray-800 rounded-none shadow-sm border border-gray-200 dark:border-gray-700"
     >
       {/* Header del formulario */}
-      <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-green-100 dark:from-blue-900/50 dark:to-green-900/50 rounded-lg flex items-center justify-center">
+          <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
             <BookOpen
-              className="text-indigo-600 dark:text-indigo-400"
+              className="text-blue-600 dark:text-blue-400"
               size={20}
             />
           </div>
@@ -205,7 +144,7 @@ export const NoteForm: React.FC<NoteFormProps> = ({
               {isEditing ? t("notes.edit") : t("notes.new")}
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              {t("forms.bookFormat")}
+              {t("forms.ebookFormat")}
             </p>
           </div>
         </div>
@@ -220,199 +159,123 @@ export const NoteForm: React.FC<NoteFormProps> = ({
         </button>
       </div>
 
-      {/* Título obligatorio */}
-      <div className="mb-6">
-        <label
-          htmlFor="title"
-          className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
-        >
-          {t("forms.titleLabel")} <span className="text-red-500">*</span>
-        </label>
-        <input
-          id="title"
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          disabled={isSubmitting}
-          required
-          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 dark:disabled:bg-gray-600 disabled:text-gray-500 dark:disabled:text-gray-400 text-base"
-          placeholder={t("forms.titlePlaceholder")}
-          maxLength={200}
-        />
-        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-          {title.length}/200 {t("forms.characters")}
-        </p>
-      </div>
-
-      {/* Image counter at top */}
-      <div className="mb-4 text-center">
-        <span className="text-sm text-gray-600 dark:text-gray-400">
-          {getTotalImagesCount()}/{MAX_IMAGES} {t("forms.images")}
-        </span>
-      </div>
-
-      {/* Contenido en dos columnas (libro abierto) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        {/* Página izquierda */}
-        <div className="bg-gradient-to-br from-blue-50/30 to-white dark:from-blue-900/20 dark:to-gray-800 p-5 rounded-xl border border-blue-100 dark:border-blue-800">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full"></div>
-            <label
-              htmlFor="leftContent"
-              className="block text-sm font-semibold text-blue-700 dark:text-blue-300"
-            >
-              {t("forms.leftPage")}
-            </label>
-          </div>
-
-          <textarea
-            id="leftContent"
+      <div className="p-6 lg:p-8 space-y-6">
+        {/* Título obligatorio - se mapea a leftContent (question) */}
+        <div>
+          <label
+            htmlFor="title"
+            className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
+          >
+            {t("forms.titleLabel")} <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="title"
+            type="text"
             value={leftContent}
             onChange={(e) => setLeftContent(e.target.value)}
-            rows={14}
             disabled={isSubmitting}
-            className="w-full px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-600 resize-none text-sm scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800"
-            placeholder={t("forms.leftPagePlaceholder")}
+            required
+            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-600 disabled:text-gray-500 dark:disabled:text-gray-400 text-base"
+            placeholder={t("forms.titlePlaceholder")}
+            maxLength={200}
           />
-
-          {/* Imagen página izquierda - opcional */}
-          <div className="mt-4 flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => leftImageInputRef.current?.click()}
-              disabled={!canAddMoreImages || isSubmitting}
-              className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ImageIcon size={16} />
-              {t("forms.addImage")}
-            </button>
-            <input
-              ref={leftImageInputRef}
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleLeftImageChange}
-              disabled={!canAddMoreImages || isSubmitting}
-              className="hidden"
-            />
-            <span className="text-xs text-gray-500 dark:text-gray-400">
-              {t("forms.optional")} - {t("forms.maxSize")}
-            </span>
-          </div>
-
-          {/* Preview imagen existente izquierda */}
-          {existingLeftImageUrl && (
-            <div className="mt-3">
-              <ImagePreview
-                existingUrl={existingLeftImageUrl}
-                onRemove={removeExistingLeftImage}
-                label={t("forms.leftPageImage")}
-              />
-            </div>
-          )}
-
-          {/* Preview imagen nueva izquierda */}
-          {leftImages.length > 0 && (
-            <div className="mt-3 space-y-2">
-              {leftImages.map((file, index) => (
-                <ImagePreview
-                  key={index}
-                  file={file}
-                  onRemove={() => removeLeftImage(index)}
-                  label={`${t("forms.leftPageImage")} ${index + 1}`}
-                />
-              ))}
-            </div>
-          )}
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            {leftContent.length}/200 {t("forms.characters")}
+          </p>
         </div>
 
-        {/* Página derecha */}
-        <div className="bg-gradient-to-bl from-green-50/30 to-white dark:from-green-900/20 dark:to-gray-800 p-5 rounded-xl border border-green-100 dark:border-green-800">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full"></div>
-            <label
-              htmlFor="rightContent"
-              className="block text-sm font-semibold text-green-700 dark:text-green-300"
-            >
-              {t("forms.rightPage")}
-            </label>
-          </div>
+        {/* Image counter */}
+        <div className="text-center">
+          <span className="text-sm text-gray-600 dark:text-gray-400">
+            {getTotalImagesCount()}/{MAX_IMAGES} {t("forms.images")}
+          </span>
+        </div>
 
+        {/* Contenido - se mapea a rightContent (answer) */}
+        <div>
+          <label
+            htmlFor="content"
+            className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
+          >
+            {t("forms.contentLabel")} <span className="text-red-500">*</span>
+          </label>
           <textarea
-            id="rightContent"
+            id="content"
             value={rightContent}
             onChange={(e) => setRightContent(e.target.value)}
-            rows={14}
+            rows={16}
             disabled={isSubmitting}
-            className="w-full px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 dark:disabled:bg-gray-600 resize-none text-sm scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800"
-            placeholder={t("forms.rightPagePlaceholder")}
+            required
+            className="w-full px-4 py-4 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-600 resize-none text-lg leading-relaxed"
+            placeholder={t("forms.contentPlaceholder")}
           />
-
-          {/* Imagen página derecha - opcional */}
-          <div className="mt-4 flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => rightImageInputRef.current?.click()}
-              disabled={!canAddMoreImages || isSubmitting}
-              className="flex items-center gap-2 px-3 py-2 text-sm bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ImageIcon size={16} />
-              {t("forms.addImage")}
-            </button>
-            <input
-              ref={rightImageInputRef}
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleRightImageChange}
-              disabled={!canAddMoreImages || isSubmitting}
-              className="hidden"
-            />
-            <span className="text-xs text-gray-500 dark:text-gray-400">
-              {t("forms.optional")} - {t("forms.maxSize")}
-            </span>
-          </div>
-
-          {/* Preview imagen existente derecha */}
-          {existingRightImageUrl && (
-            <div className="mt-3">
-              <ImagePreview
-                existingUrl={existingRightImageUrl}
-                onRemove={removeExistingRightImage}
-                label={t("forms.rightPageImage")}
-              />
-            </div>
-          )}
-
-          {/* Preview imagen nueva derecha */}
-          {rightImages.length > 0 && (
-            <div className="mt-3 space-y-2">
-              {rightImages.map((file, index) => (
-                <ImagePreview
-                  key={index}
-                  file={file}
-                  onRemove={() => removeRightImage(index)}
-                  label={`${t("forms.rightPageImage")} ${index + 1}`}
-                />
-              ))}
-            </div>
-          )}
         </div>
-      </div>
 
-      {/* Nota informativa */}
-      <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
-        <p className="text-sm text-blue-800 dark:text-blue-200">
-          <strong>{t("forms.noteInfoBold")}</strong> {t("forms.noteInfo")}
-        </p>
+        {/* Imagen - Botón azul con placeholder */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+          <button
+            type="button"
+            onClick={() => imageInputRef.current?.click()}
+            disabled={!canAddMoreImages || isSubmitting}
+            className="flex items-center gap-2 px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ImageIcon size={18} />
+            {t("forms.addImage")}
+          </button>
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleImageChange}
+            disabled={!canAddMoreImages || isSubmitting}
+            className="hidden"
+          />
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            {t("forms.optional")} - {t("forms.maxSize")}
+          </span>
+        </div>
+
+        {/* Preview imagen existente */}
+        {existingImageUrl && (
+          <div>
+            <ImagePreview
+              existingUrl={existingImageUrl}
+              onRemove={removeExistingImage}
+              label={t("forms.image")}
+            />
+          </div>
+        )}
+
+        {/* Preview imagen nueva */}
+        {leftImages.length > 0 && (
+          <div className="space-y-2">
+            {leftImages.map((file, index) => (
+              <ImagePreview
+                key={`new-${index}`}
+                file={file}
+                onRemove={() => removeImage(index)}
+                label={`${t("forms.image")} ${index + 1}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Botones de acción */}
-      <div className="flex gap-3 justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="flex gap-3 justify-end px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={isSubmitting}
+          className="px-6 py-3 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {t("common.cancel")}
+        </button>
         <button
           type="submit"
           disabled={isSubmitting}
-          className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 dark:from-indigo-600 dark:to-purple-700 dark:hover:from-indigo-700 dark:hover:to-purple-800 text-white rounded-lg font-medium transition-all disabled:from-gray-300 disabled:to-gray-300 dark:disabled:from-gray-600 dark:disabled:to-gray-600 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+          className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
         >
           {isSubmitting ? (
             <span className="flex items-center gap-2">
@@ -440,14 +303,6 @@ export const NoteForm: React.FC<NoteFormProps> = ({
               {isEditing ? "" : t("forms.note")}
             </span>
           )}
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={isSubmitting}
-          className="px-6 py-3 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {t("common.cancel")}
         </button>
       </div>
     </form>

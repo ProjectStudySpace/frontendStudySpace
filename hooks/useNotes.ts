@@ -3,42 +3,26 @@ import { Note, CreateNoteData, UpdateNoteData } from "../src/types/notes";
 import { useAuth } from "../src/context/AuthContext";
 import { api, deduplicateRequest } from "../src/utils/axiosConfig";
 
-//funcion auxiliar para mapear card del bacekend a nota del frontend
+//funcion auxiliar para mapear card del backend a nota del frontend
 const mapCardToNote = (card: any, topicId?: number): Note => {
-  let title: string | undefined;
-  let leftContent: string;
-
-  if (card.title) {
-    title = card.title;
-    leftContent = card.question || "";
-  } else {
-    const questionParts = (card.question || "").split("\n\n");
-    title = questionParts.length > 1 ? questionParts[0].trim() : undefined;
-    leftContent =
-      questionParts.length > 1
-        ? questionParts.slice(1).join("\n\n").trim()
-        : card.question || "";
-  }
-
-  // Obtener TODAS las imágenes por tipo
-  const leftImages =
-    card.images?.filter((img: any) => img.imageType === "question") || [];
-  const rightImages =
-    card.images?.filter((img: any) => img.imageType === "answer") || [];
+  // Para notas de explicación:
+  // - question (backend) → leftContent (frontend) = título de la nota
+  // - answer (backend) → rightContent (frontend) = contenido de la nota
+  const leftContent = card.question || "";
+  const rightContent = card.answer || "";
 
   return {
     id: card.id,
-    title,
     leftContent,
-    rightContent: card.answer || "",
+    rightContent,
     type: card.type,
     topicId: card.topicId || topicId,
     // Mantener compatibilidad con una sola imagen
-    leftImageUrl: leftImages[0]?.imageUrl,
-    rightImageUrl: rightImages[0]?.imageUrl,
+    leftImageUrl: card.leftImageUrl,
+    rightImageUrl: card.rightImageUrl,
     // Arrays de URLs para múltiples imágenes
-    leftImageUrls: leftImages.map((img: any) => img.imageUrl),
-    rightImageUrls: rightImages.map((img: any) => img.imageUrl),
+    leftImageUrls: card.leftImageUrls || [],
+    rightImageUrls: card.rightImageUrls || [],
     createdAt: card.createdAt,
     updatedAt: card.updatedAt,
     topic: card.topic,
@@ -188,14 +172,11 @@ export const useNotes = () => {
     try {
       const formData = new FormData();
       // Mapear campos de nota a los campos que espera el backend
-      //enviar title como campo separado
-
-      if (noteData.title) {
-        formData.append("title", noteData.title.trim());
-      }
+      // - leftContent → question (título de la nota)
+      // - rightContent → answer (contenido de la nota)
 
       formData.append("question", noteData.leftContent || "");
-      formData.append("answer", noteData.rightContent || "Sin contenido");
+      formData.append("answer", noteData.rightContent || "");
       formData.append("type", (noteData.type || "explanation").toUpperCase());
       formData.append("topicId", noteData.topicId.toString());
 
@@ -245,9 +226,8 @@ export const useNotes = () => {
     try {
       const formData = new FormData();
       // Mapear campos de nota a los campos que espera el backend
-      if (updates.title !== undefined) {
-        formData.append("title", updates.title.trim() || "");
-      }
+      // - leftContent → question (título de la nota)
+      // - rightContent → answer (contenido de la nota)
       if (updates.leftContent !== undefined) {
         formData.append("question", updates.leftContent);
       }
