@@ -3,6 +3,14 @@ export interface User {
   email: string;
   name?: string;
   userTimezone?: string;
+  // Fase 2 - Gamificación
+  totalXp?: number;
+  currentStreak?: number;
+  longestStreak?: number;
+  preferredSleepTime?: string;
+  preferredWakeTime?: string;
+  pomodorosCompleted?: number;
+  sessionsCompleted?: number;
 }
 
 export interface StudyTheme {

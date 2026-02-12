@@ -2,8 +2,10 @@
   "nav": {
     "topics": "My Topics",
     "studySessions": "Study Sessions",
+    "intensiveStudy": "Intensive Sessions",
     "calendar": "Calendar",
     "progress": "Progress",
+    "gamification": "Gamification",
     "profile": "Profile",
     "settings": "Settings",
     "logout": "Logout"
@@ -1830,5 +1832,216 @@
       "disableGuide": "Don't show startup guide"
     },
     "stepProgress": "Step {current} of {total}"
+  },
+  "intensiveStudy": {
+    "title": "Intensive Sessions",
+    "subtitle": "Study with Pomodoro technique",
+    "newSession": "New Session",
+    "continueSession": "Continue Session",
+    "intensity": {
+      "title": "Select Intensity",
+      "relaxed": {
+        "name": "Relaxed",
+        "description": "Short session with frequent breaks",
+        "pomodoros": "Up to 2 Pomodoros",
+        "reviews": "Reviews every 2 hours"
+      },
+      "normal": {
+        "name": "Normal",
+        "description": "Balanced session for regular study",
+        "pomodoros": "Up to 4 Pomodoros",
+        "reviews": "Reviews every 1.5 hours"
+      },
+      "intensive": {
+        "name": "Intensive",
+        "description": "Extensive session for intensive preparation",
+        "pomodoros": "Up to 8 Pomodoros",
+        "reviews": "Reviews every hour"
+      }
+    },
+    "status": {
+      "created": "Created",
+      "inProgress": "In Progress",
+      "paused": "Paused",
+      "completed": "Completed",
+      "abandoned": "Abandoned"
+    },
+    "pomodoro": {
+      "block": "Block {current} of {total}",
+      "work": "Work",
+      "shortBreak": "Short Break",
+      "longBreak": "Long Break",
+      "skipBreak": "Skip Break",
+      "endBreak": "End Break"
+    },
+    "difficulty": {
+      "title": "How difficult was it?",
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    },
+    "actions": {
+      "start": "Start Session",
+      "pause": "Pause",
+      "resume": "Resume",
+      "abandon": "Abandon",
+      "complete": "Complete"
+    },
+    "abandon": {
+      "title": "Abandon session?",
+      "warning": "If you abandon now you will lose XP.",
+      "xpToLose": "XP you will lose: {xp}",
+      "completedCards": "Cards completed: {completed} of {total}",
+      "confirm": "Yes, abandon",
+      "cancel": "Cancel"
+    },
+    "results": {
+      "title": "Session Completed!",
+      "cardsCompleted": "Cards Completed",
+      "xpEarned": "XP Earned",
+      "newBadges": "New Badges",
+      "intradayReviews": "Scheduled Reviews",
+      "backToTopics": "Back to Topics",
+      "startNewSession": "New Session"
+    },
+    "noCards": {
+      "title": "No cards",
+      "description": "This topic has no cards. Create some cards first.",
+      "goToTopic": "Go to topic"
+    }
+  },
+  "intradayReviews": {
+    "title": "Intraday Reviews",
+    "subtitle": "Today's scheduled reviews",
+    "pending": "Pending",
+    "completed": "Completed",
+    "missed": "Missed",
+    "scheduled": "Scheduled for {time}",
+    "startReview": "Start Review",
+    "noReviews": {
+      "title": "No pending reviews",
+      "description": "You don't have any intraday reviews scheduled for now."
+    },
+    "complete": "Complete Review",
+    "cardsRemaining": "{count} cards remaining"
+  },
+  "gamification": {
+    "title": "Gamification",
+    "subtitle": "Your progress and achievements",
+    "xp": {
+      "total": "Total XP",
+      "level": "Level",
+      "nextLevel": "Next level",
+      "progress": "Progress"
+    },
+    "badges": {
+      "title": "Badges",
+      "earned": "Earned",
+      "locked": "Locked",
+      "pomodoroNovice": {
+        "name": "Pomodoro Novice",
+        "description": "Complete your first Pomodoro"
+      },
+      "pomodoroFocused": {
+        "name": "Pomodoro Focused",
+        "description": "Complete 10 Pomodoros"
+      },
+      "pomodoroExpert": {
+        "name": "Pomodoro Expert",
+        "description": "Complete 50 Pomodoros"
+      },
+      "pomodoroMaster": {
+        "name": "Pomodoro Master",
+        "description": "Complete 100 Pomodoros"
+      },
+      "sessionStarter": {
+        "name": "Session Starter",
+        "description": "Complete your first intensive session"
+      },
+      "sessionRegular": {
+        "name": "Session Regular",
+        "description": "Complete 10 intensive sessions"
+      },
+      "sessionDevoted": {
+        "name": "Session Devoted",
+        "description": "Complete 25 intensive sessions"
+      },
+      "sessionLegend": {
+        "name": "Session Legend",
+        "description": "Complete 50 intensive sessions"
+      },
+      "streakWeek": {
+        "name": "Week Streak",
+        "description": "Maintain a 7-day streak"
+      },
+      "streakMonth": {
+        "name": "Month Streak",
+        "description": "Maintain a 30-day streak"
+      },
+      "streakChampion": {
+        "name": "Streak Champion",
+        "description": "Maintain a 100-day streak"
+      },
+      "cardCollector": {
+        "name": "Card Collector",
+        "description": "Complete 50 cards"
+      },
+      "cardMaster": {
+        "name": "Card Master",
+        "description": "Complete 200 cards"
+      },
+      "earlyBird": {
+        "name": "Early Bird",
+        "description": "Complete a session before 7am"
+      }
+    },
+    "leaderboard": {
+      "title": "Leaderboard",
+      "rank": "Rank",
+      "name": "Name",
+      "xp": "XP",
+      "level": "Level",
+      "yourPosition": "Your position: {position}",
+      "topThree": "Top 3"
+    },
+    "multipliers": {
+      "title": "Active Multipliers",
+      "streak": "Streak x{value}",
+      "intensive": "Intensive Session x{value}",
+      "firstOfDay": "First session of the day x{value}",
+      "total": "Total: x{value}"
+    },
+    "xpHistory": {
+      "title": "XP History",
+      "cardComplete": "Card completed",
+      "pomodoroComplete": "Pomodoro completed",
+      "sessionComplete": "Session completed",
+      "reviewComplete": "Review completed",
+      "badgeEarned": "Badge earned",
+      "streakBonus": "Streak bonus",
+      "penalty": "Penalty"
+    }
+  },
+  "pushNotifications": {
+    "title": "Push Notifications",
+    "enable": "Enable notifications",
+    "disable": "Disable notifications",
+    "enabled": "Notifications enabled",
+    "disabled": "Notifications disabled",
+    "description": "Receive intraday review reminders and streak warnings",
+    "permissionRequired": "Browser permission required",
+    "notSupported": "Push notifications are not supported in this browser",
+    "errors": {
+      "notSupported": "Your browser doesn't support push notifications",
+      "permissionDenied": "Notification permission denied. Enable it in your browser settings.",
+      "subscriptionFailed": "Failed to subscribe to notifications",
+      "unsubscriptionFailed": "Failed to unsubscribe from notifications",
+      "serviceWorkerFailed": "Failed to register Service Worker"
+    },
+    "success": {
+      "subscribed": "Notifications enabled successfully",
+      "unsubscribed": "Notifications disabled",
+      "permissionGranted": "Permission granted"
+    }
   }
 }

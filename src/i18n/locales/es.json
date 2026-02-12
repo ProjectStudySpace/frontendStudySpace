@@ -2,8 +2,10 @@
   "nav": {
     "topics": "Mis temas",
     "studySessions": "Sesiones de repaso",
+    "intensiveStudy": "Sesiones Intensivas",
     "calendar": "Calendario",
     "progress": "Progreso",
+    "gamification": "Gamificación",
     "profile": "Perfil",
     "settings": "Configuración",
     "logout": "Cerrar sesión"
@@ -1834,5 +1836,216 @@
       "disableGuide": "No mostrar guía de inicio"
     },
     "stepProgress": "Paso {current} de {total}"
+  },
+  "intensiveStudy": {
+    "title": "Sesiones Intensivas",
+    "subtitle": "Estudia con técnica Pomodoro",
+    "newSession": "Nueva Sesión",
+    "continueSession": "Continuar Sesión",
+    "intensity": {
+      "title": "Selecciona la Intensidad",
+      "relaxed": {
+        "name": "Relajada",
+        "description": "Sesión corta con descansos frecuentes",
+        "pomodoros": "Hasta 2 Pomodoros",
+        "reviews": "Repasos cada 2 horas"
+      },
+      "normal": {
+        "name": "Normal",
+        "description": "Sesión equilibrada para estudio regular",
+        "pomodoros": "Hasta 4 Pomodoros",
+        "reviews": "Repasos cada 1.5 horas"
+      },
+      "intensive": {
+        "name": "Intensiva",
+        "description": "Sesión extensa para preparación intensiva",
+        "pomodoros": "Hasta 8 Pomodoros",
+        "reviews": "Repasos cada hora"
+      }
+    },
+    "status": {
+      "created": "Creada",
+      "inProgress": "En Progreso",
+      "paused": "Pausada",
+      "completed": "Completada",
+      "abandoned": "Abandonada"
+    },
+    "pomodoro": {
+      "block": "Bloque {current} de {total}",
+      "work": "Trabajo",
+      "shortBreak": "Descanso Corto",
+      "longBreak": "Descanso Largo",
+      "skipBreak": "Saltar Descanso",
+      "endBreak": "Terminar Descanso"
+    },
+    "difficulty": {
+      "title": "¿Qué tan difícil fue?",
+      "easy": "Fácil",
+      "medium": "Media",
+      "hard": "Difícil"
+    },
+    "actions": {
+      "start": "Iniciar Sesión",
+      "pause": "Pausar",
+      "resume": "Reanudar",
+      "abandon": "Abandonar",
+      "complete": "Completar"
+    },
+    "abandon": {
+      "title": "¿Abandonar sesión?",
+      "warning": "Si abandonas ahora perderás XP.",
+      "xpToLose": "XP que perderás: {xp}",
+      "completedCards": "Tarjetas completadas: {completed} de {total}",
+      "confirm": "Sí, abandonar",
+      "cancel": "Cancelar"
+    },
+    "results": {
+      "title": "¡Sesión Completada!",
+      "cardsCompleted": "Tarjetas Completadas",
+      "xpEarned": "XP Ganada",
+      "newBadges": "Nuevos Badges",
+      "intradayReviews": "Repasos Programados",
+      "backToTopics": "Volver a Temas",
+      "startNewSession": "Nueva Sesión"
+    },
+    "noCards": {
+      "title": "Sin tarjetas",
+      "description": "Este tema no tiene tarjetas. Crea algunas tarjetas primero.",
+      "goToTopic": "Ir al tema"
+    }
+  },
+  "intradayReviews": {
+    "title": "Repasos Intradía",
+    "subtitle": "Repasos programados de hoy",
+    "pending": "Pendientes",
+    "completed": "Completados",
+    "missed": "Perdidos",
+    "scheduled": "Programado para las {time}",
+    "startReview": "Iniciar Repaso",
+    "noReviews": {
+      "title": "Sin repasos pendientes",
+      "description": "No tienes repasos intradía programados por ahora."
+    },
+    "complete": "Completar Repaso",
+    "cardsRemaining": "{count} tarjetas restantes"
+  },
+  "gamification": {
+    "title": "Gamificación",
+    "subtitle": "Tu progreso y logros",
+    "xp": {
+      "total": "XP Total",
+      "level": "Nivel",
+      "nextLevel": "Siguiente nivel",
+      "progress": "Progreso"
+    },
+    "badges": {
+      "title": "Badges",
+      "earned": "Ganados",
+      "locked": "Bloqueados",
+      "pomodoroNovice": {
+        "name": "Novato Pomodoro",
+        "description": "Completa tu primer Pomodoro"
+      },
+      "pomodoroFocused": {
+        "name": "Pomodoro Enfocado",
+        "description": "Completa 10 Pomodoros"
+      },
+      "pomodoroExpert": {
+        "name": "Experto Pomodoro",
+        "description": "Completa 50 Pomodoros"
+      },
+      "pomodoroMaster": {
+        "name": "Maestro Pomodoro",
+        "description": "Completa 100 Pomodoros"
+      },
+      "sessionStarter": {
+        "name": "Inicio de Sesiones",
+        "description": "Completa tu primera sesión intensiva"
+      },
+      "sessionRegular": {
+        "name": "Sesión Regular",
+        "description": "Completa 10 sesiones intensivas"
+      },
+      "sessionDevoted": {
+        "name": "Sesión Dedicada",
+        "description": "Completa 25 sesiones intensivas"
+      },
+      "sessionLegend": {
+        "name": "Leyenda de Sesiones",
+        "description": "Completa 50 sesiones intensivas"
+      },
+      "streakWeek": {
+        "name": "Racha Semanal",
+        "description": "Mantén una racha de 7 días"
+      },
+      "streakMonth": {
+        "name": "Racha Mensual",
+        "description": "Mantén una racha de 30 días"
+      },
+      "streakChampion": {
+        "name": "Campeón de Racha",
+        "description": "Mantén una racha de 100 días"
+      },
+      "cardCollector": {
+        "name": "Coleccionista",
+        "description": "Completa 50 tarjetas"
+      },
+      "cardMaster": {
+        "name": "Maestro de Tarjetas",
+        "description": "Completa 200 tarjetas"
+      },
+      "earlyBird": {
+        "name": "Madrugador",
+        "description": "Completa una sesión antes de las 7am"
+      }
+    },
+    "leaderboard": {
+      "title": "Tabla de Clasificación",
+      "rank": "Posición",
+      "name": "Nombre",
+      "xp": "XP",
+      "level": "Nivel",
+      "yourPosition": "Tu posición: {position}",
+      "topThree": "Top 3"
+    },
+    "multipliers": {
+      "title": "Multiplicadores Activos",
+      "streak": "Racha x{value}",
+      "intensive": "Sesión Intensiva x{value}",
+      "firstOfDay": "Primera sesión del día x{value}",
+      "total": "Total: x{value}"
+    },
+    "xpHistory": {
+      "title": "Historial de XP",
+      "cardComplete": "Tarjeta completada",
+      "pomodoroComplete": "Pomodoro completado",
+      "sessionComplete": "Sesión completada",
+      "reviewComplete": "Repaso completado",
+      "badgeEarned": "Badge ganado",
+      "streakBonus": "Bonus de racha",
+      "penalty": "Penalización"
+    }
+  },
+  "pushNotifications": {
+    "title": "Notificaciones Push",
+    "enable": "Activar notificaciones",
+    "disable": "Desactivar notificaciones",
+    "enabled": "Notificaciones activadas",
+    "disabled": "Notificaciones desactivadas",
+    "description": "Recibe recordatorios de repasos intradía y avisos de racha",
+    "permissionRequired": "Se requiere permiso del navegador",
+    "notSupported": "Las notificaciones push no están soportadas en este navegador",
+    "errors": {
+      "notSupported": "Tu navegador no soporta notificaciones push",
+      "permissionDenied": "Permiso de notificaciones denegado. Habilítalo en la configuración del navegador.",
+      "subscriptionFailed": "Error al suscribirse a notificaciones",
+      "unsubscriptionFailed": "Error al desuscribirse de notificaciones",
+      "serviceWorkerFailed": "Error al registrar el Service Worker"
+    },
+    "success": {
+      "subscribed": "Notificaciones activadas correctamente",
+      "unsubscribed": "Notificaciones desactivadas",
+      "permissionGranted": "Permiso concedido"
+    }
   }
 }
