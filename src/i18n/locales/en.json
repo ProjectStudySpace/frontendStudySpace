@@ -381,7 +381,8 @@
     "search": "Search",
     "deleteImage": "Delete image",
     "inTotal": "in total",
-    "backToHome": "Back to Home"
+    "backToHome": "Back to Home",
+    "retry": "Retry"
   },
   "privacy": {
     "title": "Privacy Policy",
@@ -1928,6 +1929,30 @@
   "gamification": {
     "title": "Gamification",
     "subtitle": "Your progress and achievements",
+    "level": "Level",
+    "totalXp": "Total XP",
+    "currentLevel": "Current Level",
+    "nextLevel": "Next level",
+    "streak": "Streak",
+    "days": "days",
+    "daysStreak": "day streak",
+    "yourBadges": "Your Badges",
+    "noBadges": "You don't have any badges yet",
+    "earnBadges": "Complete sessions to earn badges!",
+    "activityStats": "Activity Statistics",
+    "pomodorosCompleted": "Pomodoros Completed",
+    "sessionsCompleted": "Sessions Completed",
+    "longestStreak": "Longest Streak",
+    "yourPosition": "Your position",
+    "noLeaderboardData": "No leaderboard data available",
+    "loadMore": "Load more",
+    "user": "User",
+    "you": "You",
+    "activeMultipliers": "Active Multipliers",
+    "noActiveMultipliers": "No active multipliers",
+    "totalBonus": "Total bonus",
+    "recentActivity": "Recent Activity",
+    "noData": "No gamification data available",
     "xp": {
       "total": "Total XP",
       "level": "Level",
@@ -1993,6 +2018,10 @@
       "earlyBird": {
         "name": "Early Bird",
         "description": "Complete a session before 7am"
+      },
+      "unknown": {
+        "name": "Unknown Badge",
+        "description": "Secret badge"
       }
     },
     "leaderboard": {
@@ -2009,7 +2038,11 @@
       "streak": "Streak x{value}",
       "intensive": "Intensive Session x{value}",
       "firstOfDay": "First session of the day x{value}",
-      "total": "Total: x{value}"
+      "total": "Total: x{value}",
+      "streakBonus": "Streak Bonus",
+      "intensiveSession": "Intensive Session",
+      "firstSession": "First of the day",
+      "perfectPomodoro": "Perfect Pomodoro"
     },
     "xpHistory": {
       "title": "XP History",
@@ -2020,6 +2053,16 @@
       "badgeEarned": "Badge earned",
       "streakBonus": "Streak bonus",
       "penalty": "Penalty"
+    },
+    "transactionTypes": {
+      "CARD_COMPLETE": "Card completed",
+      "POMODORO_COMPLETE": "Pomodoro completed",
+      "SESSION_COMPLETE": "Session completed",
+      "INTRADAY_REVIEW_COMPLETE": "Review completed",
+      "BADGE_EARNED": "Badge earned",
+      "STREAK_BONUS": "Streak bonus",
+      "LEVEL_UP_BONUS": "Level up",
+      "PENALTY_ABANDON": "Abandon"
     }
   },
   "pushNotifications": {

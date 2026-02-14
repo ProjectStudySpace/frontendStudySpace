@@ -381,7 +381,8 @@
     "search": "Buscar",
     "deleteImage": "Eliminar imagen",
     "inTotal": "en total",
-    "backToHome": "Volver al inicio"
+    "backToHome": "Volver al inicio",
+    "retry": "Reintentar"
   },
   "privacy": {
     "title": "Política de Privacidad",
@@ -1932,6 +1933,30 @@
   "gamification": {
     "title": "Gamificación",
     "subtitle": "Tu progreso y logros",
+    "level": "Nivel",
+    "totalXp": "XP Total",
+    "currentLevel": "Nivel Actual",
+    "nextLevel": "Siguiente nivel",
+    "streak": "Racha",
+    "days": "días",
+    "daysStreak": "días de racha",
+    "yourBadges": "Tus Badges",
+    "noBadges": "Aún no tienes badges",
+    "earnBadges": "¡Completa sesiones para ganar badges!",
+    "activityStats": "Estadísticas de Actividad",
+    "pomodorosCompleted": "Pomodoros Completados",
+    "sessionsCompleted": "Sesiones Completadas",
+    "longestStreak": "Racha Más Larga",
+    "yourPosition": "Tu posición",
+    "noLeaderboardData": "No hay datos de clasificación",
+    "loadMore": "Cargar más",
+    "user": "Usuario",
+    "you": "Tú",
+    "activeMultipliers": "Multiplicadores Activos",
+    "noActiveMultipliers": "No hay multiplicadores activos",
+    "totalBonus": "Bonus total",
+    "recentActivity": "Actividad Reciente",
+    "noData": "No hay datos de gamificación disponibles",
     "xp": {
       "total": "XP Total",
       "level": "Nivel",
@@ -1997,6 +2022,10 @@
       "earlyBird": {
         "name": "Madrugador",
         "description": "Completa una sesión antes de las 7am"
+      },
+      "unknown": {
+        "name": "Badge Desconocido",
+        "description": "Badge secreto"
       }
     },
     "leaderboard": {
@@ -2013,7 +2042,11 @@
       "streak": "Racha x{value}",
       "intensive": "Sesión Intensiva x{value}",
       "firstOfDay": "Primera sesión del día x{value}",
-      "total": "Total: x{value}"
+      "total": "Total: x{value}",
+      "streakBonus": "Bonus de Racha",
+      "intensiveSession": "Sesión Intensiva",
+      "firstSession": "Primera del día",
+      "perfectPomodoro": "Pomodoro Perfecto"
     },
     "xpHistory": {
       "title": "Historial de XP",
@@ -2024,6 +2057,16 @@
       "badgeEarned": "Badge ganado",
       "streakBonus": "Bonus de racha",
       "penalty": "Penalización"
+    },
+    "transactionTypes": {
+      "CARD_COMPLETE": "Tarjeta completada",
+      "POMODORO_COMPLETE": "Pomodoro completado",
+      "SESSION_COMPLETE": "Sesión completada",
+      "INTRADAY_REVIEW_COMPLETE": "Repaso completado",
+      "BADGE_EARNED": "Badge ganado",
+      "STREAK_BONUS": "Bonus de racha",
+      "LEVEL_UP_BONUS": "Subida de nivel",
+      "PENALTY_ABANDON": "Abandono"
     }
   },
   "pushNotifications": {
