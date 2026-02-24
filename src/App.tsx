@@ -26,6 +26,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import GoogleCallback from "./pages/GoogleCallback";
 import GamificationPage from "./pages/GamificationPage";
+import IntensiveStudy from "./pages/IntensiveStudy";
 import Layout from "./components/layout";
 
 const AppRoutes: React.FC = () => {
@@ -69,6 +70,7 @@ const AppRoutes: React.FC = () => {
           <Route path="/profile" element={<Perfil />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/gamification" element={<GamificationPage />} />
+          <Route path="/intensive-study" element={<IntensiveStudy />} />
         </Route>
       ) : (
         <>
@@ -83,6 +85,10 @@ const AppRoutes: React.FC = () => {
           <Route path="/settings" element={<Navigate to="/login" replace />} />
           <Route
             path="/gamification"
+            element={<Navigate to="/login" replace />}
+          />
+          <Route
+            path="/intensive-study"
             element={<Navigate to="/login" replace />}
           />
         </>

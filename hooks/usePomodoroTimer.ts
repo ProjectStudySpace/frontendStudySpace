@@ -2,6 +2,10 @@
  * Hook para el Timer Pomodoro - Fase 2
  * Temporizador visual para sesiones intensivas
  * NOTA: El timer es visual/UX solamente. El backend es la fuente de verdad del estado.
+ *
+ * Soporta sincronización con backend usando timestamps UTC:
+ * - calculateRemainingTime(): calcula tiempo restante basado en startedAt y duration del backend
+ * - syncWithBackend(): sincroniza el timer con los valores del backend
  */
 import { useState, useCallback, useEffect, useRef } from "react";
 import { POMODORO_CONFIG } from "../src/types/intensiveSessions";
@@ -25,6 +29,10 @@ interface UsePomodoroTimerReturn {
   setBlockNumber: (block: number) => void;
   setTimeRemaining: (seconds: number) => void;
 
+  // Nuevas funciones para sincronización con backend
+  calculateRemainingTime: (startedAt: string, duration: number) => number;
+  syncWithBackend: (startedAt: string, duration: number) => void;
+
   // Constantes
   WORK_DURATION: number;
   SHORT_BREAK_DURATION: number;
@@ -44,6 +52,10 @@ export const usePomodoroTimer = (): UsePomodoroTimerReturn => {
 
   // Ref para el intervalo
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  // Ref para evitar que onComplete se llame múltiples veces
+  const hasCompletedRef = useRef(false);
+  // Ref para almacenar el startedAt del backend
+  const backendStartedAtRef = useRef<string | null>(null);
 
   // Calcular progreso (0-100)
   const progress =
@@ -73,11 +85,50 @@ export const usePomodoroTimer = (): UsePomodoroTimerReturn => {
   }, [isRunning, timeRemaining]);
 
   /**
+   * Calcula el tiempo restante basado en el timestamp UTC del backend
+   * @param startedAt - Timestamp UTC cuando inició el Pomodoro (ISO string)
+   * @param duration - Duración total en segundos
+   * @returns Tiempo restante en segundos
+   */
+  const calculateRemainingTime = useCallback(
+    (startedAt: string, duration: number): number => {
+      try {
+        const startTime = new Date(startedAt).getTime(); // UTC milliseconds
+        const endTime = startTime + duration * 1000; // UTC milliseconds
+        const now = Date.now(); // UTC milliseconds
+        const remaining = Math.max(0, Math.floor((endTime - now) / 1000));
+        return remaining;
+      } catch (error) {
+        console.warn("Error calculating remaining time:", error);
+        return duration; // Fallback to full duration
+      }
+    },
+    [],
+  );
+
+  /**
+   * Sincroniza el timer con los valores del backend
+   * Usa el timestamp UTC del backend para calcular el tiempo restante exacto
+   * @param startedAt - Timestamp UTC cuando inició el Pomodoro (ISO string)
+   * @param duration - Duración total en segundos
+   */
+  const syncWithBackend = useCallback(
+    (startedAt: string, duration: number) => {
+      backendStartedAtRef.current = startedAt;
+      const remaining = calculateRemainingTime(startedAt, duration);
+      setTimeRemaining(remaining);
+      setTotalTime(duration);
+    },
+    [calculateRemainingTime],
+  );
+
+  /**
    * Iniciar el timer
    */
   const start = useCallback(() => {
     if (timeRemaining > 0) {
       setIsRunning(true);
+      hasCompletedRef.current = false;
     }
   }, [timeRemaining]);
 
@@ -90,6 +141,7 @@ export const usePomodoroTimer = (): UsePomodoroTimerReturn => {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
+    hasCompletedRef.current = false;
   }, []);
 
   /**
@@ -180,6 +232,10 @@ export const usePomodoroTimer = (): UsePomodoroTimerReturn => {
     setPhase,
     setBlockNumber,
     setTimeRemaining,
+
+    // Funciones de sincronización
+    calculateRemainingTime,
+    syncWithBackend,
 
     // Constantes
     WORK_DURATION: POMODORO_CONFIG.WORK_DURATION,

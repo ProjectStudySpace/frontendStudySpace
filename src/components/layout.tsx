@@ -13,6 +13,7 @@ import {
   User,
   Settings,
   Trophy,
+  Zap,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
@@ -112,6 +113,12 @@ const LayoutContent = () => {
       icon: GraduationCap,
       label: t("nav.studySessions"),
       id: "nav-study-sessions",
+    },
+    {
+      to: "/intensive-study",
+      icon: Zap,
+      label: t("nav.intensiveStudy"),
+      id: "nav-intensive-study",
     },
     {
       to: "/calendar",
