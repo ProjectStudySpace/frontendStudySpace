@@ -434,7 +434,6 @@ const Layout = () => {
     <OnboardingProvider>
       <LayoutContent />
       <OnboardingTour />
-      <Outlet />
     </OnboardingProvider>
   );
 };

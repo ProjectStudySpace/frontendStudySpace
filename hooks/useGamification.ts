@@ -72,10 +72,29 @@ export const useGamification = (): UseGamificationReturn => {
         );
 
         if (response.data) {
-          setStats(response.data);
-          setBadges(response.data.badges || []);
-          setRecentTransactions(response.data.recentTransactions || []);
-          return response.data;
+          const apiData = response.data as any; // Ajustar según la estructura real de la respuesta
+
+          const mappedStats: GamificationStats = {
+            totalXp: apiData.totalXp ?? 0,
+            level: apiData.level ?? 1,
+            currentLevelXp:
+              apiData.xpForCurrentLevel ?? apiData.currentLevelXp ?? 0,
+            nextLevelXp: apiData.xpToNextLevel ?? apiData.nextLevelXp ?? 1000,
+            progressPercent:
+              apiData.levelProgress ?? apiData.progressPercent ?? 0,
+            currentStreak: apiData.currentStreak ?? 0,
+            longestStreak: apiData.longestStreak ?? 0,
+            badges: apiData.badges || [],
+            recentTransactions:
+              apiData.recentTransactions || apiData.recentXp || [],
+            pomodorosCompleted: apiData.pomodorosCompleted ?? 0,
+            sessionsCompleted: apiData.sessionsCompleted ?? 0,
+            sessionsAbandoned: apiData.sessionsAbandoned ?? 0,
+          };
+          setStats(mappedStats);
+          setBadges(mappedStats.badges);
+          setRecentTransactions(mappedStats.recentTransactions);
+          return mappedStats;
         }
         return null;
       } catch (err: any) {
