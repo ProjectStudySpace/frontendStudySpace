@@ -89,11 +89,11 @@ const IntensityPicker: React.FC<IntensityPickerProps> = ({
   const getIntensityLabel = (intensity: StudyIntensity): string => {
     switch (intensity) {
       case StudyIntensity.RELAXED:
-        return t("intensiveStudy.intensity.relaxed", "Relajado");
+        return t("intensiveStudy.intensity.relaxed.name", "Relajado");
       case StudyIntensity.NORMAL:
-        return t("intensiveStudy.intensity.normal", "Normal");
+        return t("intensiveStudy.intensity.normal.name", "Normal");
       case StudyIntensity.INTENSIVE:
-        return t("intensiveStudy.intensity.intensive", "Intensivo");
+        return t("intensiveStudy.intensity.intensive.name", "Intensivo");
       default:
         return "";
     }

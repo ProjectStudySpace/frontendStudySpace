@@ -165,11 +165,13 @@ export const useGamification = (): UseGamificationReturn => {
         );
 
         if (response.data) {
-          setLeaderboard(response.data.entries || []);
-          if (response.data.userPosition !== undefined) {
-            setUserPosition(response.data.userPosition);
+          const apiResponse = response.data as any;
+          const entries = apiResponse.leaderboard || apiResponse.entries || [];
+          setLeaderboard(entries);
+          if (apiResponse.userPosition !== undefined) {
+            setUserPosition(apiResponse.userPosition);
           }
-          return response.data.entries || [];
+          return entries;
         }
         return [];
       } catch (err: any) {

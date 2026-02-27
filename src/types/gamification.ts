@@ -75,11 +75,11 @@ export interface BadgeMetadata {
  * Badge ganado por el usuario
  */
 export interface UserBadge {
-  id: string;
-  userId: string;
+  id: number;
+  userId: number;
   badgeType: BadgeType;
   earnedAt: string;
-  topicId?: string;
+  topicId?: number;
   metadata?: BadgeMetadata;
   createdAt: string;
 }
@@ -88,8 +88,8 @@ export interface UserBadge {
  * Transacción de XP
  */
 export interface XpTransaction {
-  id: string;
-  userId: string;
+  id: number;
+  userId: number;
   amount: number;
   type: XpTransactionType;
   multiplier: number;
@@ -130,7 +130,7 @@ export interface GamificationStats {
  * Entrada del leaderboard
  */
 export interface LeaderboardEntry {
-  userId: string;
+  userId: number;
   name: string;
   avatar?: string;
   totalXp: number;

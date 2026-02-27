@@ -49,7 +49,13 @@ import { IntradayReview } from "../types/intradayReviews";
 import { UserBadge } from "../types/gamification";
 
 // Tipo de vista interna
-type SessionView = "CONFIG" | "ACTIVE" | "BREAK" | "PAUSED" | "RESULTS";
+type SessionView =
+  | "CONFIG"
+  | "READY"
+  | "ACTIVE"
+  | "BREAK"
+  | "PAUSED"
+  | "RESULTS";
 
 const IntensiveStudy: React.FC = () => {
   const { t } = useTranslation();
@@ -71,6 +77,7 @@ const IntensiveStudy: React.FC = () => {
     abandonSession,
     getAbandonInfo,
     completeSession,
+    getActiveSession,
     startPomodoro,
     completePomodoro,
     endBreak,
@@ -90,7 +97,7 @@ const IntensiveStudy: React.FC = () => {
 
   // Estado local
   const [currentView, setCurrentView] = useState<SessionView>("CONFIG");
-  const [selectedTopicId, setSelectedTopicId] = useState<string>("");
+  const [selectedTopicId, setSelectedTopicId] = useState<number | null>(null);
   const [selectedIntensity, setSelectedIntensity] =
     useState<StudyIntensity | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
@@ -101,6 +108,9 @@ const IntensiveStudy: React.FC = () => {
     useState<IntensiveSessionDetail | null>(null);
   const [newBadges, setNewBadges] = useState<UserBadge[]>([]);
   const [intradayReviews, setIntradayReviews] = useState<IntradayReview[]>([]);
+  const [activeSessionError, setActiveSessionError] = useState<string | null>(
+    null,
+  );
 
   // Cargar temas al montar
   useEffect(() => {
@@ -111,6 +121,22 @@ const IntensiveStudy: React.FC = () => {
   useEffect(() => {
     fetchSessions();
   }, [fetchSessions]);
+
+  // Verificar si hay sesión activa al montar
+  useEffect(() => {
+    const checkActiveSession = async () => {
+      const active = await getActiveSession();
+      if (active) {
+        setActiveSessionError(
+          t(
+            "intensiveStudy.activeSessionExists",
+            "Ya tienes una sesión activa. Continúa o abandónala primero.",
+          ),
+        );
+      }
+    };
+    checkActiveSession();
+  }, [getActiveSession, t]);
 
   // ==================== FUNCIONES DE SINCRONIZACIÓN ====================
 
@@ -168,6 +194,8 @@ const IntensiveStudy: React.FC = () => {
   const handleCreateSession = async () => {
     if (!selectedTopicId || !selectedIntensity) return;
 
+    setActiveSessionError(null);
+
     try {
       // Crear sesión
       const newSession = await createSession(
@@ -175,37 +203,62 @@ const IntensiveStudy: React.FC = () => {
         selectedIntensity,
       );
       if (newSession) {
-        // Iniciar sesión
+        // Iniciar sesión (cambia estado a ACTIVE)
         const startedSession = await startSession(newSession.id);
         if (startedSession) {
-          // Obtener detalle para ver las tarjetas
-          const detail = await fetchSessionDetail(startedSession.id);
-          if (detail) {
-            // Iniciar primer Pomodoro
-            const pomodoro = await startPomodoro(detail.id);
+          // Obtener detalle de la sesión
+          await fetchSessionDetail(startedSession.id);
 
-            // Obtener primera tarjeta
-            const firstCard = await getNextCard(detail.id);
+          // Configurar timer en 0, pausado - esperando a que inicie el Pomodoro
+          pomodoroTimer.reset();
+          pomodoroTimer.setPhase("WORK");
 
-            // Iniciar timer con duración del backend (sincronizado con UTC)
-            if (pomodoro && pomodoro.startedAt && pomodoro.duration) {
-              pomodoroTimer.syncWithBackend(
-                pomodoro.startedAt,
-                pomodoro.duration,
-              );
-              pomodoroTimer.start();
-            } else {
-              // Fallback: usar valores por defecto si el backend no responde
-              pomodoroTimer.setPhase("WORK");
-              pomodoroTimer.start();
-            }
-
-            setCurrentView("ACTIVE");
-          }
+          // Cambiar a vista READY (sesión lista, esperando iniciar Pomodoro)
+          setCurrentView("READY");
         }
       }
+    } catch (err: any) {
+      // Manejar error específico de sesión activa existente
+      if (err.code === "ACTIVE_SESSION_EXISTS") {
+        setActiveSessionError(err.message);
+      } else {
+        console.error("Error creating session:", err);
+      }
+    }
+  };
+
+  // Iniciar primer bloque Pomodoro
+  const handleStartFirstPomodoro = async () => {
+    if (!currentSession) return;
+
+    try {
+      // Iniciar primer Pomodoro
+      const pomodoro = await startPomodoro(currentSession.id);
+
+      if (pomodoro) {
+        console.log("Pomodoro started:", pomodoro);
+
+        // Obtener primera tarjeta
+        const card = await getNextCard(currentSession.id);
+        console.log("Card loaded:", card);
+
+        // Iniciar timer con duración del backend (sincronizado con UTC)
+        if (pomodoro.startedAt && pomodoro.durationMinutes) {
+          pomodoroTimer.syncWithBackend(
+            pomodoro.startedAt,
+            pomodoro.durationMinutes * 60, // Convertir minutos a segundos
+          );
+          pomodoroTimer.start();
+        } else {
+          // Fallback: usar valores por defecto
+          pomodoroTimer.setPhase("WORK");
+          pomodoroTimer.start();
+        }
+
+        setCurrentView("ACTIVE");
+      }
     } catch (err) {
-      console.error("Error creating session:", err);
+      console.error("Error starting first pomodoro:", err);
     }
   };
 
@@ -399,7 +452,7 @@ const IntensiveStudy: React.FC = () => {
   // Volver a configuración
   const handleBackToConfig = () => {
     setCurrentView("CONFIG");
-    setSelectedTopicId("");
+    setSelectedTopicId(null);
     setSelectedIntensity(null);
     setShowAnswer(false);
     setSelectedDifficulty(null);
@@ -433,14 +486,102 @@ const IntensiveStudy: React.FC = () => {
         </p>
       </div>
 
+      {/* Alerta de sesión activa existente */}
+      {activeSessionError && (
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0">
+              <svg
+                className="w-5 h-5 text-amber-500 mt-0.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                {t(
+                  "intensiveStudy.activeSessionTitle",
+                  "Sesión Activa Existente",
+                )}
+              </h3>
+              <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                {activeSessionError}
+              </p>
+              <div className="mt-3 flex gap-2">
+                <button
+                  onClick={async () => {
+                    try {
+                      const active = await getActiveSession();
+                      if (active) {
+                        const detail = await fetchSessionDetail(active.id);
+                        if (detail) {
+                          setCurrentView("ACTIVE");
+                        }
+                      } else {
+                        // Si no hay sesión activa, limpiar el error
+                        setActiveSessionError(null);
+                      }
+                    } catch (err) {
+                      console.error("Error continuing session:", err);
+                    }
+                  }}
+                  className="px-3 py-1.5 text-xs font-medium text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-800/50 rounded hover:bg-amber-200 dark:hover:bg-amber-700/50 transition-colors"
+                >
+                  {t("intensiveStudy.continueSession", "Continuar Sesión")}
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      const active = await getActiveSession();
+                      if (active) {
+                        if (
+                          window.confirm(
+                            t(
+                              "intensiveStudy.confirmAbandon",
+                              "¿Estás seguro de abandonar la sesión? Perderás XP.",
+                            ),
+                          )
+                        ) {
+                          await abandonSession(active.id);
+                          setActiveSessionError(null);
+                          await fetchSessions();
+                        }
+                      } else {
+                        // Si no hay sesión activa, limpiar el error
+                        setActiveSessionError(null);
+                      }
+                    } catch (err) {
+                      console.error("Error abandoning session:", err);
+                    }
+                  }}
+                  className="px-3 py-1.5 text-xs font-medium text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-800/50 rounded hover:bg-red-200 dark:hover:bg-red-700/50 transition-colors"
+                >
+                  {t("intensiveStudy.abandonSession", "Abandonar")}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Selector de tema */}
       <div className="space-y-3">
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           {t("intensiveStudy.selectTopic", "Seleccionar tema")}
         </label>
         <select
-          value={selectedTopicId}
-          onChange={(e) => setSelectedTopicId(e.target.value)}
+          value={selectedTopicId ?? ""}
+          onChange={(e) =>
+            setSelectedTopicId(e.target.value ? Number(e.target.value) : null)
+          }
           disabled={loadingTopics}
           className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
         >
@@ -484,6 +625,96 @@ const IntensiveStudy: React.FC = () => {
       {error && (
         <p className="text-center text-red-600 dark:text-red-400">{error}</p>
       )}
+    </div>
+  );
+
+  // Vista de sesión lista (esperando iniciar Pomodoro)
+  const renderReadyView = () => (
+    <div className="max-w-2xl mx-auto text-center space-y-8">
+      <div>
+        <h2 className="text-3xl font-bold text-gray-800 dark:text-white">
+          {t("intensiveStudy.sessionReady", "Sesión Lista")}
+        </h2>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">
+          {t(
+            "intensiveStudy.readyDesc",
+            "Tu sesión está activa y lista para comenzar",
+          )}
+        </p>
+      </div>
+
+      {/* Timer en 0, pausado */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
+        <PomodoroTimer
+          timeRemaining={0}
+          totalTime={25 * 60} // 25 minutos por defecto
+          phase="WORK"
+          blockNumber={1}
+          totalBlocks={currentSession?.totalPomodoros || 4}
+          isPaused={true}
+        />
+      </div>
+
+      {/* Información de la sesión */}
+      <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-xl p-6">
+        <h3 className="font-semibold text-indigo-800 dark:text-indigo-200 mb-4">
+          {t("intensiveStudy.sessionInfo", "Información de la sesión")}
+        </h3>
+        <div className="grid grid-cols-2 gap-4 text-left">
+          <div>
+            <p className="text-sm text-indigo-600 dark:text-indigo-400">
+              {t("intensiveStudy.topic", "Tema")}
+            </p>
+            <p className="font-medium text-indigo-800 dark:text-indigo-200">
+              {currentSession?.topic?.name}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-indigo-600 dark:text-indigo-400">
+              {t("intensiveStudy.intensity", "Intensidad")}
+            </p>
+            <p className="font-medium text-indigo-800 dark:text-indigo-200 capitalize">
+              {currentSession?.intensity?.toLowerCase()}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-indigo-600 dark:text-indigo-400">
+              {t("intensiveStudy.totalCards", "Total de tarjetas")}
+            </p>
+            <p className="font-medium text-indigo-800 dark:text-indigo-200">
+              {currentSession?.totalCards}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-indigo-600 dark:text-indigo-400">
+              {t("intensiveStudy.pomodoros", "Pomodoros")}
+            </p>
+            <p className="font-medium text-indigo-800 dark:text-indigo-200">
+              {currentSession?.totalPomodoros}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Botón para iniciar Pomodoro */}
+      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <button
+          onClick={handleStartFirstPomodoro}
+          disabled={loading}
+          className="flex items-center justify-center gap-2 px-8 py-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-semibold rounded-xl transition-colors"
+        >
+          <Play className="w-5 h-5" />
+          {t("intensiveStudy.startPomodoro", "Iniciar Bloque Pomodoro")}
+        </button>
+
+        <button
+          onClick={handleAbandon}
+          className="flex items-center justify-center gap-2 px-8 py-4 bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 text-red-700 dark:text-red-300 font-semibold rounded-xl transition-colors"
+        >
+          <Square className="w-5 h-5" />
+          {t("intensiveStudy.abandonSession", "Abandonar Sesión")}
+        </button>
+      </div>
     </div>
   );
 
@@ -691,16 +922,18 @@ const IntensiveStudy: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
       {/* Botón de volver (excepto en configuración) */}
-      {currentView !== "CONFIG" && currentView !== "RESULTS" && (
-        <button
-          onClick={() =>
-            currentView === "PAUSED" ? handleResume() : handlePause()
-          }
-          className="fixed top-20 left-4 p-2 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow z-10"
-        >
-          <ArrowLeft className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-        </button>
-      )}
+      {currentView !== "CONFIG" &&
+        currentView !== "RESULTS" &&
+        currentView !== "READY" && (
+          <button
+            onClick={() =>
+              currentView === "PAUSED" ? handleResume() : handlePause()
+            }
+            className="fixed top-20 left-4 p-2 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow z-10"
+          >
+            <ArrowLeft className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+          </button>
+        )}
 
       {/* Loading */}
       {loading && (
@@ -713,6 +946,7 @@ const IntensiveStudy: React.FC = () => {
       {!loading && (
         <>
           {currentView === "CONFIG" && renderConfigView()}
+          {currentView === "READY" && renderReadyView()}
           {currentView === "ACTIVE" && renderActiveView()}
           {currentView === "BREAK" && renderBreakView()}
           {currentView === "PAUSED" && renderPausedView()}

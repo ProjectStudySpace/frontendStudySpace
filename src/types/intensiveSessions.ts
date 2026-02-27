@@ -59,7 +59,7 @@ export enum BreakType {
  * Información básica del tema (incluida en la sesión)
  */
 export interface TopicInfo {
-  id: string;
+  id: number;
   name: string;
   description?: string;
   color?: string;
@@ -69,19 +69,19 @@ export interface TopicInfo {
  * Información básica de la tarjeta de estudio
  */
 export interface StudyCardInfo {
-  id: string;
+  id: number;
   question: string;
   answer: string;
-  topicId: string;
+  topicId: number;
 }
 
 /**
  * Sesión de estudio intensiva
  */
 export interface IntensiveStudySession {
-  id: string;
-  topicId: string;
-  userId: string;
+  id: number;
+  topicId: number;
+  userId: number;
   intensity: StudyIntensity;
   status: SessionStatus;
   totalCards: number;
@@ -102,16 +102,18 @@ export interface IntensiveStudySession {
  * Bloque Pomodoro dentro de una sesión
  */
 export interface PomodoroBlock {
-  id: string;
-  sessionId: string;
+  id: number;
+  sessionId: number;
   blockNumber: number;
   status: PomodoroStatus;
   startedAt?: string;
   completedAt?: string;
   breakStartedAt?: string;
   breakEndedAt?: string;
-  duration: number; // en segundos
-  breakDuration: number; // en segundos
+  duration?: number; // en segundos (legacy)
+  durationMinutes?: number; // en minutos (del backend)
+  breakDuration?: number; // en segundos (legacy)
+  breakDurationMinutes?: number; // en minutos (del backend)
   breakType: BreakType;
   createdAt: string;
   updatedAt: string;
@@ -121,9 +123,9 @@ export interface PomodoroBlock {
  * Tarjeta dentro de una sesión intensiva
  */
 export interface IntensiveSessionCard {
-  id: string;
-  sessionId: string;
-  cardId: string;
+  id: number;
+  sessionId: number;
+  cardId: number;
   difficulty?: CardDifficulty;
   completed: boolean;
   completedAt?: string;
@@ -137,7 +139,7 @@ export interface IntensiveSessionCard {
  * Datos para crear una nueva sesión intensiva
  */
 export interface CreateIntensiveSessionData {
-  topicId: string;
+  topicId: number;
   intensity: StudyIntensity;
 }
 
@@ -168,7 +170,7 @@ export interface AbandonInfo {
 export interface IntensiveSessionCardProps {
   card: IntensiveSessionCard;
   onDifficultySelect: (difficulty: CardDifficulty) => void;
-  onComplete: (cardId: string, difficulty: CardDifficulty) => void;
+  onComplete: (cardId: number, difficulty: CardDifficulty) => void;
   isCurrentCard: boolean;
   disabled?: boolean;
 }

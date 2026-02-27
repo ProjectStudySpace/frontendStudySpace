@@ -20,10 +20,10 @@ export enum IntradayReviewStatus {
  * Información de la tarjeta para repaso intradía
  */
 export interface IntradayReviewCardInfo {
-  id: string;
+  id: number;
   question: string;
   answer: string;
-  topicId: string;
+  topicId: number;
   topicName?: string;
 }
 
@@ -31,9 +31,9 @@ export interface IntradayReviewCardInfo {
  * Repaso intradía programado
  */
 export interface IntradayReview {
-  id: string;
-  sessionId: string;
-  userId: string;
+  id: number;
+  sessionId: number;
+  userId: number;
   scheduledFor: string; // ISO date string
   status: IntradayReviewStatus;
   completedAt?: string;
@@ -47,9 +47,9 @@ export interface IntradayReview {
  * Tarjeta individual dentro de un repaso intradía
  */
 export interface IntradayReviewCard {
-  id: string;
-  reviewId: string;
-  cardId: string;
+  id: number;
+  reviewId: number;
+  cardId: number;
   reviewed: boolean;
   reviewedAt?: string;
   card?: IntradayReviewCardInfo;
@@ -60,9 +60,9 @@ export interface IntradayReviewCard {
  * Datos para crear un repaso intradía (normalmente automático)
  */
 export interface CreateIntradayReviewData {
-  sessionId: string;
+  sessionId: number;
   scheduledFor: string;
-  cardIds: string[];
+  cardIds: number[];
 }
 
 /**
@@ -91,7 +91,7 @@ export interface CompleteIntradayReviewResponse {
  */
 export interface IntradayReviewCardProps {
   review: IntradayReview;
-  onStartReview: (reviewId: string) => void;
+  onStartReview: (reviewId: number) => void;
   isExpanded?: boolean;
 }
 
@@ -100,7 +100,7 @@ export interface IntradayReviewCardProps {
  */
 export interface IntradayReviewListProps {
   reviews: IntradayReview[];
-  onStartReview: (reviewId: string) => void;
+  onStartReview: (reviewId: number) => void;
   loading?: boolean;
 }
 
@@ -109,6 +109,6 @@ export interface IntradayReviewListProps {
  */
 export interface ActiveIntradayReviewProps {
   review: IntradayReview;
-  onComplete: (reviewId: string) => void;
+  onComplete: (reviewId: number) => void;
   onCancel: () => void;
 }

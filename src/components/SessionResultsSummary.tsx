@@ -22,7 +22,7 @@ interface SessionResultsSummaryProps {
   newBadges?: UserBadge[];
   intradayReviews?: IntradayReview[];
   onClose?: () => void;
-  onStartIntradayReview?: (reviewId: string) => void;
+  onStartIntradayReview?: (reviewId: number) => void;
 }
 
 const SessionResultsSummary: React.FC<SessionResultsSummaryProps> = ({

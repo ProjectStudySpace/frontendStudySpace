@@ -26,11 +26,11 @@ interface UseIntradayReviewsReturn {
 
   // Funciones
   fetchPendingReviews: () => Promise<IntradayReview[]>;
-  fetchReviewCards: (reviewId: string) => Promise<IntradayReviewCard[]>;
+  fetchReviewCards: (reviewId: number) => Promise<IntradayReviewCard[]>;
   completeReview: (
-    reviewId: string,
+    reviewId: number,
   ) => Promise<CompleteIntradayReviewResponse | null>;
-  startReview: (reviewId: string) => Promise<IntradayReview | null>;
+  startReview: (reviewId: number) => Promise<IntradayReview | null>;
 
   // Utilidades
   clearError: () => void;
@@ -99,7 +99,7 @@ export const useIntradayReviews = (): UseIntradayReviewsReturn => {
    * Obtener las tarjetas de un repaso específico
    */
   const fetchReviewCards = useCallback(
-    async (reviewId: string): Promise<IntradayReviewCard[]> => {
+    async (reviewId: number): Promise<IntradayReviewCard[]> => {
       if (!user) {
         setError("Usuario no autenticado");
         return [];
@@ -109,11 +109,12 @@ export const useIntradayReviews = (): UseIntradayReviewsReturn => {
       setError(null);
 
       try {
-        const response = await api.get<{ cards: IntradayReviewCard[] }>(
+        const response = await api.get<any>(
           `/intraday-reviews/${reviewId}/cards`,
         );
 
-        const cards = response.data?.cards || [];
+        const apiResponse = response.data;
+        const cards = apiResponse?.cards || [];
         setCurrentReviewCards(cards);
         return cards;
       } catch (err: any) {
@@ -134,7 +135,7 @@ export const useIntradayReviews = (): UseIntradayReviewsReturn => {
    * Iniciar un repaso (establecer como current)
    */
   const startReview = useCallback(
-    async (reviewId: string): Promise<IntradayReview | null> => {
+    async (reviewId: number): Promise<IntradayReview | null> => {
       if (!user) {
         setError("Usuario no autenticado");
         return null;
@@ -180,7 +181,7 @@ export const useIntradayReviews = (): UseIntradayReviewsReturn => {
    */
   const completeReview = useCallback(
     async (
-      reviewId: string,
+      reviewId: number,
     ): Promise<CompleteIntradayReviewResponse | null> => {
       if (!user) {
         setError("Usuario no autenticado");
@@ -191,31 +192,35 @@ export const useIntradayReviews = (): UseIntradayReviewsReturn => {
       setError(null);
 
       try {
-        const response = await api.post<CompleteIntradayReviewResponse>(
+        const response = await api.post<any>(
           `/intraday-reviews/${reviewId}/complete`,
         );
 
         if (response.data) {
-          // Actualizar estado local
-          setCurrentReview(null);
-          setCurrentReviewCards([]);
-          setTotalPending((prev) => Math.max(0, prev - 1));
-          setTotalCompleted((prev) => prev + 1);
+          const apiResponse = response.data;
+          // Verificar success
+          if (apiResponse.success) {
+            // Actualizar estado local
+            setCurrentReview(null);
+            setCurrentReviewCards([]);
+            setTotalPending((prev) => Math.max(0, prev - 1));
+            setTotalCompleted((prev) => prev + 1);
 
-          // Actualizar el review en la lista
-          setReviews((prev) =>
-            prev.map((r) =>
-              r.id === reviewId
-                ? {
-                    ...r,
-                    status: IntradayReviewStatus.COMPLETED,
-                    completedAt: new Date().toISOString(),
-                  }
-                : r,
-            ),
-          );
+            // Actualizar el review en la lista
+            setReviews((prev) =>
+              prev.map((r) =>
+                r.id === reviewId
+                  ? {
+                      ...r,
+                      status: IntradayReviewStatus.COMPLETED,
+                      completedAt: new Date().toISOString(),
+                    }
+                  : r,
+              ),
+            );
 
-          return response.data;
+            return apiResponse as CompleteIntradayReviewResponse;
+          }
         }
         return null;
       } catch (err: any) {

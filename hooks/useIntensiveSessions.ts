@@ -14,6 +14,7 @@ import {
   IntensiveSessionCard,
   StudyIntensity,
   CardDifficulty,
+  SessionStatus,
 } from "../src/types/intensiveSessions";
 
 interface UseIntensiveSessionsReturn {
@@ -27,37 +28,38 @@ interface UseIntensiveSessionsReturn {
 
   // Funciones de sesión
   createSession: (
-    topicId: string,
+    topicId: number,
     intensity: StudyIntensity,
   ) => Promise<IntensiveStudySession | null>;
   fetchSessions: () => Promise<IntensiveStudySession[]>;
-  fetchSessionDetail: (id: string) => Promise<IntensiveSessionDetail | null>;
-  startSession: (id: string) => Promise<IntensiveSessionDetail | null>;
-  pauseSession: (id: string) => Promise<IntensiveSessionDetail | null>;
-  abandonSession: (id: string) => Promise<IntensiveStudySession | null>;
-  getAbandonInfo: (id: string) => Promise<AbandonInfo | null>;
-  completeSession: (id: string) => Promise<IntensiveSessionDetail | null>;
+  fetchSessionDetail: (id: number) => Promise<IntensiveSessionDetail | null>;
+  startSession: (id: number) => Promise<IntensiveSessionDetail | null>;
+  pauseSession: (id: number) => Promise<IntensiveSessionDetail | null>;
+  abandonSession: (id: number) => Promise<IntensiveStudySession | null>;
+  getAbandonInfo: (id: number) => Promise<AbandonInfo | null>;
+  completeSession: (id: number) => Promise<IntensiveSessionDetail | null>;
+  getActiveSession: () => Promise<IntensiveStudySession | null>;
 
   // Funciones de Pomodoro
-  startPomodoro: (sessionId: string) => Promise<PomodoroBlock | null>;
+  startPomodoro: (sessionId: number) => Promise<PomodoroBlock | null>;
   completePomodoro: (
-    sessionId: string,
-    blockId: string,
+    sessionId: number,
+    blockId: number,
   ) => Promise<PomodoroBlock | null>;
   endBreak: (
-    sessionId: string,
-    blockId: string,
+    sessionId: number,
+    blockId: number,
   ) => Promise<PomodoroBlock | null>;
   skipBreak: (
-    sessionId: string,
-    blockId: string,
+    sessionId: number,
+    blockId: number,
   ) => Promise<PomodoroBlock | null>;
 
   // Funciones de tarjetas
-  getNextCard: (sessionId: string) => Promise<IntensiveSessionCard | null>;
+  getNextCard: (sessionId: number) => Promise<IntensiveSessionCard | null>;
   completeCard: (
-    sessionId: string,
-    cardId: string,
+    sessionId: number,
+    cardId: number,
     difficulty: CardDifficulty,
   ) => Promise<IntensiveSessionCard | null>;
 
@@ -89,7 +91,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
    */
   const createSession = useCallback(
     async (
-      topicId: string,
+      topicId: number,
       intensity: StudyIntensity,
     ): Promise<IntensiveStudySession | null> => {
       if (!user) {
@@ -102,19 +104,36 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
 
       try {
         const data: CreateIntensiveSessionData = { topicId, intensity };
-        const response = await api.post<IntensiveStudySession>(
-          "/intensive-sessions",
-          data,
-        );
+
+        const response = await api.post<any>("/intensive-sessions", data);
 
         if (response.data) {
-          setSessions((prev) => [response.data, ...prev]);
-          return response.data;
+          const apiResponse = response.data;
+          const session = apiResponse.session;
+          setSessions((prev) => [session, ...prev]);
+          return session;
         }
         return null;
       } catch (err: any) {
+        const errorData = err.response?.data;
         const errorMessage =
-          err.response?.data?.message || err.message || "Error al crear sesión";
+          errorData?.error ||
+          errorData?.message ||
+          err.message ||
+          "Error al crear sesión";
+
+        // Detectar error de sesión activa existente
+        const isActiveSessionError =
+          errorMessage.toLowerCase().includes("sesión activa") ||
+          errorMessage.toLowerCase().includes("active session");
+
+        if (isActiveSessionError) {
+          const activeSessionError = new Error(errorMessage);
+          (activeSessionError as any).code = "ACTIVE_SESSION_EXISTS";
+          (activeSessionError as any).status = err.response?.status;
+          throw activeSessionError;
+        }
+
         setError(errorMessage);
         return null;
       } finally {
@@ -123,6 +142,33 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
     },
     [user],
   );
+
+  /**
+   * Obtener la sesión activa actual del usuario
+   */
+  const getActiveSession =
+    useCallback(async (): Promise<IntensiveStudySession | null> => {
+      if (!user) return null;
+
+      try {
+        const response = await api.get<{ sessions: IntensiveStudySession[] }>(
+          "/intensive-sessions",
+        );
+        const sessionsData = response.data?.sessions || [];
+
+        // Buscar sesión en progreso o pausada
+        const activeSession = sessionsData.find(
+          (s) =>
+            s.status === SessionStatus.IN_PROGRESS ||
+            s.status === SessionStatus.PAUSED,
+        );
+
+        return activeSession || null;
+      } catch (err) {
+        console.error("Error getting active session:", err);
+        return null;
+      }
+    }, [user]);
 
   /**
    * Obtener todas las sesiones del usuario
@@ -163,7 +209,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
    * Obtener detalle de una sesión específica
    */
   const fetchSessionDetail = useCallback(
-    async (id: string): Promise<IntensiveSessionDetail | null> => {
+    async (id: number): Promise<IntensiveSessionDetail | null> => {
       if (!user) {
         setError("Usuario no autenticado");
         return null;
@@ -173,13 +219,13 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
       setError(null);
 
       try {
-        const response = await api.get<IntensiveSessionDetail>(
-          `/intensive-sessions/${id}`,
-        );
+        const response = await api.get<any>(`/intensive-sessions/${id}`);
 
         if (response.data) {
-          setCurrentSession(response.data);
-          return response.data;
+          const apiResponse = response.data;
+          const sessionDetail = apiResponse.session;
+          setCurrentSession(sessionDetail);
+          return sessionDetail;
         }
         return null;
       } catch (err: any) {
@@ -200,7 +246,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
    * Iniciar una sesión
    */
   const startSession = useCallback(
-    async (id: string): Promise<IntensiveSessionDetail | null> => {
+    async (id: number): Promise<IntensiveSessionDetail | null> => {
       if (!user) {
         setError("Usuario no autenticado");
         return null;
@@ -210,19 +256,19 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
       setError(null);
 
       try {
-        const response = await api.post<IntensiveSessionDetail>(
-          `/intensive-sessions/${id}/start`,
-        );
+        const response = await api.post<any>(`/intensive-sessions/${id}/start`);
 
         if (response.data) {
-          setCurrentSession(response.data);
+          const apiResponse = response.data;
+          const sessionDetail = apiResponse.session;
+          setCurrentSession(sessionDetail);
           // Actualizar en la lista también
           setSessions((prev) =>
             prev.map((s) =>
-              s.id === id ? { ...s, status: response.data.status } : s,
+              s.id === id ? { ...s, status: sessionDetail.status } : s,
             ),
           );
-          return response.data;
+          return sessionDetail;
         }
         return null;
       } catch (err: any) {
@@ -243,7 +289,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
    * Pausar una sesión
    */
   const pauseSession = useCallback(
-    async (id: string): Promise<IntensiveSessionDetail | null> => {
+    async (id: number): Promise<IntensiveSessionDetail | null> => {
       if (!user) {
         setError("Usuario no autenticado");
         return null;
@@ -253,18 +299,18 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
       setError(null);
 
       try {
-        const response = await api.post<IntensiveSessionDetail>(
-          `/intensive-sessions/${id}/pause`,
-        );
+        const response = await api.post<any>(`/intensive-sessions/${id}/pause`);
 
         if (response.data) {
-          setCurrentSession(response.data);
+          const apiResponse = response.data;
+          const sessionDetail = apiResponse.session;
+          setCurrentSession(sessionDetail);
           setSessions((prev) =>
             prev.map((s) =>
-              s.id === id ? { ...s, status: response.data.status } : s,
+              s.id === id ? { ...s, status: sessionDetail.status } : s,
             ),
           );
-          return response.data;
+          return sessionDetail;
         }
         return null;
       } catch (err: any) {
@@ -285,7 +331,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
    * Obtener información de abandono (penalización)
    */
   const getAbandonInfo = useCallback(
-    async (id: string): Promise<AbandonInfo | null> => {
+    async (id: number): Promise<AbandonInfo | null> => {
       if (!user) {
         setError("Usuario no autenticado");
         return null;
@@ -312,7 +358,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
    * Abandonar una sesión
    */
   const abandonSession = useCallback(
-    async (id: string): Promise<IntensiveStudySession | null> => {
+    async (id: number): Promise<IntensiveStudySession | null> => {
       if (!user) {
         setError("Usuario no autenticado");
         return null;
@@ -354,7 +400,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
    * Completar una sesión
    */
   const completeSession = useCallback(
-    async (id: string): Promise<IntensiveSessionDetail | null> => {
+    async (id: number): Promise<IntensiveSessionDetail | null> => {
       if (!user) {
         setError("Usuario no autenticado");
         return null;
@@ -364,18 +410,20 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
       setError(null);
 
       try {
-        const response = await api.post<IntensiveSessionDetail>(
+        const response = await api.post<any>(
           `/intensive-sessions/${id}/complete`,
         );
 
         if (response.data) {
-          setCurrentSession(response.data);
+          const apiResponse = response.data;
+          const session = apiResponse.session;
+          setCurrentSession(session);
           setSessions((prev) =>
             prev.map((s) =>
-              s.id === id ? { ...s, status: response.data.status } : s,
+              s.id === id ? { ...s, status: session.status } : s,
             ),
           );
-          return response.data;
+          return session;
         }
         return null;
       } catch (err: any) {
@@ -398,7 +446,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
    * Iniciar un bloque Pomodoro
    */
   const startPomodoro = useCallback(
-    async (sessionId: string): Promise<PomodoroBlock | null> => {
+    async (sessionId: number): Promise<PomodoroBlock | null> => {
       if (!user) {
         setError("Usuario no autenticado");
         return null;
@@ -408,13 +456,15 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
       setError(null);
 
       try {
-        const response = await api.post<PomodoroBlock>(
+        const response = await api.post<any>(
           `/intensive-sessions/${sessionId}/pomodoro/start`,
         );
 
         if (response.data) {
-          setCurrentPomodoro(response.data);
-          return response.data;
+          const apiResponse = response.data;
+          const block = apiResponse.block;
+          setCurrentPomodoro(block);
+          return block;
         }
         return null;
       } catch (err: any) {
@@ -436,8 +486,8 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
    */
   const completePomodoro = useCallback(
     async (
-      sessionId: string,
-      blockId: string,
+      sessionId: number,
+      blockId: number,
     ): Promise<PomodoroBlock | null> => {
       if (!user) {
         setError("Usuario no autenticado");
@@ -448,13 +498,15 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
       setError(null);
 
       try {
-        const response = await api.post<PomodoroBlock>(
+        const response = await api.post<any>(
           `/intensive-sessions/${sessionId}/pomodoro/${blockId}/complete`,
         );
 
         if (response.data) {
-          setCurrentPomodoro(response.data);
-          return response.data;
+          const apiResponse = response.data;
+          const block = apiResponse.block;
+          setCurrentPomodoro(block);
+          return block;
         }
         return null;
       } catch (err: any) {
@@ -476,8 +528,8 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
    */
   const endBreak = useCallback(
     async (
-      sessionId: string,
-      blockId: string,
+      sessionId: number,
+      blockId: number,
     ): Promise<PomodoroBlock | null> => {
       if (!user) {
         setError("Usuario no autenticado");
@@ -488,13 +540,15 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
       setError(null);
 
       try {
-        const response = await api.post<PomodoroBlock>(
+        const response = await api.post<any>(
           `/intensive-sessions/${sessionId}/pomodoro/${blockId}/end-break`,
         );
 
         if (response.data) {
-          setCurrentPomodoro(response.data);
-          return response.data;
+          const apiResponse = response.data;
+          // No hay block en la respuesta, solo success y message
+          // Retornamos el objeto completo para que el componente maneje la respuesta
+          return apiResponse.success ? apiResponse : null;
         }
         return null;
       } catch (err: any) {
@@ -516,8 +570,8 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
    */
   const skipBreak = useCallback(
     async (
-      sessionId: string,
-      blockId: string,
+      sessionId: number,
+      blockId: number,
     ): Promise<PomodoroBlock | null> => {
       if (!user) {
         setError("Usuario no autenticado");
@@ -528,13 +582,14 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
       setError(null);
 
       try {
-        const response = await api.post<PomodoroBlock>(
+        const response = await api.post<any>(
           `/intensive-sessions/${sessionId}/pomodoro/${blockId}/skip-break`,
         );
 
         if (response.data) {
-          setCurrentPomodoro(response.data);
-          return response.data;
+          const apiResponse = response.data;
+          // No hay block en la respuesta, solo success y message
+          return apiResponse.success ? apiResponse : null;
         }
         return null;
       } catch (err: any) {
@@ -557,20 +612,50 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
    * Obtener la siguiente tarjeta
    */
   const getNextCard = useCallback(
-    async (sessionId: string): Promise<IntensiveSessionCard | null> => {
+    async (sessionId: number): Promise<IntensiveSessionCard | null> => {
       if (!user) {
         setError("Usuario no autenticado");
         return null;
       }
 
       try {
-        const response = await api.get<IntensiveSessionCard>(
+        const response = await api.get<any>(
           `/intensive-sessions/${sessionId}/cards/next`,
         );
 
         if (response.data) {
-          setCurrentCard(response.data);
-          return response.data;
+          const apiResponse = response.data;
+
+          // Si no hay más tarjetas, el backend retorna { card: null, blockComplete: true }
+          if (apiResponse.card === null || apiResponse.blockComplete === true) {
+            setCurrentCard(null);
+            return null;
+          }
+
+          // El backend retorna los campos de la tarjeta directamente:
+          // { sessionCardId, cardId, question, answer, images, blockComplete, ... }
+          // Mapear al formato IntensiveSessionCard
+          const sessionCard: IntensiveSessionCard = {
+            id: apiResponse.sessionCardId || apiResponse.id,
+            sessionId: sessionId,
+            cardId: apiResponse.cardId,
+            difficulty: apiResponse.difficulty,
+            completed: apiResponse.completed || false,
+            completedAt: apiResponse.completedAt,
+            order: apiResponse.order || 0,
+            // El backend retorna los datos de la tarjeta directamente, no anidados
+            card: {
+              id: apiResponse.cardId,
+              question: apiResponse.question || "",
+              answer: apiResponse.answer || "",
+              topicId: apiResponse.topicId || 0,
+            },
+            createdAt: apiResponse.createdAt || new Date().toISOString(),
+            updatedAt: apiResponse.updatedAt || new Date().toISOString(),
+          };
+
+          setCurrentCard(sessionCard);
+          return sessionCard;
         }
         // No hay más tarjetas
         setCurrentCard(null);
@@ -597,8 +682,8 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
    */
   const completeCard = useCallback(
     async (
-      sessionId: string,
-      cardId: string,
+      sessionId: number,
+      cardId: number,
       difficulty: CardDifficulty,
     ): Promise<IntensiveSessionCard | null> => {
       if (!user) {
@@ -607,14 +692,16 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
       }
 
       try {
-        const response = await api.post<IntensiveSessionCard>(
+        const response = await api.post<any>(
           `/intensive-sessions/${sessionId}/cards/${cardId}/complete`,
           { difficulty },
         );
 
         if (response.data) {
+          const apiResponse = response.data;
+          const card = apiResponse.card;
           setCurrentCard(null);
-          return response.data;
+          return card;
         }
         return null;
       } catch (err: any) {
@@ -662,6 +749,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
     abandonSession,
     getAbandonInfo,
     completeSession,
+    getActiveSession,
 
     // Funciones de Pomodoro
     startPomodoro,
