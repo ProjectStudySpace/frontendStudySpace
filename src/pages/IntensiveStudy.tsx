@@ -332,7 +332,7 @@ const IntensiveStudy: React.FC = () => {
       const nextPhase = isLongBreak ? "LONG_BREAK" : "SHORT_BREAK";
 
       // Completar Pomodoro en backend
-      await completePomodoro(currentSession.id, currentPomodoro.id);
+      await completePomodoro(currentPomodoro.sessionId, currentPomodoro.id);
 
       // Iniciar descanso
       pomodoroTimer.setPhase(nextPhase);
@@ -362,10 +362,11 @@ const IntensiveStudy: React.FC = () => {
 
       if (nextPomodoro) {
         // Sincronizar con la duración del nuevo Pomodoro del backend
-        if (nextPomodoro.startedAt && nextPomodoro.duration) {
+        // Usar durationMinutes y convertir a segundos
+        if (nextPomodoro.startedAt && nextPomodoro.durationMinutes) {
           pomodoroTimer.syncWithBackend(
             nextPomodoro.startedAt,
-            nextPomodoro.duration,
+            nextPomodoro.durationMinutes * 60, // Convertir minutos a segundos
           );
         } else {
           pomodoroTimer.setPhase("WORK");
@@ -389,10 +390,11 @@ const IntensiveStudy: React.FC = () => {
       const nextPomodoro = await startPomodoro(currentSession.id);
       if (nextPomodoro) {
         // Sincronizar con la duración del nuevo Pomodoro del backend
-        if (nextPomodoro.startedAt && nextPomodoro.duration) {
+        // Usar durationMinutes y convertir a segundos
+        if (nextPomodoro.startedAt && nextPomodoro.durationMinutes) {
           pomodoroTimer.syncWithBackend(
             nextPomodoro.startedAt,
-            nextPomodoro.duration,
+            nextPomodoro.durationMinutes * 60, // Convertir minutos a segundos
           );
         } else {
           pomodoroTimer.setPhase("WORK");
@@ -419,11 +421,19 @@ const IntensiveStudy: React.FC = () => {
       setSelectedDifficulty(null);
 
       // Obtener siguiente tarjeta
-      const nextCard = await getNextCard(currentSession.id);
+      const result = await getNextCard(currentSession.id);
 
-      if (!nextCard) {
-        // No hay más tarjetas, completar sesión
-        await handleSessionComplete();
+      if (!result.card) {
+        // No hay más tarjetas en este bloque
+        if (result.sessionComplete) {
+          // La sesión está completa (todos los bloques terminados)
+          await handleSessionComplete();
+        } else if (result.blockComplete && currentPomodoro) {
+          // El bloque actual está completo, pasar a descanso
+          // Completar el Pomodoro actual y mostrar vista de descanso
+          await handlePomodoroComplete();
+        }
+        // Si no es ni blockComplete ni sessionComplete, esperar al timer
       }
     } catch (err) {
       console.error("Error completing card:", err);
@@ -754,6 +764,7 @@ const IntensiveStudy: React.FC = () => {
           style={{ width: `${getProgress()}%` }}
         />
       </div>
+      {/* BLOQUE A REVISAR*/}
       <p className="text-center text-sm text-gray-600 dark:text-gray-400">
         {currentSession?.completedCards || 0} /{" "}
         {currentSession?.totalCards || 0}{" "}
@@ -762,6 +773,35 @@ const IntensiveStudy: React.FC = () => {
         {t("intensiveStudy.pomodoro", "Pomodoro")} {pomodoroTimer.blockNumber} /{" "}
         {currentSession?.totalPomodoros || 4}
       </p>
+
+      {/* Mensaje cuando se completaron las tarjetas del bloque pero el timer sigue */}
+      {!currentCard && pomodoroTimer.timeRemaining > 0 && (
+        <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-xl p-6 text-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-800/50 rounded-full flex items-center justify-center">
+              <Check className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-emerald-800 dark:text-emerald-200">
+                {t("intensiveStudy.blockCardsComplete", "¡Bloque completado!")}
+              </h3>
+              <p className="text-emerald-600 dark:text-emerald-400 mt-1">
+                {t(
+                  "intensiveStudy.blockCardsCompleteDesc",
+                  "Has revisado todas las tarjetas de este bloque. Esperando a que termine el tiempo.",
+                )}
+              </p>
+            </div>
+            <button
+              onClick={handlePomodoroComplete}
+              className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
+            >
+              <SkipForward className="w-5 h-5" />
+              {t("intensiveStudy.goToBreak", "Ir al descanso ahora")}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Tarjeta actual */}
       {currentCard && (

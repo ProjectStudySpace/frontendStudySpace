@@ -17,6 +17,13 @@ import {
   SessionStatus,
 } from "../src/types/intensiveSessions";
 
+interface GetNextCardResult {
+  card: IntensiveSessionCard | null;
+  blockComplete: boolean;
+  block: PomodoroBlock | null;
+  sessionComplete: boolean;
+}
+
 interface UseIntensiveSessionsReturn {
   // Estado
   sessions: IntensiveStudySession[];
@@ -56,7 +63,7 @@ interface UseIntensiveSessionsReturn {
   ) => Promise<PomodoroBlock | null>;
 
   // Funciones de tarjetas
-  getNextCard: (sessionId: number) => Promise<IntensiveSessionCard | null>;
+  getNextCard: (sessionId: number) => Promise<GetNextCardResult>;
   completeCard: (
     sessionId: number,
     cardId: number,
@@ -610,12 +617,18 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
 
   /**
    * Obtener la siguiente tarjeta
+   * Retorna información sobre la tarjeta y si el bloque/sesión está completo
    */
   const getNextCard = useCallback(
-    async (sessionId: number): Promise<IntensiveSessionCard | null> => {
+    async (sessionId: number): Promise<GetNextCardResult> => {
       if (!user) {
         setError("Usuario no autenticado");
-        return null;
+        return {
+          card: null,
+          blockComplete: false,
+          block: null,
+          sessionComplete: false,
+        };
       }
 
       try {
@@ -629,7 +642,12 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
           // Si no hay más tarjetas, el backend retorna { card: null, blockComplete: true }
           if (apiResponse.card === null || apiResponse.blockComplete === true) {
             setCurrentCard(null);
-            return null;
+            return {
+              card: null,
+              blockComplete: apiResponse.blockComplete === true,
+              block: apiResponse.block || null,
+              sessionComplete: apiResponse.sessionComplete === true,
+            };
           }
 
           // El backend retorna los campos de la tarjeta directamente:
@@ -655,23 +673,43 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
           };
 
           setCurrentCard(sessionCard);
-          return sessionCard;
+          return {
+            card: sessionCard,
+            blockComplete: false,
+            block: apiResponse.block || null,
+            sessionComplete: false,
+          };
         }
         // No hay más tarjetas
         setCurrentCard(null);
-        return null;
+        return {
+          card: null,
+          blockComplete: true,
+          block: null,
+          sessionComplete: false,
+        };
       } catch (err: any) {
         // 404 significa que no hay más tarjetas
         if (err.response?.status === 404) {
           setCurrentCard(null);
-          return null;
+          return {
+            card: null,
+            blockComplete: true,
+            block: null,
+            sessionComplete: false,
+          };
         }
         const errorMessage =
           err.response?.data?.message ||
           err.message ||
           "Error al obtener tarjeta";
         setError(errorMessage);
-        return null;
+        return {
+          card: null,
+          blockComplete: false,
+          block: null,
+          sessionComplete: false,
+        };
       }
     },
     [user],
