@@ -236,11 +236,8 @@ const IntensiveStudy: React.FC = () => {
       const pomodoro = await startPomodoro(currentSession.id);
 
       if (pomodoro) {
-        console.log("Pomodoro started:", pomodoro);
-
         // Obtener primera tarjeta
-        const card = await getNextCard(currentSession.id);
-        console.log("Card loaded:", card);
+        const result = await getNextCard(currentSession.id);
 
         // Iniciar timer con duración del backend (sincronizado con UTC)
         if (pomodoro.startedAt && pomodoro.durationMinutes) {
@@ -372,6 +369,10 @@ const IntensiveStudy: React.FC = () => {
           pomodoroTimer.setPhase("WORK");
         }
         pomodoroTimer.start();
+
+        // Cargar la primera tarjeta del nuevo bloque
+        await getNextCard(currentSession.id);
+
         setCurrentView("ACTIVE");
       }
     } catch (err) {
@@ -400,6 +401,10 @@ const IntensiveStudy: React.FC = () => {
           pomodoroTimer.setPhase("WORK");
         }
         pomodoroTimer.start();
+
+        // Cargar la primera tarjeta del nuevo bloque
+        await getNextCard(currentSession.id);
+
         setCurrentView("ACTIVE");
       }
     } catch (err) {
