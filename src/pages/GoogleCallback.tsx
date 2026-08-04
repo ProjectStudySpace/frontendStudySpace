@@ -1,6 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { api } from "../utils/axiosConfig";
+import {
+  api,
+  beginAuthenticatedGeneration,
+  clearAuthCredentialsIfOwner,
+  getAuthGenerationIdentity,
+  isAuthGenerationOwner,
+} from "../utils/axiosConfig";
 import { useNotification } from "../context/NotificationContext";
 import { useTranslation } from "react-i18next";
 
@@ -58,10 +64,12 @@ const GoogleCallback: React.FC = () => {
         return;
       }
 
-      try {
-        // 1. Guardar token en localStorage
-        localStorage.setItem("token", token);
+      // 1. Guardar token en localStorage
+      localStorage.setItem("token", token);
+      const generation = beginAuthenticatedGeneration();
+      const identity = getAuthGenerationIdentity(generation);
 
+      try {
         // 2. Set new user flag for onboarding if this is a new user
         if (isNewUser) {
           localStorage.setItem("memopal_new_user", "true");
@@ -69,6 +77,10 @@ const GoogleCallback: React.FC = () => {
 
         // 3. Verificar que el token funciona obteniendo el perfil
         const { data } = await api.get("/users/profile");
+
+        if (!isAuthGenerationOwner(identity)) {
+          return;
+        }
 
         if (data?.user) {
           // 3. Guardar timezone si existe
@@ -96,9 +108,10 @@ const GoogleCallback: React.FC = () => {
       } catch (err) {
         console.error("Error processing Google callback:", err);
 
-        // Limpiar token inválido
-        localStorage.removeItem("token");
-        localStorage.removeItem("userTimezone");
+        // Limpiar token inválido only while this callback still owns it.
+        if (!clearAuthCredentialsIfOwner(identity)) {
+          return;
+        }
 
         setStatus("error");
         showError(

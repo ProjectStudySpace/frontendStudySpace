@@ -1,7 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AxiosError } from "axios";
-import type { InternalAxiosRequestConfig } from "axios";
-import { api, isHttpSuccess } from "../../../utils/axiosConfig";
+import type {
+  AxiosRequestConfig,
+  InternalAxiosRequestConfig,
+} from "axios";
+import {
+  api,
+  isHttpSuccess,
+  beginAuthenticatedGeneration,
+  resetAuthExpiryStateForTests,
+} from "../../../utils/axiosConfig";
 import {
   installSettlingAdapter,
   responseLessFailure,
@@ -9,12 +17,14 @@ import {
 
 describe("strict transport contracts", () => {
   beforeEach(() => {
+    resetAuthExpiryStateForTests();
     localStorage.clear();
     document.body.innerHTML = "";
     vi.useRealTimers();
   });
 
   afterEach(() => {
+    resetAuthExpiryStateForTests();
     localStorage.clear();
     document.body.innerHTML = "";
     vi.useRealTimers();
@@ -162,6 +172,93 @@ describe("strict transport contracts", () => {
 
     await expect(request).resolves.toMatchObject({ status: 204 });
     expect(attempts).toBe(2);
+  });
+
+  it("preserves the original credential identity through an idempotent retry", async () => {
+    vi.useFakeTimers();
+    localStorage.setItem("token", "token-a");
+    const generationA = beginAuthenticatedGeneration();
+    const attempts: Array<{
+      generation: number | undefined;
+      authorization: string | undefined;
+    }> = [];
+    let generationB = 0;
+
+    api.defaults.adapter = async (config) => {
+      attempts.push({
+        generation: config.authMeta?.authGeneration,
+        authorization: config.headers.Authorization?.toString(),
+      });
+      if (attempts.length === 1) {
+        localStorage.setItem("token", "token-b");
+        generationB = beginAuthenticatedGeneration();
+        throw responseLessFailure(
+          config as InternalAxiosRequestConfig,
+          "temporary network failure",
+        );
+      }
+      return {
+        data: { ok: true },
+        status: 200,
+        statusText: "200",
+        headers: {},
+        config,
+        request: {},
+      };
+    };
+
+    const retriedRequest = api.get("/users/profile");
+    await vi.runAllTimersAsync();
+    await expect(retriedRequest).resolves.toMatchObject({ status: 200 });
+
+    expect(attempts.slice(0, 2)).toEqual([
+      { generation: generationA, authorization: "Bearer token-a" },
+      { generation: generationA, authorization: "Bearer token-a" },
+    ]);
+
+    await api.get("/users/dashboard");
+    expect(attempts[2]).toEqual({
+      generation: generationB,
+      authorization: "Bearer token-b",
+    });
+  });
+
+  it("stamps auth generation metadata on outgoing authenticated requests", async () => {
+    localStorage.setItem("token", "tok-a");
+    const generation = beginAuthenticatedGeneration();
+    let seen: AxiosRequestConfig | undefined;
+
+    installSettlingAdapter(api, (config) => {
+      seen = config;
+      return { status: 200, data: { ok: true } };
+    });
+
+    await api.get("/users/profile");
+    expect(generation).toBeGreaterThan(0);
+    expect((seen as any).authMeta).toEqual({
+      authGeneration: generation,
+      hadCredentials: true,
+      identityCaptured: true,
+    });
+    expect((seen as any).headers?.Authorization || (seen as any).headers?.authorization).toMatch(/Bearer tok-a/);
+  });
+
+  it("stamps unauthenticated requests without inventing credentials", async () => {
+    let seen: AxiosRequestConfig | undefined;
+
+    installSettlingAdapter(api, (config) => {
+      seen = config;
+      return { status: 200, data: { ok: true } };
+    });
+
+    await api.get("/users/profile");
+
+    expect((seen as any).authMeta).toEqual({
+      authGeneration: 0,
+      hadCredentials: false,
+      identityCaptured: true,
+    });
+    expect((seen as any).headers?.Authorization || (seen as any).headers?.authorization).toBeUndefined();
   });
 
   it("does not retry an idempotent request when an HTTP response exists", async () => {

@@ -1,4 +1,9 @@
-import axios, { AxiosResponse, AxiosError, AxiosRequestConfig } from "axios";
+import axios, {
+  AxiosResponse,
+  AxiosError,
+  AxiosRequestConfig,
+  InternalAxiosRequestConfig,
+} from "axios";
 import { API_URL } from "../config";
 import i18n from "../i18n/config";
 
@@ -6,14 +11,161 @@ export function isHttpSuccess(status: number): boolean {
   return status >= 200 && status < 300;
 }
 
+export type AuthRequestMeta = {
+  authGeneration: number;
+  hadCredentials: boolean;
+  identityCaptured?: boolean;
+};
+
+export type AuthGenerationIdentity = {
+  generation: number;
+  token: string | null;
+};
+
 declare module "axios" {
   export interface AxiosRequestConfig {
+    authMeta?: AuthRequestMeta;
     retryCount?: number;
   }
 
   export interface InternalAxiosRequestConfig {
+    authMeta?: AuthRequestMeta;
     retryCount?: number;
   }
+}
+
+type AuthExpiryState = {
+  currentGeneration: number;
+  authenticated: boolean;
+  handledGeneration: number | null;
+  redirectTimer: ReturnType<typeof setTimeout> | null;
+};
+
+let authExpiryState: AuthExpiryState = {
+  currentGeneration: 0,
+  authenticated: false,
+  handledGeneration: null,
+  redirectTimer: null,
+};
+
+function clearRedirectTimer(): void {
+  if (authExpiryState.redirectTimer != null) {
+    clearTimeout(authExpiryState.redirectTimer);
+    authExpiryState.redirectTimer = null;
+  }
+}
+
+/** Start a new authenticated generation after accepted credentials are installed. */
+export function beginAuthenticatedGeneration(): number {
+  clearRedirectTimer();
+  authExpiryState.currentGeneration += 1;
+  authExpiryState.authenticated = true;
+  authExpiryState.handledGeneration = null;
+  return authExpiryState.currentGeneration;
+}
+
+export function getAuthGenerationIdentity(
+  generation = authExpiryState.currentGeneration,
+): AuthGenerationIdentity {
+  return {
+    generation,
+    token: localStorage.getItem("token"),
+  };
+}
+
+/**
+ * Check whether an async auth operation still owns the current credentials.
+ * A missing token is also accepted for the same generation because the 401
+ * coordinator may have already removed the captured credential locally.
+ */
+export function isAuthGenerationOwner(
+  identity: AuthGenerationIdentity,
+): boolean {
+  if (identity.generation !== authExpiryState.currentGeneration) {
+    return false;
+  }
+
+  const currentToken = localStorage.getItem("token");
+  return currentToken === identity.token || currentToken === null;
+}
+
+/** Invalidate the current generation on logout or failed credential validation. */
+export function invalidateAuthGeneration(
+  identity?: AuthGenerationIdentity,
+): boolean {
+  if (identity && !isAuthGenerationOwner(identity)) {
+    return false;
+  }
+
+  clearRedirectTimer();
+  authExpiryState.authenticated = false;
+  return true;
+}
+
+/** Remove credentials only while the async operation still owns them. */
+export function clearAuthCredentialsIfOwner(
+  identity: AuthGenerationIdentity,
+): boolean {
+  if (!invalidateAuthGeneration(identity)) {
+    return false;
+  }
+
+  localStorage.removeItem("token");
+  localStorage.removeItem("userTimezone");
+  return true;
+}
+
+export function getAuthExpiryStateForTests(): Readonly<AuthExpiryState> {
+  return {
+    currentGeneration: authExpiryState.currentGeneration,
+    authenticated: authExpiryState.authenticated,
+    handledGeneration: authExpiryState.handledGeneration,
+    redirectTimer: authExpiryState.redirectTimer,
+  };
+}
+
+export function resetAuthExpiryStateForTests(): void {
+  clearRedirectTimer();
+  authExpiryState = {
+    currentGeneration: 0,
+    authenticated: false,
+    handledGeneration: null,
+    redirectTimer: null,
+  };
+}
+
+function handleSessionExpiredOnce(
+  requestGeneration: number,
+  hadCredentials: boolean,
+): boolean {
+  if (!hadCredentials) {
+    return false;
+  }
+  if (!authExpiryState.authenticated) {
+    return false;
+  }
+  if (requestGeneration !== authExpiryState.currentGeneration) {
+    return false;
+  }
+  if (authExpiryState.handledGeneration === requestGeneration) {
+    return false;
+  }
+
+  authExpiryState.handledGeneration = requestGeneration;
+
+  localStorage.removeItem("token");
+  localStorage.removeItem("userTimezone");
+
+  const title = i18n.t("auth.sessionExpired.title");
+  const message = i18n.t("auth.sessionExpired.message");
+  showErrorGlobal(title, message);
+
+  authExpiryState.redirectTimer = setTimeout(() => {
+    authExpiryState.redirectTimer = null;
+    window.location.href = "/login";
+  }, 4000);
+
+  return true;
 }
 
 // Create a cancellation token source for request management
@@ -51,28 +203,43 @@ export const api = axios.create({
   validateStatus: isHttpSuccess,
 });
 
-// Request interceptor for token and request management
+type RequestConfigWithMeta = InternalAxiosRequestConfig & {
+  authMeta?: AuthRequestMeta;
+  retryCount?: number;
+};
+
+// Request interceptor for token, auth generation stamp, and request management
 api.interceptors.request.use(
   (config) => {
-    // Add auth token
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const typed = config as RequestConfigWithMeta;
+
+    // Capture request identity exactly once. A retry keeps the original
+    // generation and Authorization header even if a later login has occurred.
+    if (typed.authMeta?.identityCaptured !== true) {
+      const token = localStorage.getItem("token");
+      if (token) {
+        typed.headers.Authorization = `Bearer ${token}`;
+      }
+      typed.authMeta = {
+        authGeneration: authExpiryState.currentGeneration,
+        hadCredentials: Boolean(token),
+        identityCaptured: true,
+      };
     }
 
     // Ensure Content-Type is set for POST/PUT/PATCH requests with data
     if (
-      config.data &&
-      (config.method === "post" ||
-        config.method === "put" ||
-        config.method === "patch")
+      typed.data &&
+      (typed.method === "post" ||
+        typed.method === "put" ||
+        typed.method === "patch")
     ) {
-      if (!config.headers["Content-Type"]) {
-        config.headers["Content-Type"] = "application/json";
+      if (!typed.headers["Content-Type"]) {
+        typed.headers["Content-Type"] = "application/json";
       }
     }
 
-    return config;
+    return typed;
   },
   (error) => {
     return Promise.reject(error);
@@ -140,22 +307,7 @@ export const deduplicateRequest = async <T>(
 };
 
 // Función para manejar sesión expirada
-const handleSessionExpired = () => {
-  // Limpiar tokens del localStorage
-  localStorage.removeItem("token");
-  localStorage.removeItem("userTimezone");
 
-  // Mostrar notificación de sesión expirada
-  const title = i18n.t("auth.sessionExpired.title");
-  const message = i18n.t("auth.sessionExpired.message");
-
-  showErrorGlobal(title, message);
-
-  // Redirigir al login después de mostrar la notificación
-  setTimeout(() => {
-    window.location.href = "/login";
-  }, 4000); // 4 segundos para que el usuario vea la notificación
-};
 
 // Función auxiliar para mostrar errores globalmente sin depender del contexto de React
 const showErrorGlobal = (title: string, description: string) => {
@@ -204,13 +356,42 @@ api.interceptors.response.use(
     return response;
   },
   (error: AxiosError) => {
-    // No mostrar errores globales para ciertos endpoints que manejan sus propios errores
-    const url = error.config?.url || "";
-    const isPasswordChange =
-      url.includes("/users/update-password") || url.includes("update-password");
-    const isLogin = url.includes("/users/login");
+        const config = error.config as RequestConfigWithMeta | undefined;
+        const url = config?.url || "";
+        const isPasswordChange =
+          url.includes("/users/update-password") || url.includes("update-password");
+        const isAccountDelete = url.includes("/users/delete");
+        const isLogin = url.includes("/users/login");
+        const authMeta = config?.authMeta;
+        const responseData = error.response?.data;
+        const responseMessage =
+          responseData && typeof responseData === "object"
+            ? String(
+                (responseData as { error?: unknown; message?: unknown }).error ??
+                  (responseData as { message?: unknown }).message ??
+                  "",
+              ).toLowerCase()
+            : "";
+        const isCredentialConfirmationFailure =
+          error.response?.status === 401 &&
+          ((isPasswordChange && responseMessage.includes("current password is incorrect")) ||
+            (isAccountDelete && responseMessage.includes("invalid password")));
 
-    // Solo manejar errores de red o servidor, no errores de validación del cliente
+        // Login and wrong-confirmation 401s belong to their local forms. This
+        // exemption must run before global session-expiry side effects.
+        if (error.response?.status === 401 && (isLogin || isCredentialConfirmationFailure)) {
+          return Promise.reject(error);
+        }
+
+        if (error.response?.status === 401) {
+          handleSessionExpiredOnce(
+            authMeta?.authGeneration ?? -1,
+            authMeta?.hadCredentials === true,
+          );
+          return Promise.reject(error);
+        }
+
+        // Solo manejar errores de red o servidor, no errores de validación del cliente
     if (error.response && !isPasswordChange && !isLogin) {
       const status = error.response.status;
       const message =
@@ -236,19 +417,7 @@ api.interceptors.response.use(
             );
           }
           break;
-        case 401:
-          // Verificar si es un error de token expirado (no para endpoints de login)
-          if (!isLogin) {
-            handleSessionExpired();
-          } else {
-            showErrorGlobal("No autorizado", "Credenciales inválidas");
-          }
-          // Limpiar token inválido solo para non-auth endpoints
-          if (!isLogin) {
-            localStorage.removeItem("token");
-            localStorage.removeItem("userTimezone");
-          }
-          break;
+
         case 403:
           showErrorGlobal(
             "Acceso denegado",
