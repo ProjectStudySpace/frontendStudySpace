@@ -25,6 +25,8 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isAuthDegraded: boolean;
+  retrySession: () => Promise<void>;
   login: (email: string, password: string) => Promise<boolean>;
   register: (
     name: string,
@@ -72,64 +74,71 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthDegraded, setIsAuthDegraded] = useState(false);
   const isAuthenticated = !!user;
   const { showSuccess, showError } = useNotification();
   const { t, i18n } = useTranslation();
 
-  // Verificar sesión al cargar la aplicación
-  useEffect(() => {
-    const checkSession = async () => {
-      const token = localStorage.getItem("token");
+  const checkSession = useCallback(async (): Promise<void> => {
+    setIsLoading(true);
+    setIsAuthDegraded(false);
 
-      if (!token) {
-        setIsLoading(false);
-        setUser(null);
-        return;
-      }
+    const token = localStorage.getItem("token");
 
-      const generation = beginAuthenticatedGeneration();
-      const identity = getAuthGenerationIdentity(generation);
+    if (!token) {
+      setIsLoading(false);
+      setUser(null);
+      return;
+    }
 
-      try {
-        const { data } = await api.get("/users/profile");
+    const generation = beginAuthenticatedGeneration();
+    const identity = getAuthGenerationIdentity(generation);
 
-        if (data?.user && isAuthGenerationOwner(identity)) {
-          setUser(data.user);
-          // Persistir zona horaria en localStorage si viene del backend
-          if (data.user?.userTimezone) {
-            localStorage.setItem("userTimezone", data.user.userTimezone);
-          }
-        } else if (!data?.user) {
-          // Token inválido o expirado
-          if (clearAuthCredentialsIfOwner(identity)) {
-            setUser(null);
-          }
+    try {
+      const { data } = await api.get("/users/profile");
+
+      if (data?.user && isAuthGenerationOwner(identity)) {
+        setUser(data.user);
+        setIsAuthDegraded(false);
+        // Persistir zona horaria en localStorage si viene del backend
+        if (data.user?.userTimezone) {
+          localStorage.setItem("userTimezone", data.user.userTimezone);
         }
-      } catch (error: any) {
-        // Handle network errors gracefully during session check
-        if (
-          error.code === "ERR_INSUFFICIENT_RESOURCES" ||
-          error.code === "ERR_NETWORK"
-        ) {
-          console.warn(
-            "Network error during session check, user will need to login again"
-          );
-        } else if (error.response?.status === 401) {
-          // Token expired or invalid
-        } else {
-          console.error("Error verificando sesión:", error);
-        }
-
+      } else if (!data?.user && isAuthGenerationOwner(identity)) {
+        // Token inválido o expirado
         if (clearAuthCredentialsIfOwner(identity)) {
           setUser(null);
         }
-      } finally {
+        setIsAuthDegraded(false);
+      }
+    } catch (error: any) {
+      if (error.response?.status === 401) {
+        // A 401 is authoritative: the token is no longer valid.
+        if (clearAuthCredentialsIfOwner(identity)) {
+          setUser(null);
+          setIsAuthDegraded(false);
+        }
+      } else if (isAuthGenerationOwner(identity)) {
+        // Network, timeout, and server failures are ambiguous during bootstrap.
+        // Keep the credential so the caller can retry without logging in again.
+        console.warn("Session bootstrap degraded; credentials are preserved", error.code);
+        setIsAuthDegraded(true);
+      }
+    } finally {
+      if (isAuthGenerationOwner(identity)) {
         setIsLoading(false);
       }
-    };
-
-    checkSession();
+    }
   }, []);
+
+  // Verificar sesión al cargar la aplicación
+  useEffect(() => {
+    void checkSession();
+  }, [checkSession]);
+
+  const retrySession = useCallback(async (): Promise<void> => {
+    await checkSession();
+  }, [checkSession]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
@@ -149,6 +158,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       localStorage.setItem("token", data.token);
       beginAuthenticatedGeneration();
+      setIsAuthDegraded(false);
       setUser(data.user);
       // Persistir zona horaria en localStorage
       if (data.user?.userTimezone) {
@@ -265,6 +275,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Save token and set user
           localStorage.setItem("token", data.token);
           beginAuthenticatedGeneration();
+          setIsAuthDegraded(false);
           setUser(data.user);
           if (data.user?.userTimezone) {
             localStorage.setItem("userTimezone", data.user.userTimezone);
@@ -335,6 +346,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     } finally {
       if (clearAuthCredentialsIfOwner(logoutIdentity)) {
+        setIsAuthDegraded(false);
         setUser(null);
       }
     }
@@ -378,6 +390,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (googleAuth === "success" && token) {
       localStorage.setItem("token", token);
       const generation = beginAuthenticatedGeneration();
+      setIsAuthDegraded(false);
       const identity = getAuthGenerationIdentity(generation);
       try {
         const { data } = await api.get("/users/profile");
@@ -422,6 +435,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         user,
         isAuthenticated,
         isLoading,
+        isAuthDegraded,
+        retrySession,
         login,
         register,
         logout,
