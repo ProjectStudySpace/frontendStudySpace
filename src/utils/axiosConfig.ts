@@ -2,6 +2,20 @@ import axios, { AxiosResponse, AxiosError, AxiosRequestConfig } from "axios";
 import { API_URL } from "../config";
 import i18n from "../i18n/config";
 
+export function isHttpSuccess(status: number): boolean {
+  return status >= 200 && status < 300;
+}
+
+declare module "axios" {
+  export interface AxiosRequestConfig {
+    retryCount?: number;
+  }
+
+  export interface InternalAxiosRequestConfig {
+    retryCount?: number;
+  }
+}
+
 // Create a cancellation token source for request management
 const createCancelToken = () => axios.CancelToken.source();
 
@@ -18,17 +32,23 @@ const RETRY_CONFIG = {
       error.code === "ERR_NETWORK" ||
       error.code === "ERR_INSUFFICIENT_RESOURCES" ||
       error.code === "ECONNABORTED" ||
-      (error.response?.status && error.response.status >= 500)
+      (error.response?.status !== undefined && error.response.status >= 500)
     );
   },
 };
+
+const IDEMPOTENT_METHODS = new Set(["get", "head", "options", "put", "delete"]);
+
+function isIdempotentRequest(config: AxiosRequestConfig): boolean {
+  return IDEMPOTENT_METHODS.has((config.method || "get").toLowerCase());
+}
 
 // Create axios instance with optimized configuration
 export const api = axios.create({
   baseURL: API_URL,
   timeout: 10000, // 10 second timeout
   maxRedirects: 5,
-  validateStatus: (status) => status < 500, // Don't treat 5xx as errors for retry logic
+  validateStatus: isHttpSuccess,
 });
 
 // Request interceptor for token and request management
@@ -66,13 +86,17 @@ api.interceptors.response.use(
   },
   async (error: AxiosError) => {
     // Retry logic for transient errors
-    const config = error.config as AxiosRequestConfig & { retryCount?: number };
+    const config = error.config as AxiosRequestConfig | undefined;
+    if (!config) {
+      return Promise.reject(error);
+    }
     config.retryCount = config.retryCount || 0;
 
     if (
       RETRY_CONFIG.retryCondition(error) &&
+      isIdempotentRequest(config) &&
       config.retryCount < RETRY_CONFIG.maxRetries &&
-      !error.response // Only retry for network errors, not HTTP errors
+      !error.response // Only retry response-less failures for idempotent methods
     ) {
       config.retryCount++;
 
