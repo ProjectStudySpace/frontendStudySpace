@@ -456,6 +456,38 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
         }
         return null;
       } catch (err: any) {
+        const hasHttpResponse = Boolean(err?.response);
+        if (!hasHttpResponse) {
+          try {
+            const snapshotResponse = await api.get<any>(
+              `/intensive-sessions/${sessionId}`,
+            );
+            const snapshot = snapshotResponse.data;
+            const activeBlock =
+              snapshot?.activeBlock ||
+              snapshot?.session?.pomodoroBlocks?.find(
+                (block: { status?: string }) =>
+                  block.status === "ACTIVE" || block.status === "ON_BREAK",
+              );
+
+            if (activeBlock) {
+              if (snapshot?.session) {
+                setCurrentSession(snapshot.session);
+              }
+              setCurrentPomodoro(activeBlock);
+              return activeBlock;
+            }
+          } catch (reconciliationError) {
+            console.warn(
+              "Could not reconcile ambiguous Pomodoro start:",
+              intensiveErrorMessage(
+                reconciliationError,
+                "Error al reconciliar Pomodoro",
+              ),
+            );
+          }
+        }
+
         setError(intensiveErrorMessage(err, "Error al iniciar Pomodoro"));
         return null;
       } finally {

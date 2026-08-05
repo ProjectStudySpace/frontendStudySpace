@@ -3,7 +3,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { api, resetAuthExpiryStateForTests } from "../../../utils/axiosConfig";
 import { useIntensiveSessions } from "../../../../hooks/useIntensiveSessions";
-import { installSettlingAdapter } from "./testAxios";
+import { installSettlingAdapter, responseLessFailure } from "./testAxios";
 
 vi.mock("../../../context/AuthContext", () => ({
   useAuth: () => ({ user: { id: 10, email: "student@example.test" } }),
@@ -93,5 +93,87 @@ describe("useIntensiveSessions corrective production seams", () => {
     expect(result).toBeNull();
     expect(latest?.error).toBe("Ya hay un bloque activo");
     expect(calls).toEqual(["post:/intensive-sessions/1/pomodoro/start"]);
+  });
+
+  it("reconciles one response-lost Pomodoro start with authoritative detail", async () => {
+    const calls: Array<{ method: string | undefined; url: string | undefined }> = [];
+    api.defaults.adapter = async (config) => {
+      calls.push({ method: config.method, url: config.url });
+      if (config.method === "post") {
+        config.retryCount = 3;
+        throw responseLessFailure(config, "response lost after commit");
+      }
+      return {
+        data: {
+          session: {
+            id: 1,
+            status: "ACTIVE",
+            pomodoroBlocks: [{ id: 101, status: "ACTIVE" }],
+          },
+          activeBlock: {
+            id: 101,
+            sessionId: 1,
+            status: "ACTIVE",
+            blockNumber: 1,
+            durationMinutes: 25,
+          },
+        },
+        status: 200,
+        statusText: "200",
+        headers: {},
+        config,
+        request: {},
+      };
+    };
+    await renderHookProbe();
+
+    let result: Awaited<ReturnType<HookState["startPomodoro"]>> | undefined;
+    await act(async () => {
+      result = await latest?.startPomodoro(1);
+    });
+
+    expect(result?.id).toBe(101);
+    expect(latest?.currentPomodoro?.id).toBe(101);
+    expect(latest?.error).toBeNull();
+    expect(calls).toEqual([
+      { method: "post", url: "/intensive-sessions/1/pomodoro/start" },
+      { method: "get", url: "/intensive-sessions/1" },
+    ]);
+  });
+
+  it("reports the original ambiguous failure when authoritative detail has no active block", async () => {
+    const calls: string[] = [];
+    api.defaults.adapter = async (config) => {
+      calls.push(`${config.method}:${config.url}`);
+      if (config.method === "post") {
+        config.retryCount = 3;
+        throw responseLessFailure(config, "start outcome unknown");
+      }
+      return {
+        data: {
+          session: { id: 1, status: "ACTIVE", pomodoroBlocks: [] },
+          activeBlock: null,
+        },
+        status: 200,
+        statusText: "200",
+        headers: {},
+        config,
+        request: {},
+      };
+    };
+    await renderHookProbe();
+
+    let result: Awaited<ReturnType<HookState["startPomodoro"]>> | undefined;
+    await act(async () => {
+      result = await latest?.startPomodoro(1);
+    });
+
+    expect(result).toBeNull();
+    expect(latest?.currentPomodoro).toBeNull();
+    expect(latest?.error).toBe("start outcome unknown");
+    expect(calls).toEqual([
+      "post:/intensive-sessions/1/pomodoro/start",
+      "get:/intensive-sessions/1",
+    ]);
   });
 });
