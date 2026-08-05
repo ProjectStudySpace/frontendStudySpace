@@ -15,6 +15,7 @@ export type AuthRequestMeta = {
   authGeneration: number;
   hadCredentials: boolean;
   identityCaptured?: boolean;
+  intensiveLocalError?: boolean;
 };
 
 export type AuthGenerationIdentity = {
@@ -220,10 +221,12 @@ api.interceptors.request.use(
       if (token) {
         typed.headers.Authorization = `Bearer ${token}`;
       }
+      const intensiveLocalError = typed.authMeta?.intensiveLocalError === true;
       typed.authMeta = {
         authGeneration: authExpiryState.currentGeneration,
         hadCredentials: Boolean(token),
         identityCaptured: true,
+        ...(intensiveLocalError ? { intensiveLocalError: true } : {}),
       };
     }
 
@@ -362,6 +365,7 @@ api.interceptors.response.use(
           url.includes("/users/update-password") || url.includes("update-password");
         const isAccountDelete = url.includes("/users/delete");
         const isLogin = url.includes("/users/login");
+        const isIntensiveLocalError = config?.authMeta?.intensiveLocalError === true;
         const authMeta = config?.authMeta;
         const responseData = error.response?.data;
         const responseMessage =
@@ -388,6 +392,11 @@ api.interceptors.response.use(
             authMeta?.authGeneration ?? -1,
             authMeta?.hadCredentials === true,
           );
+          return Promise.reject(error);
+        }
+
+        // Intensive local business errors are rendered by the feature without a duplicate toast.
+        if (isIntensiveLocalError) {
           return Promise.reject(error);
         }
 

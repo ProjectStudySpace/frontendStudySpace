@@ -11,6 +11,11 @@ import {
   resetAuthExpiryStateForTests,
 } from "../../../utils/axiosConfig";
 import {
+  intensiveApi,
+  normalizeIntensiveError,
+  withIntensiveLocalError,
+} from "./errors";
+import {
   installSettlingAdapter,
   responseLessFailure,
 } from "./testAxios";
@@ -222,6 +227,203 @@ describe("strict transport contracts", () => {
       authorization: "Bearer token-b",
     });
   });
+
+  it("does not show a global notification for intensive local business errors", async () => {
+    installSettlingAdapter(api, () => ({
+      status: 409,
+      data: {
+        error: "Ya hay un bloque activo",
+        path: "/api/intensive-sessions/1/pomodoro/start",
+        method: "POST",
+      },
+    }));
+
+    await expect(
+      api.post(
+        "/api/intensive-sessions/1/pomodoro/start",
+        undefined,
+        withIntensiveLocalError({} as AxiosRequestConfig),
+      ),
+    ).rejects.toBeTruthy();
+
+    expect(document.getElementById("notification-container")).toBeNull();
+  });
+
+  it("keeps a production intensive GET 404 local without a global notification", async () => {
+    installSettlingAdapter(api, () => ({
+      status: 404,
+      data: {
+        error: "Sesión intensiva no encontrada",
+        path: "/api/intensive-sessions/999",
+        method: "GET",
+      },
+    }));
+
+    const failure = await intensiveApi
+      .get("/intensive-sessions/999")
+      .catch((error) => error);
+    const normalized = normalizeIntensiveError(failure);
+
+    expect(normalized).toMatchObject({
+      kind: "business",
+      message: "Sesión intensiva no encontrada",
+      status: 404,
+      path: "/api/intensive-sessions/999",
+      method: "GET",
+    });
+    expect(document.getElementById("notification-container")).toBeNull();
+  });
+
+  it("keeps a production intensive POST business error local", async () => {
+    installSettlingAdapter(api, () => ({
+      status: 409,
+      data: {
+        error: "Ya hay un bloque activo",
+        path: "/api/intensive-sessions/1/pomodoro/start",
+        method: "POST",
+      },
+    }));
+
+    const failure = await intensiveApi
+      .post("/intensive-sessions/1/pomodoro/start")
+      .catch((error) => error);
+    const normalized = normalizeIntensiveError(failure);
+
+    expect(normalized).toMatchObject({
+      kind: "business",
+      message: "Ya hay un bloque activo",
+      status: 409,
+      method: "POST",
+    });
+    expect(document.getElementById("notification-container")).toBeNull();
+  });
+
+  it("still shows a global notification for ordinary non-login client errors", async () => {
+    installSettlingAdapter(api, () => ({
+      status: 404,
+      data: { message: "missing" },
+    }));
+
+    await expect(api.get("/api/topics/999")).rejects.toBeTruthy();
+    const container = document.getElementById("notification-container");
+    expect(container).not.toBeNull();
+    expect(container?.textContent || "").toMatch(/No encontrado|not found|Error/i);
+  });
+
+  it("normalizes backend intensive error envelopes without inventing success", () => {
+    const normalized = normalizeIntensiveError({
+      isAxiosError: true,
+      response: {
+        status: 400,
+        data: {
+          error: "Aún tienes 2 tarjetas pendientes",
+          path: "/api/intensive-sessions/1/complete",
+          method: "POST",
+        },
+      },
+      config: { url: "/api/intensive-sessions/1/complete" },
+      message: "Request failed",
+    });
+
+    expect(normalized.kind).toBe("business");
+    expect(normalized.message).toContain("2 tarjetas pendientes");
+    expect(normalized.status).toBe(400);
+    expect(normalized.path).toBe("/api/intensive-sessions/1/complete");
+    expect(normalized.method).toBe("POST");
+  });
+
+  it("classifies 401 intensive failures as auth errors for local rendering", () => {
+    const normalized = normalizeIntensiveError({
+      isAxiosError: true,
+      response: {
+        status: 401,
+        data: {
+          error: "Unauthorized",
+          path: "/api/intensive-sessions/1",
+          method: "GET",
+        },
+      },
+      config: { url: "/api/intensive-sessions/1" },
+      message: "Unauthorized",
+    });
+
+    expect(normalized.kind).toBe("auth");
+    expect(normalized.status).toBe(401);
+  });
+
+  it("keeps arbitrary response-shaped non-Axios values unknown", () => {
+    const responseShapedValue = {
+      response: {
+        status: 409,
+        data: { error: "not an Axios failure" },
+      },
+      message: "arbitrary object",
+    };
+
+    const normalized = normalizeIntensiveError(responseShapedValue);
+    expect(normalized).toMatchObject({
+      kind: "unknown",
+      message: "Unexpected error",
+      status: null,
+      path: null,
+      method: null,
+    });
+    expect(normalized.raw).toBe(responseShapedValue);
+  });
+
+  it("preserves the intensive marker across a response-less GET retry", async () => {
+    vi.useFakeTimers();
+    let attempts = 0;
+    const markers: Array<boolean | undefined> = [];
+    const urls: Array<string | undefined> = [];
+    const retryCounts: Array<number | undefined> = [];
+
+    installSettlingAdapter(api, (config) => {
+      attempts += 1;
+      markers.push(config.authMeta?.intensiveLocalError);
+      urls.push(config.url);
+      retryCounts.push(config.retryCount);
+
+      if (attempts === 1) {
+        throw responseLessFailure(
+          config,
+          "response lost",
+        );
+      }
+
+      return {
+        status: 409,
+        data: {
+          error: "Ya hay un bloque activo",
+          path: "/api/intensive-sessions/1",
+          method: "GET",
+        },
+      };
+    });
+
+    const failurePromise = intensiveApi
+      .get("/intensive-sessions/1")
+      .catch((error) => error);
+    await vi.runAllTimersAsync();
+    const failure = await failurePromise;
+    const normalized = normalizeIntensiveError(failure);
+
+    expect(attempts).toBe(2);
+    expect(markers).toEqual([true, true]);
+    expect(urls).toEqual(["/intensive-sessions/1", "/intensive-sessions/1"]);
+    expect(retryCounts).toEqual([undefined, 1]);
+    expect(failure.config?.authMeta?.intensiveLocalError).toBe(true);
+    expect(failure.response?.status).toBe(409);
+    expect(normalized).toMatchObject({
+      kind: "business",
+      message: "Ya hay un bloque activo",
+      status: 409,
+      path: "/api/intensive-sessions/1",
+      method: "GET",
+    });
+    expect(document.getElementById("notification-container")).toBeNull();
+  });
+
 
   it("stamps auth generation metadata on outgoing authenticated requests", async () => {
     localStorage.setItem("token", "tok-a");

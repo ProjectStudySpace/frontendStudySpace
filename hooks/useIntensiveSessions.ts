@@ -4,7 +4,8 @@
  */
 import { useState, useCallback } from "react";
 import { useAuth } from "../src/context/AuthContext";
-import { api, deduplicateRequest } from "../src/utils/axiosConfig";
+import { deduplicateRequest } from "../src/utils/axiosConfig";
+import { intensiveApi as api } from "../src/features/intensive-study/api/errors";
 import {
   IntensiveStudySession,
   IntensiveSessionDetail,
