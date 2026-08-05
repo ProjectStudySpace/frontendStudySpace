@@ -5,7 +5,10 @@
 import { useState, useCallback } from "react";
 import { useAuth } from "../src/context/AuthContext";
 import { deduplicateRequest } from "../src/utils/axiosConfig";
-import { intensiveApi as api } from "../src/features/intensive-study/api/errors";
+import {
+  intensiveApi as api,
+  intensiveErrorMessage,
+} from "../src/features/intensive-study/api/errors";
 import {
   IntensiveStudySession,
   IntensiveSessionDetail,
@@ -123,12 +126,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
         }
         return null;
       } catch (err: any) {
-        const errorData = err.response?.data;
-        const errorMessage =
-          errorData?.error ||
-          errorData?.message ||
-          err.message ||
-          "Error al crear sesión";
+        const errorMessage = intensiveErrorMessage(err, "Error al crear sesión");
 
         // Detectar error de sesión activa existente
         const isActiveSessionError =
@@ -173,7 +171,10 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
 
         return activeSession || null;
       } catch (err) {
-        console.error("Error getting active session:", err);
+        console.error(
+          "Error getting active session:",
+          intensiveErrorMessage(err, "Error al obtener sesión activa"),
+        );
         return null;
       }
     }, [user]);
@@ -202,10 +203,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
       setSessions(sessionsData);
       return sessionsData;
     } catch (err: any) {
-      const errorMessage =
-        err.response?.data?.message ||
-        err.message ||
-        "Error al obtener sesiones";
+      const errorMessage = intensiveErrorMessage(err, "Error al obtener sesiones");
       setError(errorMessage);
       return [];
     } finally {
@@ -237,10 +235,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
         }
         return null;
       } catch (err: any) {
-        const errorMessage =
-          err.response?.data?.message ||
-          err.message ||
-          "Error al obtener sesión";
+        const errorMessage = intensiveErrorMessage(err, "Error al obtener sesión");
         setError(errorMessage);
         return null;
       } finally {
@@ -280,10 +275,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
         }
         return null;
       } catch (err: any) {
-        const errorMessage =
-          err.response?.data?.message ||
-          err.message ||
-          "Error al iniciar sesión";
+        const errorMessage = intensiveErrorMessage(err, "Error al iniciar sesión");
         setError(errorMessage);
         return null;
       } finally {
@@ -322,10 +314,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
         }
         return null;
       } catch (err: any) {
-        const errorMessage =
-          err.response?.data?.message ||
-          err.message ||
-          "Error al pausar sesión";
+        const errorMessage = intensiveErrorMessage(err, "Error al pausar sesión");
         setError(errorMessage);
         return null;
       } finally {
@@ -351,10 +340,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
         );
         return response.data || null;
       } catch (err: any) {
-        const errorMessage =
-          err.response?.data?.message ||
-          err.message ||
-          "Error al obtener info de abandono";
+        const errorMessage = intensiveErrorMessage(err, "Error al obtener info de abandono");
         setError(errorMessage);
         return null;
       }
@@ -391,10 +377,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
         }
         return null;
       } catch (err: any) {
-        const errorMessage =
-          err.response?.data?.message ||
-          err.message ||
-          "Error al abandonar sesión";
+        const errorMessage = intensiveErrorMessage(err, "Error al abandonar sesión");
         setError(errorMessage);
         return null;
       } finally {
@@ -435,10 +418,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
         }
         return null;
       } catch (err: any) {
-        const errorMessage =
-          err.response?.data?.message ||
-          err.message ||
-          "Error al completar sesión";
+        const errorMessage = intensiveErrorMessage(err, "Error al completar sesión");
         setError(errorMessage);
         return null;
       } finally {
@@ -476,11 +456,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
         }
         return null;
       } catch (err: any) {
-        const errorMessage =
-          err.response?.data?.message ||
-          err.message ||
-          "Error al iniciar Pomodoro";
-        setError(errorMessage);
+        setError(intensiveErrorMessage(err, "Error al iniciar Pomodoro"));
         return null;
       } finally {
         setLoading(false);
@@ -518,10 +494,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
         }
         return null;
       } catch (err: any) {
-        const errorMessage =
-          err.response?.data?.message ||
-          err.message ||
-          "Error al completar Pomodoro";
+        const errorMessage = intensiveErrorMessage(err, "Error al completar Pomodoro");
         setError(errorMessage);
         return null;
       } finally {
@@ -560,10 +533,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
         }
         return null;
       } catch (err: any) {
-        const errorMessage =
-          err.response?.data?.message ||
-          err.message ||
-          "Error al terminar descanso";
+        const errorMessage = intensiveErrorMessage(err, "Error al terminar descanso");
         setError(errorMessage);
         return null;
       } finally {
@@ -601,10 +571,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
         }
         return null;
       } catch (err: any) {
-        const errorMessage =
-          err.response?.data?.message ||
-          err.message ||
-          "Error al saltar descanso";
+        const errorMessage = intensiveErrorMessage(err, "Error al saltar descanso");
         setError(errorMessage);
         return null;
       } finally {
@@ -700,10 +667,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
             sessionComplete: false,
           };
         }
-        const errorMessage =
-          err.response?.data?.message ||
-          err.message ||
-          "Error al obtener tarjeta";
+        const errorMessage = intensiveErrorMessage(err, "Error al obtener tarjeta");
         setError(errorMessage);
         return {
           card: null,
@@ -744,10 +708,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
         }
         return null;
       } catch (err: any) {
-        const errorMessage =
-          err.response?.data?.message ||
-          err.message ||
-          "Error al completar tarjeta";
+        const errorMessage = intensiveErrorMessage(err, "Error al completar tarjeta");
         setError(errorMessage);
         return null;
       }
