@@ -8,6 +8,8 @@ import { deduplicateRequest } from "../src/utils/axiosConfig";
 import {
   intensiveApi as api,
   intensiveErrorMessage,
+  localIntensiveError,
+  normalizeIntensiveError,
 } from "../src/features/intensive-study/api/errors";
 import {
   IntensiveStudySession,
@@ -24,6 +26,12 @@ import {
   buildResumeSnapshot,
   isResumableSession,
 } from "../src/features/intensive-study/state/resume";
+import {
+  isAmbiguousFailure,
+  isCommandConfirmed,
+  type IntensiveCommand,
+  type IntensiveMutationOutcome,
+} from "../src/features/intensive-study/state/mutationOutcome";
 
 interface GetNextCardResult {
   card: IntensiveSessionCard | null;
@@ -49,10 +57,16 @@ interface UseIntensiveSessionsReturn {
   fetchSessions: () => Promise<IntensiveStudySession[]>;
   fetchSessionDetail: (id: number) => Promise<IntensiveSessionDetail | null>;
   startSession: (id: number) => Promise<IntensiveSessionDetail | null>;
-  pauseSession: (id: number) => Promise<IntensiveSessionDetail | null>;
-  abandonSession: (id: number) => Promise<IntensiveStudySession | null>;
+  pauseSession: (
+    id: number,
+  ) => Promise<IntensiveMutationOutcome<IntensiveSessionDetail>>;
+  abandonSession: (
+    id: number,
+  ) => Promise<IntensiveMutationOutcome<IntensiveStudySession>>;
   getAbandonInfo: (id: number) => Promise<AbandonInfo | null>;
-  completeSession: (id: number) => Promise<IntensiveSessionDetail | null>;
+  completeSession: (
+    id: number,
+  ) => Promise<IntensiveMutationOutcome<IntensiveSessionDetail>>;
   getActiveSession: () => Promise<IntensiveStudySession | null>;
   resumeSession: (id: number) => Promise<IntensiveResumeSnapshot | null>;
 
@@ -65,11 +79,11 @@ interface UseIntensiveSessionsReturn {
   endBreak: (
     sessionId: number,
     blockId: number,
-  ) => Promise<PomodoroBlock | null>;
+  ) => Promise<IntensiveMutationOutcome<PomodoroBlock | null>>;
   skipBreak: (
     sessionId: number,
     blockId: number,
-  ) => Promise<PomodoroBlock | null>;
+  ) => Promise<IntensiveMutationOutcome<PomodoroBlock | null>>;
 
   // Funciones de tarjetas
   getNextCard: (sessionId: number) => Promise<GetNextCardResult>;
@@ -82,6 +96,27 @@ interface UseIntensiveSessionsReturn {
   // Utilidades
   clearError: () => void;
   resetState: () => void;
+}
+
+/**
+ * The break endpoints answer `{ success, message }` and carry no block, so a
+ * `success: false` acknowledgement is a business rejection, not a result.
+ */
+function readBreakAck(
+  payload: any,
+  fallbackMessage: string,
+): IntensiveMutationOutcome<PomodoroBlock | null> {
+  if (!payload?.success) {
+    return {
+      status: "failed",
+      error: localIntensiveError(
+        "business",
+        payload?.message || payload?.error || fallbackMessage,
+      ),
+    };
+  }
+
+  return { status: "success", data: payload.block ?? null, snapshot: null };
 }
 
 export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
@@ -289,43 +324,138 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
     [user],
   );
 
+  // ============ COMANDOS DE CICLO DE VIDA (no idempotentes) ============
+
   /**
-   * Pausar una sesión
+   * Re-read the authoritative session after an ambiguous command. Only a GET is
+   * issued: a non-idempotent POST is never replayed.
    */
-  const pauseSession = useCallback(
-    async (id: number): Promise<IntensiveSessionDetail | null> => {
-      if (!user) {
-        setError("Usuario no autenticado");
+  const reconcileSession = useCallback(
+    async (sessionId: number): Promise<IntensiveResumeSnapshot | null> => {
+      try {
+        const response = await api.get<any>(`/intensive-sessions/${sessionId}`);
+        const payload = response.data;
+
+        return buildResumeSnapshot({
+          session: payload?.session || null,
+          activeBlock: payload?.activeBlock || null,
+          card: null,
+          userId: user?.id ?? null,
+        });
+      } catch (err) {
+        console.warn(
+          "Could not reconcile ambiguous intensive command:",
+          intensiveErrorMessage(err, "Error al reconciliar la sesión"),
+        );
         return null;
+      }
+    },
+    [user],
+  );
+
+  /**
+   * Run a lifecycle command and report a discriminated outcome.
+   *
+   * A rejected command never advances local state. A failure without an HTTP
+   * response may still have been applied, so it is resolved against the
+   * authoritative session before being reported as a failure.
+   */
+  const runCommand = useCallback(
+    async <T,>({
+      command,
+      sessionId,
+      fallbackMessage,
+      send,
+      fromSnapshot,
+    }: {
+      command: IntensiveCommand;
+      sessionId: number;
+      fallbackMessage: string;
+      send: () => Promise<IntensiveMutationOutcome<T>>;
+      fromSnapshot: (snapshot: IntensiveResumeSnapshot) => T;
+    }): Promise<IntensiveMutationOutcome<T>> => {
+      if (!user) {
+        const message = "Usuario no autenticado";
+        setError(message);
+        return { status: "failed", error: localIntensiveError("auth", message) };
       }
 
       setLoading(true);
       setError(null);
 
       try {
-        const response = await api.post<any>(`/intensive-sessions/${id}/pause`);
+        const outcome = await send();
+        if (outcome.status === "failed") {
+          console.error(
+            `Intensive command rejected [${command}]:`,
+            outcome.error.message,
+          );
+          setError(outcome.error.message);
+        }
+        return outcome;
+      } catch (err) {
+        const normalized = normalizeIntensiveError(err);
+        const failure = {
+          ...normalized,
+          message: intensiveErrorMessage(err, fallbackMessage),
+        };
 
-        if (response.data) {
-          const apiResponse = response.data;
-          const sessionDetail = apiResponse.session;
+        if (isAmbiguousFailure(failure)) {
+          const snapshot = await reconcileSession(sessionId);
+          if (snapshot && isCommandConfirmed(command, snapshot.phase)) {
+            // The command did land: adopt the authoritative state instead of
+            // sending the request again.
+            setCurrentSession(snapshot.session);
+            setCurrentPomodoro(snapshot.block);
+            setCurrentCard(snapshot.card);
+            setError(null);
+            return { status: "success", data: fromSnapshot(snapshot), snapshot };
+          }
+        }
+
+        console.error(`Intensive command failed [${command}]:`, failure.message);
+        setError(failure.message);
+        return { status: "failed", error: failure };
+      } finally {
+        setLoading(false);
+      }
+    },
+    [user, reconcileSession],
+  );
+
+  /**
+   * Pausar una sesión
+   */
+  const pauseSession = useCallback(
+    (id: number): Promise<IntensiveMutationOutcome<IntensiveSessionDetail>> =>
+      runCommand({
+        command: "PAUSE",
+        sessionId: id,
+        fallbackMessage: "Error al pausar sesión",
+        fromSnapshot: (snapshot) => snapshot.session,
+        send: async () => {
+          const response = await api.post<any>(
+            `/intensive-sessions/${id}/pause`,
+          );
+          const sessionDetail = response.data?.session;
+
+          if (!sessionDetail) {
+            return {
+              status: "failed",
+              error: localIntensiveError("business", "Error al pausar sesión"),
+            };
+          }
+
           setCurrentSession(sessionDetail);
           setSessions((prev) =>
             prev.map((s) =>
               s.id === id ? { ...s, status: sessionDetail.status } : s,
             ),
           );
-          return sessionDetail;
-        }
-        return null;
-      } catch (err: any) {
-        const errorMessage = intensiveErrorMessage(err, "Error al pausar sesión");
-        setError(errorMessage);
-        return null;
-      } finally {
-        setLoading(false);
-      }
-    },
-    [user],
+          return { status: "success", data: sessionDetail, snapshot: null };
+        },
+      }),
+    [runCommand],
   );
 
   /**
@@ -356,80 +486,75 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
    * Abandonar una sesión
    */
   const abandonSession = useCallback(
-    async (id: number): Promise<IntensiveStudySession | null> => {
-      if (!user) {
-        setError("Usuario no autenticado");
-        return null;
-      }
+    (id: number): Promise<IntensiveMutationOutcome<IntensiveStudySession>> =>
+      runCommand({
+        command: "ABANDON",
+        sessionId: id,
+        fallbackMessage: "Error al abandonar sesión",
+        fromSnapshot: (snapshot) => snapshot.session,
+        send: async () => {
+          const response = await api.post<IntensiveStudySession>(
+            `/intensive-sessions/${id}/abandon`,
+          );
 
-      setLoading(true);
-      setError(null);
+          if (!response.data) {
+            return {
+              status: "failed",
+              error: localIntensiveError(
+                "business",
+                "Error al abandonar sesión",
+              ),
+            };
+          }
 
-      try {
-        const response = await api.post<IntensiveStudySession>(
-          `/intensive-sessions/${id}/abandon`,
-        );
-
-        if (response.data) {
           setCurrentSession(null);
           setCurrentPomodoro(null);
           setCurrentCard(null);
           setSessions((prev) =>
             prev.map((s) => (s.id === id ? response.data : s)),
           );
-          return response.data;
-        }
-        return null;
-      } catch (err: any) {
-        const errorMessage = intensiveErrorMessage(err, "Error al abandonar sesión");
-        setError(errorMessage);
-        return null;
-      } finally {
-        setLoading(false);
-      }
-    },
-    [user],
+          return { status: "success", data: response.data, snapshot: null };
+        },
+      }),
+    [runCommand],
   );
 
   /**
    * Completar una sesión
    */
   const completeSession = useCallback(
-    async (id: number): Promise<IntensiveSessionDetail | null> => {
-      if (!user) {
-        setError("Usuario no autenticado");
-        return null;
-      }
+    (id: number): Promise<IntensiveMutationOutcome<IntensiveSessionDetail>> =>
+      runCommand({
+        command: "COMPLETE",
+        sessionId: id,
+        fallbackMessage: "Error al completar sesión",
+        fromSnapshot: (snapshot) => snapshot.session,
+        send: async () => {
+          const response = await api.post<any>(
+            `/intensive-sessions/${id}/complete`,
+          );
+          const session = response.data?.session;
 
-      setLoading(true);
-      setError(null);
+          if (!session) {
+            return {
+              status: "failed",
+              error: localIntensiveError(
+                "business",
+                "Error al completar sesión",
+              ),
+            };
+          }
 
-      try {
-        const response = await api.post<any>(
-          `/intensive-sessions/${id}/complete`,
-        );
-
-        if (response.data) {
-          const apiResponse = response.data;
-          const session = apiResponse.session;
           setCurrentSession(session);
           setSessions((prev) =>
             prev.map((s) =>
               s.id === id ? { ...s, status: session.status } : s,
             ),
           );
-          return session;
-        }
-        return null;
-      } catch (err: any) {
-        const errorMessage = intensiveErrorMessage(err, "Error al completar sesión");
-        setError(errorMessage);
-        return null;
-      } finally {
-        setLoading(false);
-      }
-    },
-    [user],
+          return { status: "success", data: session, snapshot: null };
+        },
+      }),
+    [runCommand],
   );
 
   // ==================== FUNCIONES DE POMODORO ====================
@@ -544,77 +669,46 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
    * Terminar descanso
    */
   const endBreak = useCallback(
-    async (
+    (
       sessionId: number,
       blockId: number,
-    ): Promise<PomodoroBlock | null> => {
-      if (!user) {
-        setError("Usuario no autenticado");
-        return null;
-      }
-
-      setLoading(true);
-      setError(null);
-
-      try {
-        const response = await api.post<any>(
-          `/intensive-sessions/${sessionId}/pomodoro/${blockId}/end-break`,
-        );
-
-        if (response.data) {
-          const apiResponse = response.data;
-          // No hay block en la respuesta, solo success y message
-          // Retornamos el objeto completo para que el componente maneje la respuesta
-          return apiResponse.success ? apiResponse : null;
-        }
-        return null;
-      } catch (err: any) {
-        const errorMessage = intensiveErrorMessage(err, "Error al terminar descanso");
-        setError(errorMessage);
-        return null;
-      } finally {
-        setLoading(false);
-      }
-    },
-    [user],
+    ): Promise<IntensiveMutationOutcome<PomodoroBlock | null>> =>
+      runCommand({
+        command: "END_BREAK",
+        sessionId,
+        fallbackMessage: "Error al terminar descanso",
+        fromSnapshot: (snapshot) => snapshot.block,
+        send: async () => {
+          const response = await api.post<any>(
+            `/intensive-sessions/${sessionId}/pomodoro/${blockId}/end-break`,
+          );
+          return readBreakAck(response.data, "Error al terminar descanso");
+        },
+      }),
+    [runCommand],
   );
 
   /**
    * Saltar descanso
    */
   const skipBreak = useCallback(
-    async (
+    (
       sessionId: number,
       blockId: number,
-    ): Promise<PomodoroBlock | null> => {
-      if (!user) {
-        setError("Usuario no autenticado");
-        return null;
-      }
-
-      setLoading(true);
-      setError(null);
-
-      try {
-        const response = await api.post<any>(
-          `/intensive-sessions/${sessionId}/pomodoro/${blockId}/skip-break`,
-        );
-
-        if (response.data) {
-          const apiResponse = response.data;
-          // No hay block en la respuesta, solo success y message
-          return apiResponse.success ? apiResponse : null;
-        }
-        return null;
-      } catch (err: any) {
-        const errorMessage = intensiveErrorMessage(err, "Error al saltar descanso");
-        setError(errorMessage);
-        return null;
-      } finally {
-        setLoading(false);
-      }
-    },
-    [user],
+    ): Promise<IntensiveMutationOutcome<PomodoroBlock | null>> =>
+      runCommand({
+        command: "SKIP_BREAK",
+        sessionId,
+        fallbackMessage: "Error al saltar descanso",
+        fromSnapshot: (snapshot) => snapshot.block,
+        send: async () => {
+          const response = await api.post<any>(
+            `/intensive-sessions/${sessionId}/pomodoro/${blockId}/skip-break`,
+          );
+          return readBreakAck(response.data, "Error al saltar descanso");
+        },
+      }),
+    [runCommand],
   );
 
   // ==================== FUNCIONES DE TARJETAS ====================

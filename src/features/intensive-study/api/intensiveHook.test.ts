@@ -60,12 +60,13 @@ describe("useIntensiveSessions corrective production seams", () => {
     }));
     await renderHookProbe();
 
-    let result: unknown;
+    let result: Awaited<ReturnType<HookState["completeSession"]>> | undefined;
     await act(async () => {
       result = await latest?.completeSession(1);
     });
 
-    expect(result).toBeNull();
+    // The command reports an explicit failure instead of an ambiguous `null`.
+    expect(result?.status).toBe("failed");
     expect(latest?.error).toBe("Aún tienes 2 tarjetas pendientes");
     expect(document.getElementById("notification-container")).toBeNull();
   });

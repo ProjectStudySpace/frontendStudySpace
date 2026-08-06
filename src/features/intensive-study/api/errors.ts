@@ -59,6 +59,24 @@ export const intensiveApi = {
   },
 };
 
+/**
+ * Build a normalized error for failures the client detects itself, such as a
+ * response envelope that acknowledges the request but denies the action.
+ */
+export function localIntensiveError(
+  kind: IntensiveErrorKind,
+  message: string,
+): IntensiveError {
+  return {
+    kind,
+    message,
+    status: null,
+    path: null,
+    method: null,
+    raw: null,
+  };
+}
+
 function readEnvelope(data: unknown): {
   error?: string;
   message?: string;

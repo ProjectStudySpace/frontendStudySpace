@@ -52,6 +52,11 @@ import {
   shouldShowBlockComplete,
 } from "../features/intensive-study/state/resume";
 import { resolveCompletionDispatch } from "../features/intensive-study/state/timerCompletion";
+import {
+  selectVisibleIntensiveError,
+  type IntensiveCommand,
+  type IntensiveCommandFailure,
+} from "../features/intensive-study/state/mutationOutcome";
 import { IntradayReview } from "../types/intradayReviews";
 import { UserBadge } from "../types/gamification";
 
@@ -119,6 +124,10 @@ const IntensiveStudy: React.FC = () => {
   const [activeSessionError, setActiveSessionError] = useState<string | null>(
     null,
   );
+  // A lifecycle command that was rejected or lost. While it is set the local
+  // lifecycle stays where it was and the user can retry.
+  const [commandFailure, setCommandFailure] =
+    useState<IntensiveCommandFailure | null>(null);
   // True only once authoritative session/block/card/timer data has been applied.
   const [hydrated, setHydrated] = useState(false);
   const [resuming, setResuming] = useState(false);
@@ -354,16 +363,25 @@ const IntensiveStudy: React.FC = () => {
   };
 
   // Pausar sesión
+  // La vista sólo cambia con una pausa confirmada por el backend.
   const handlePause = async () => {
     if (!currentSession) return;
 
-    try {
-      await pauseSession(currentSession.id);
-      pomodoroTimer.pause();
-      setCurrentView("PAUSED");
-    } catch (err) {
-      console.error("Error pausing session:", err);
+    setCommandFailure(null);
+    const outcome = await pauseSession(currentSession.id);
+
+    if (outcome.status !== "success") {
+      setCommandFailure({ command: "PAUSE", message: outcome.error.message });
+      return;
     }
+
+    if (outcome.snapshot) {
+      applyResumeSnapshot(outcome.snapshot);
+      return;
+    }
+
+    pomodoroTimer.pause();
+    setCurrentView("PAUSED");
   };
 
   // Reanudar sesión
@@ -390,29 +408,40 @@ const IntensiveStudy: React.FC = () => {
     }
   };
 
+  // Enviar el abandono ya confirmado. Se reutiliza al reintentar, para no
+  // volver a pedir confirmación de una decisión que el usuario ya tomó.
+  const runAbandon = async () => {
+    if (!currentSession) return;
+
+    setCommandFailure(null);
+    const outcome = await abandonSession(currentSession.id);
+
+    if (outcome.status !== "success") {
+      setCommandFailure({ command: "ABANDON", message: outcome.error.message });
+      return;
+    }
+
+    setCurrentView("RESULTS");
+  };
+
   // Abandonar sesión
   const handleAbandon = async () => {
     if (!currentSession) return;
 
-    try {
-      const info = await getAbandonInfo(currentSession.id);
-      setAbandonInfo(info);
+    const info = await getAbandonInfo(currentSession.id);
+    setAbandonInfo(info);
 
-      // Confirmar abandono
-      if (
-        window.confirm(
-          info?.message ||
-            t(
-              "intensiveStudy.confirmAbandon",
-              "¿Estás seguro de abandonar la sesión? Perderás XP.",
-            ),
-        )
-      ) {
-        await abandonSession(currentSession.id);
-        setCurrentView("RESULTS");
-      }
-    } catch (err) {
-      console.error("Error abandoning session:", err);
+    // Confirmar abandono
+    if (
+      window.confirm(
+        info?.message ||
+          t(
+            "intensiveStudy.confirmAbandon",
+            "¿Estás seguro de abandonar la sesión? Perderás XP.",
+          ),
+      )
+    ) {
+      await runAbandon();
     }
   };
 
@@ -442,59 +471,85 @@ const IntensiveStudy: React.FC = () => {
     }
   };
 
+  // Arrancar el bloque siguiente una vez que el descanso quedó cerrado.
+  const startNextWorkBlock = async (sessionId: number) => {
+    pomodoroTimer.setBlockNumber(pomodoroTimer.blockNumber + 1);
+
+    const nextPomodoro = await startPomodoro(sessionId);
+    if (!nextPomodoro) return;
+
+    // Sincronizar con la duración del nuevo Pomodoro del backend
+    startWorkBlock(nextPomodoro);
+
+    // Cargar la primera tarjeta del nuevo bloque
+    await getNextCard(sessionId);
+
+    setHydrated(true);
+    setCurrentView("ACTIVE");
+  };
+
+  // Adoptar el estado autoritativo tras reconciliar un comando ambiguo.
+  const adoptReconciledBreak = async (
+    snapshot: IntensiveResumeSnapshot,
+    sessionId: number,
+  ) => {
+    applyResumeSnapshot(snapshot);
+    if (snapshot.phase === "ACTIVE") {
+      await getNextCard(sessionId);
+    }
+  };
+
   // Terminar descanso
   const handleBreakEnd = async () => {
     if (!currentSession || !currentPomodoro) return;
 
-    try {
-      pomodoroTimer.pause();
+    setCommandFailure(null);
+    const sessionId = currentSession.id;
 
-      // Terminar descanso en backend
-      await endBreak(currentSession.id, currentPomodoro.id);
+    // Terminar descanso en backend
+    const outcome = await endBreak(sessionId, currentPomodoro.id);
 
-      // Incrementar bloque
-      pomodoroTimer.setBlockNumber(pomodoroTimer.blockNumber + 1);
-
-      // Iniciar siguiente Pomodoro
-      const nextPomodoro = await startPomodoro(currentSession.id);
-
-      if (nextPomodoro) {
-        // Sincronizar con la duración del nuevo Pomodoro del backend
-        startWorkBlock(nextPomodoro);
-
-        // Cargar la primera tarjeta del nuevo bloque
-        await getNextCard(currentSession.id);
-
-        setHydrated(true);
-        setCurrentView("ACTIVE");
-      }
-    } catch (err) {
-      console.error("Error ending break:", err);
+    if (outcome.status !== "success") {
+      setCommandFailure({
+        command: "END_BREAK",
+        message: outcome.error.message,
+      });
+      return;
     }
+
+    pomodoroTimer.pause();
+
+    if (outcome.snapshot) {
+      await adoptReconciledBreak(outcome.snapshot, sessionId);
+      return;
+    }
+
+    await startNextWorkBlock(sessionId);
   };
 
   // Saltar descanso
   const handleSkipBreak = async () => {
     if (!currentSession || !currentPomodoro) return;
 
-    try {
-      await skipBreak(currentSession.id, currentPomodoro.id);
-      pomodoroTimer.setBlockNumber(pomodoroTimer.blockNumber + 1);
+    setCommandFailure(null);
+    const sessionId = currentSession.id;
 
-      const nextPomodoro = await startPomodoro(currentSession.id);
-      if (nextPomodoro) {
-        // Sincronizar con la duración del nuevo Pomodoro del backend
-        startWorkBlock(nextPomodoro);
+    const outcome = await skipBreak(sessionId, currentPomodoro.id);
 
-        // Cargar la primera tarjeta del nuevo bloque
-        await getNextCard(currentSession.id);
-
-        setHydrated(true);
-        setCurrentView("ACTIVE");
-      }
-    } catch (err) {
-      console.error("Error skipping break:", err);
+    if (outcome.status !== "success") {
+      setCommandFailure({
+        command: "SKIP_BREAK",
+        message: outcome.error.message,
+      });
+      return;
     }
+
+    if (outcome.snapshot) {
+      await adoptReconciledBreak(outcome.snapshot, sessionId);
+      return;
+    }
+
+    await startNextWorkBlock(sessionId);
   };
 
   // Completar tarjeta
@@ -534,19 +589,51 @@ const IntensiveStudy: React.FC = () => {
   const handleSessionComplete = async () => {
     if (!currentSession) return;
 
-    try {
-      pomodoroTimer.pause();
+    setCommandFailure(null);
+    const outcome = await completeSession(currentSession.id);
 
-      const completed = await completeSession(currentSession.id);
-      if (completed) {
-        setSessionResults(completed);
-        // Aquí normalmente vendrían los nuevos badges del backend
-        setNewBadges([]);
-        setCurrentView("RESULTS");
-      }
-    } catch (err) {
-      console.error("Error completing session:", err);
+    if (outcome.status !== "success") {
+      setCommandFailure({
+        command: "COMPLETE",
+        message: outcome.error.message,
+      });
+      return;
     }
+
+    pomodoroTimer.pause();
+    setSessionResults(
+      outcome.snapshot ? outcome.snapshot.session : outcome.data,
+    );
+    // Aquí normalmente vendrían los nuevos badges del backend
+    setNewBadges([]);
+    setCurrentView("RESULTS");
+  };
+
+  // Reintentar el último comando fallido sin repetir pasos ya confirmados.
+  const retryCommand = (command: IntensiveCommand) => {
+    switch (command) {
+      case "PAUSE":
+        void handlePause();
+        return;
+      case "ABANDON":
+        void runAbandon();
+        return;
+      case "COMPLETE":
+        void handleSessionComplete();
+        return;
+      case "END_BREAK":
+        void handleBreakEnd();
+        return;
+      case "SKIP_BREAK":
+        void handleSkipBreak();
+        return;
+    }
+  };
+
+  // Descartar el error visible sin tocar el ciclo de vida de la sesión.
+  const dismissCommandFailure = () => {
+    setCommandFailure(null);
+    clearError();
   };
 
   // Volver a configuración
@@ -557,6 +644,7 @@ const IntensiveStudy: React.FC = () => {
     setShowAnswer(false);
     setSelectedDifficulty(null);
     setHydrated(false);
+    setCommandFailure(null);
     pomodoroTimer.reset();
     clearError();
   };
@@ -626,28 +714,33 @@ const IntensiveStudy: React.FC = () => {
                 </button>
                 <button
                   onClick={async () => {
-                    try {
-                      const active = await getActiveSession();
-                      if (active) {
-                        if (
-                          window.confirm(
-                            t(
-                              "intensiveStudy.confirmAbandon",
-                              "¿Estás seguro de abandonar la sesión? Perderás XP.",
-                            ),
-                          )
-                        ) {
-                          await abandonSession(active.id);
-                          setActiveSessionError(null);
-                          await fetchSessions();
-                        }
-                      } else {
-                        // Si no hay sesión activa, limpiar el error
-                        setActiveSessionError(null);
-                      }
-                    } catch (err) {
-                      console.error("Error abandoning session:", err);
+                    const active = await getActiveSession();
+                    if (!active) {
+                      // Si no hay sesión activa, limpiar el error
+                      setActiveSessionError(null);
+                      return;
                     }
+
+                    if (
+                      !window.confirm(
+                        t(
+                          "intensiveStudy.confirmAbandon",
+                          "¿Estás seguro de abandonar la sesión? Perderás XP.",
+                        ),
+                      )
+                    ) {
+                      return;
+                    }
+
+                    // El aviso sólo desaparece si el backend confirmó el
+                    // abandono; si falla, el error local sigue visible.
+                    const outcome = await abandonSession(active.id);
+                    if (outcome.status !== "success") {
+                      return;
+                    }
+
+                    setActiveSessionError(null);
+                    await fetchSessions();
                   }}
                   className="px-3 py-1.5 text-xs font-medium text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-800/50 rounded hover:bg-red-200 dark:hover:bg-red-700/50 transition-colors"
                 >
@@ -1041,8 +1134,48 @@ const IntensiveStudy: React.FC = () => {
     />
   );
 
+  // Error accionable fuera de CONFIG: la vista de configuración ya tiene su
+  // propio aviso, así que aquí nunca se duplica.
+  const visibleError = selectVisibleIntensiveError({
+    view: currentView,
+    commandFailure,
+    hookError: error,
+  });
+  // Sólo un comando fallido es reintentable; un error informativo no lo es.
+  const retryableCommand: IntensiveCommand | null =
+    visibleError?.command ?? null;
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
+      {/* Error local de la sesión intensiva, visible en cualquier vista activa */}
+      {visibleError && (
+        <div
+          role="alert"
+          className="max-w-3xl mx-auto mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4"
+        >
+          <p className="text-sm text-red-700 dark:text-red-300">
+            {visibleError.message}
+          </p>
+          <div className="mt-3 flex gap-2">
+            {retryableCommand && (
+              <button
+                onClick={() => retryCommand(retryableCommand)}
+                disabled={loading}
+                className="px-3 py-1.5 text-xs font-medium text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-800/50 rounded hover:bg-red-200 dark:hover:bg-red-700/50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {t("intensiveStudy.retryCommand", "Reintentar")}
+              </button>
+            )}
+            <button
+              onClick={dismissCommandFailure}
+              className="px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            >
+              {t("intensiveStudy.dismissError", "Descartar")}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Botón de volver (excepto en configuración) */}
       {currentView !== "CONFIG" &&
         currentView !== "RESULTS" &&
