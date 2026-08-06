@@ -192,9 +192,9 @@ describe("intensive session discovery and authoritative resume", () => {
     );
     await renderHookProbe();
 
-    let snapshot: Awaited<ReturnType<HookState["resumeSession"]>> | undefined;
+    let snapshot: Awaited<ReturnType<HookState["rehydrateSession"]>> | undefined;
     await act(async () => {
-      snapshot = await latest?.resumeSession(1);
+      snapshot = await latest?.rehydrateSession(1);
     });
 
     expect(snapshot?.phase).toBe("ACTIVE");
@@ -244,9 +244,9 @@ describe("intensive session discovery and authoritative resume", () => {
     );
     await renderHookProbe();
 
-    let snapshot: Awaited<ReturnType<HookState["resumeSession"]>> | undefined;
+    let snapshot: Awaited<ReturnType<HookState["rehydrateSession"]>> | undefined;
     await act(async () => {
-      snapshot = await latest?.resumeSession(1);
+      snapshot = await latest?.rehydrateSession(1);
     });
 
     expect(snapshot?.phase).toBe("BREAK");
@@ -291,9 +291,9 @@ describe("intensive session discovery and authoritative resume", () => {
     );
     await renderHookProbe();
 
-    let snapshot: Awaited<ReturnType<HookState["resumeSession"]>> | undefined;
+    let snapshot: Awaited<ReturnType<HookState["rehydrateSession"]>> | undefined;
     await act(async () => {
-      snapshot = await latest?.resumeSession(1);
+      snapshot = await latest?.rehydrateSession(1);
     });
 
     expect(snapshot?.phase).toBe("PAUSED");
@@ -317,9 +317,9 @@ describe("intensive session discovery and authoritative resume", () => {
     );
     await renderHookProbe();
 
-    let snapshot: Awaited<ReturnType<HookState["resumeSession"]>> | undefined;
+    let snapshot: Awaited<ReturnType<HookState["rehydrateSession"]>> | undefined;
     await act(async () => {
-      snapshot = await latest?.resumeSession(1);
+      snapshot = await latest?.rehydrateSession(1);
     });
 
     expect(snapshot?.phase).toBe("READY");
@@ -342,9 +342,9 @@ describe("intensive session discovery and authoritative resume", () => {
     );
     await renderHookProbe();
 
-    let snapshot: Awaited<ReturnType<HookState["resumeSession"]>> | undefined;
+    let snapshot: Awaited<ReturnType<HookState["rehydrateSession"]>> | undefined;
     await act(async () => {
-      snapshot = await latest?.resumeSession(1);
+      snapshot = await latest?.rehydrateSession(1);
     });
 
     expect(snapshot).toBeNull();
@@ -379,9 +379,9 @@ describe("intensive session discovery and authoritative resume", () => {
     });
     await renderHookProbe();
 
-    let snapshot: Awaited<ReturnType<HookState["resumeSession"]>> | undefined;
+    let snapshot: Awaited<ReturnType<HookState["rehydrateSession"]>> | undefined;
     await act(async () => {
-      snapshot = await latest?.resumeSession(1);
+      snapshot = await latest?.rehydrateSession(1);
     });
 
     expect(snapshot?.phase).toBe("READY");
@@ -398,9 +398,9 @@ describe("intensive session discovery and authoritative resume", () => {
     });
     await renderHookProbe();
 
-    let snapshot: Awaited<ReturnType<HookState["resumeSession"]>> | undefined;
+    let snapshot: Awaited<ReturnType<HookState["rehydrateSession"]>> | undefined;
     await act(async () => {
-      snapshot = await latest?.resumeSession(1);
+      snapshot = await latest?.rehydrateSession(1);
     });
 
     expect(snapshot).toBeNull();

@@ -68,7 +68,7 @@ interface UseIntensiveSessionsReturn {
     id: number,
   ) => Promise<IntensiveMutationOutcome<IntensiveSessionDetail>>;
   getActiveSession: () => Promise<IntensiveStudySession | null>;
-  resumeSession: (id: number) => Promise<IntensiveResumeSnapshot | null>;
+  rehydrateSession: (id: number) => Promise<IntensiveResumeSnapshot | null>;
   resumeFromPause: (
     sessionId: number,
   ) => Promise<IntensiveResumeSnapshot | null>;
@@ -859,7 +859,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
    * Returns `null` when the session cannot be trusted (not found, failed
    * request, or owned by another user) and leaves local state untouched.
    */
-  const resumeSession = useCallback(
+  const rehydrateSession = useCallback(
     async (sessionId: number): Promise<IntensiveResumeSnapshot | null> => {
       if (!user) {
         setError("Usuario no autenticado");
@@ -929,14 +929,14 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
    */
   const resumeFromPause = useCallback(
     async (sessionId: number): Promise<IntensiveResumeSnapshot | null> => {
-      const current = await resumeSession(sessionId); // authoritative GET
+      const current = await rehydrateSession(sessionId); // authoritative GET
       if (!current) return null;
       if (current.phase !== "PAUSED") return current; // already live: nothing to start
       const started = await startSession(sessionId); // POST, genuinely PAUSED only
       if (!started) return null;
-      return resumeSession(sessionId); // ack is not a state source: re-GET
+      return rehydrateSession(sessionId); // ack is not a state source: re-GET
     },
-    [resumeSession, startSession],
+    [rehydrateSession, startSession],
   );
 
   // ==================== UTILIDADES ====================
@@ -973,7 +973,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
     getAbandonInfo,
     completeSession,
     getActiveSession,
-    resumeSession,
+    rehydrateSession,
     resumeFromPause,
 
     // Funciones de Pomodoro

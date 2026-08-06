@@ -90,7 +90,7 @@ const IntensiveStudy: React.FC = () => {
     getAbandonInfo,
     completeSession,
     getActiveSession,
-    resumeSession,
+    rehydrateSession,
     resumeFromPause,
     startPomodoro,
     completePomodoro,
@@ -296,7 +296,7 @@ const IntensiveStudy: React.FC = () => {
         return;
       }
 
-      const snapshot = await resumeSession(active.id);
+      const snapshot = await rehydrateSession(active.id);
       if (!snapshot) {
         return;
       }
@@ -307,7 +307,7 @@ const IntensiveStudy: React.FC = () => {
     } finally {
       setResuming(false);
     }
-  }, [getActiveSession, resumeSession, applyResumeSnapshot]);
+  }, [getActiveSession, rehydrateSession, applyResumeSnapshot]);
 
   // ==================== FUNCIONES DE MANEJO ====================
 

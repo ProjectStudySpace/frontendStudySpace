@@ -135,7 +135,7 @@ function postCalls() {
 async function hydrate() {
   currentDetail = UNCHANGED_DETAIL;
   await act(async () => {
-    await latest?.resumeSession(1);
+    await latest?.rehydrateSession(1);
   });
   calls = [];
 }
