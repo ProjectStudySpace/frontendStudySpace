@@ -1,6 +1,6 @@
 # Phase 2 Contract Stabilization Status and Execution Plan
 
-Contract stabilization is the only active Phase 2 delivery track. Units 1–2 are committed locally as feature-branch chains, but no branch has been pushed, assigned an upstream, opened as a PR, reviewed, merged, deployed, or shipped. Units 3–9 are planned and incomplete. Deferred product expansion remains in [Deferred Phase 2 Product Roadmap](deferred-phase-2-product-roadmap.md).
+Contract stabilization is the only active Phase 2 delivery track. Units 1–2 are committed locally. Frontend F-01–F-06, its documentation, and the ATL ignore are integrated on the clean local source branch at `61cb205`; a separate non-deploying branch reconciles that source with refreshed `origin/main` at merge `5733280`. Neither local integration is a remote review, main merge, deployment, or shipment. Units 3–9 remain incomplete. Deferred product expansion remains in [Deferred Phase 2 Product Roadmap](deferred-phase-2-product-roadmap.md).
 
 ## Review path
 
@@ -14,9 +14,9 @@ Contract stabilization is the only active Phase 2 delivery track. Units 1–2 ar
 
 | Scope | Current state | Delivery truth |
 |---|---|---|
-| Committed intensive-study route and UI | Frontend tracker/base `f7f9e6f` | Local committed baseline; known lifecycle and contract defects remain |
+| Committed intensive-study route and UI | Frontend source `61cb205` | F-01–F-06 + Docs + ATL ignore integrated locally; source is clean and 8 commits ahead of its upstream |
 | Unit 1: backend dependency baseline and partial-resume transaction | Backend B-00 `1c520b3` and B-01 `622da79`, based on tracker `9ef7e1f` | Committed locally; awaiting push, PR, review, and merge; not shipped |
-| Unit 2: frontend transport/authentication stabilization | Frontend F-01–F-06, ending at `3167e72` | Committed locally; awaiting push, PR, review, and merge; not shipped |
+| Unit 2: frontend transport/authentication stabilization | F-01–F-06 integrated at source `61cb205`; main reconciliation `5733280` | Local integration and reconciliation verified; no push, upstream for the reconciliation branch, PR, main merge, deploy, or shipment |
 | Units 3–9 | Defined below | Planned, incomplete, and not shipped |
 | Deferred intraday, push, gamification validation, onboarding, i18n, and product E2E | Defined in the deferred roadmap | Deferred; not part of stabilization |
 | Long-term generated/shared contract strategy | No decision | Deferred; no implementation commitment |
@@ -56,7 +56,7 @@ Its 11/11 evidence covers the **Unit 1 partial-resume service/helper contract**,
 
 Unit 2 adds strict HTTP `2xx` semantics, retries only for response-less idempotent requests, auth-generation identity, exactly-once same-generation non-login `401` expiry handling, stale-generation rejection, degraded bootstrap, local intensive error normalization, and one-POST/authoritative-GET recovery for an ambiguous Pomodoro-start result. Its focused tests are under `src/features/intensive-study/api/`.
 
-The frontend work is committed locally as F-01 through F-06. The final accepted focused evidence on F-06 is 4 files / 42 tests PASS, scoped TypeScript PASS, and Vite build PASS. These results do not establish Units 3–9, merge, deployment, or shipped status.
+The clean local source branch `intensiveSessions-pomodoro-pushNotifications` now ends at `61cb2058985f9b3ae72c3601b8b2debf4334209a`, 8 commits ahead of its upstream, with F-01–F-06, Docs, and the ATL ignore integrated. A separate local reconciliation added three notes regressions to the 42 intensive tests: 45/45 PASS, scoped TypeScript PASS, Vite build PASS, locale validation PASS, and `npm ls` PASS. This is local evidence only; it does not establish Units 3–9, remote review, main merge, deployment, or shipment.
 
 ### Units 3–9
 
@@ -91,16 +91,15 @@ Units 3–9 must parse and represent this behavior; they must not restore the su
 
 The backend Prisma CLI, client, adapter, and generated client are exactly **7.7.0**. Engram observation #151 records independent approval of that normalization. This is a dependency baseline fact, not a dependency-incident narrative and not evidence that Units 3–9 are complete.
 
-### Local delivery chains
-
-All entries below are local commits in feature-branch chains. Exact linear ancestry was verified; none has been pushed, assigned an upstream, opened as a PR, reviewed, merged, deployed, or shipped.
+### Local delivery chains and main reconciliation
 
 | Repository | Local chain | Delivery state |
 |---|---|---|
-| Backend | tracker/base `9ef7e1f` → B-00 `1c520b3` → B-01 `622da79` | Unit 1 and exact Prisma 7.7.0 baseline committed locally |
-| Frontend | tracker/base `f7f9e6f` → F-01 `e0ffb13` → F-02 `1cc4c31` → F-03 `e446cd8` → F-04 `875beb7` → F-05 `e724218` → F-06 `3167e72` | Unit 2 committed locally; final accepted evidence belongs to F-06 |
+| Backend | tracker/base `9ef7e1f` → B-00 `1c520b3` → B-01 `622da79` | Unit 1 and exact Prisma 7.7.0 baseline committed locally; remote review and integration remain pending |
+| Frontend source | tracker/base `f7f9e6f` → F-01 `e0ffb13` → F-02 `1cc4c31` → F-03 `e446cd8` → F-04 `875beb7` → F-05 `e724218` → F-06 `3167e72` → Docs `d697524` → ATL ignore `61cb205` | Clean local source, 8 ahead of its upstream; no push of these commits, PR, main merge, deploy, or shipment |
+| Frontend reconciliation | `chore/intensive-main-reconciliation` merge `5733280`, parents source `61cb205` and refreshed `origin/main` `dca9563` | Main contributed 12 commits; branch was 0 behind/16 ahead of `origin/main` at creation; no upstream, push, PR, main merge, deploy, or shipment |
 
-Push and review each repository through its selected feature-branch-chain workflow before integration. The dirty source worktrees remain evidence/canonical-document locations, not delivery branches.
+The reconciliation semantic review fixed an EXPLANATION note regression without changing the API intent: backend `Card.images[]` remains canonical; question images map left and answer images map right; `leftImageUrls`/`rightImageUrls` remain frontend presentation fields; create/update unwrap `{message, card}`. A discriminated backend `CARD`/`EXPLANATION` DTO remains Unit 3 work and is not implemented by this reconciliation.
 
 ## Known blockers mapped to execution units
 
@@ -116,8 +115,10 @@ Push and review each repository through its selected feature-branch-chain workfl
 | Legacy frontend enums and broad `any` payloads remain | Unit 3 | Replace them at the wire/application boundary with canonical values and endpoint-specific parsers |
 | Late command/GET/card results can overwrite another route or generation | Unit 4 | Add request tags, captured targets, reducer acceptance, generation invalidation, and stale-result rejection |
 | Relative in-memory timers and auto-transitions do not survive reload/backgrounding safely | Unit 5 | Use absolute descriptors from `endsAt`, `breakEndsAt`, or authoritative timestamps; expiry exposes an action rather than inventing a server transition |
-| Broad TypeScript fails and no focused script exists | Unit 9 | Add `tsconfig.intensive.json` and `typecheck:intensive`; keep the 46 pre-existing broad diagnostics outside the focused acceptance boundary |
+| Broad TypeScript fails and no permanent focused script exists | Unit 9 | Add `tsconfig.intensive.json` and `typecheck:intensive`; the reconciliation's scoped TypeScript PASS is evidence for its slice, not the final gate |
 | Full HTTP validation remains blocked on the recorded Windows/native `sharp` startup issue | Unit 9 final evidence | Run and record the full HTTP path in a viable environment; the accepted 11/11 service/helper suite is not a substitute |
+| Same-day past reschedule options remain visible | Later product/runtime decision | Informational and non-blocking for reconciliation; behavior remains unresolved |
+| Review delete action remains inert | Later product/runtime decision | Informational and non-blocking for reconciliation; behavior remains unresolved |
 
 ## Units 3–9 execution plan
 
@@ -128,7 +129,7 @@ Execute these units in order. A unit may be split into smaller PRs where stated,
 | Field | Plan |
 |---|---|
 | Objective | Replace legacy status values, broad `any`, compatibility guesses, and acknowledgement-as-entity assumptions with endpoint-specific wire DTOs, parsers, and clients. |
-| Prerequisites | Local backend chain through B-01 and frontend chain through F-06 pushed and reviewed as separate semantic slices; authoritative backend envelopes reconfirmed; approved Unit 1 supersession above accepted. |
+| Prerequisites | Local backend chain through B-01 and reconciled frontend branch `5733280` pushed, reviewed, and remotely integrated as separate semantic slices; authoritative backend envelopes reconfirmed; approved Unit 1 supersession above accepted. |
 | Deliverables/contracts | Canonical session/block/card statuses; create/list/detail/start/pause; Pomodoro start/complete/end/skip; card complete/next union; complete/abandon-info/abandon; omitted `activeBlock -> null`; nullable timestamps; opaque retained metadata; `cards: []` interrupted-block response support. |
 | Likely file boundaries | Existing: `src/types/intensiveSessions.ts`, `hooks/useIntensiveSessions.ts`, `src/features/intensive-study/api/errors.ts`. Planned under the verified `src/features/intensive-study/api/` directory: `wire.ts`, `parsers.ts`, `client.ts`, and focused `*.test.ts` files. |
 | Acceptance criteria | Every operation has its real request and response shape; parser inputs are `unknown`; no generic envelope is imposed; acknowledgements cannot hydrate entities; `cards/next` supports both card and `blockComplete` forms; summary/`nextReviews` parse without deferred execution; canonical statuses have no legacy aliases. |
@@ -275,9 +276,10 @@ Every row is required for stabilization. “Unchanged” means the authoritative
 | Unit 1 focused service contract | Backend B-01 `622da797702ea8c4a0ba2a17f676785d0d1b371d` | `npm run test:intensive-pomodoro` — 11/11 accepted PASS | Service/helper partial-resume scope only; not the full HTTP/backend flow; not rerun for this document | Observations #114, #122, #128, #149 |
 | Unit 1 syntax | Same B-01 commit | `node --check services/intensivePomodoroStartService.js && node --check services/intensiveStudyService.js && node --check test/intensivePomodoroStartService.test.js` — accepted PASS | Unit 1 files only; not rerun for this document | Observations #128, #149 |
 | Real PostgreSQL concurrency | Backend B-01 lineage; disposable fixture | Prior service + Prisma/PostgreSQL one-winner/one-conflict PASS with cleanup | Service/transaction persistence evidence; HTTP stack excluded; not rerun for this document | Observation #128 |
-| Unit 2 final focused frontend | Frontend F-06 `3167e72414971984dd6c6b67338bb8a4bd2c5135` | `npm run test:intensive -- src/features/intensive-study/api/transport.test.ts src/features/intensive-study/api/authExpiry.test.ts src/features/intensive-study/api/authBootstrap.test.ts src/features/intensive-study/api/intensiveHook.test.ts` — 4 files / 42 tests accepted PASS | F-01–F-06 transport/auth/intensive scope; not Units 3–9; not rerun for this document | Observation #183 |
-| Scoped frontend TypeScript | Same F-06 commit | Accepted scoped TypeScript PASS | Existing F-01–F-06 changed-file acceptance scope; not `typecheck:intensive`; not rerun for this document | Observation #183 |
-| Frontend production build | Same F-06 commit | `npm run build` — accepted Vite PASS (3,035 modules) | Production bundle validation; not deployment; not rerun for this document | Observation #183 |
+| Reconciled focused frontend | Reconciliation `57332808418044f66d56b49a6d0ef02f64ccfc84` | 3 notes regressions + 42 intensive tests — 45/45 PASS | Reconciled notes and F-01–F-06 scope; not Units 3–9 or the final gate | Observation #125 |
+| Scoped frontend TypeScript | Same reconciliation commit | Scoped TypeScript PASS | Reconciliation scope only; not permanent `typecheck:intensive` or final acceptance | Observation #125 |
+| Frontend production build | Same reconciliation commit | `npm run build` — Vite PASS | Production bundle validation; not deployment | Observation #125 |
+| Locales and dependency tree | Same reconciliation commit | Locale JSON validation PASS; `npm ls` PASS | Reconciliation readiness only; not CI or shipment | Observation #125 |
 | Broad frontend TypeScript | Same F-06 commit | `./node_modules/.bin/tsc -p tsconfig.json --noEmit --pretty false` — non-gating FAIL with 46 pre-existing diagnostics | Broad repository debt remains red; not a stabilization pass | Observation #183 |
 | Focused Unit 9 TypeScript command | Same F-06 commit | `npm run typecheck:intensive` — unavailable; `typecheck:intensive` and `tsconfig.intensive.json` do not exist | Required Unit 9 deliverables; no current pass is claimed | Observation #183 |
 | Prisma normalization | Backend B-00 `1c520b33d9089348e0fd8ae2a7b182a4cdbaf395` and B-01 descendant | CLI/client/adapter/generated client exactly 7.7.0 | Committed local dependency baseline only | Observations #151, #160 |
@@ -290,7 +292,7 @@ This gate is stabilization-only and must pass before the deferred roadmap's prod
 
 ### Gate checklist
 
-- [ ] Local backend B-00/B-01 and frontend F-01–F-06 chains are pushed, reviewed, and integrated; Units 3–9 are then completed and integrated.
+- [ ] Local backend B-00/B-01 and frontend reconciliation `5733280` are pushed, reviewed (including required Full-4R readiness), and integrated through the remote workflow; Units 3–9 are then completed and integrated.
 - [ ] The Unit 4 URL `sessionId`/`blockId` ownership decision is implemented and tested, or the acceptance contract is explicitly amended with a recorded residual risk.
 - [ ] `tsconfig.intensive.json` exists and includes root contract-bearing hooks, intensive page/components, auth lifecycle call sites, and feature modules without absorbing unrelated broad diagnostics.
 - [ ] `typecheck:intensive` exists in `package.json` and passes.
@@ -330,9 +332,10 @@ cd /mnt/d/OneStudySpace && node --check services/intensivePomodoroStartService.j
 
 ## Integration checklist before Unit 3
 
-- [ ] Push the local backend tracker/B-00/B-01 and frontend tracker/F-01–F-06 chains without changing their verified ancestry.
-- [ ] Open and review Unit 1 and Unit 2 as separate semantic delivery slices; local passing evidence is not merge or shipped status.
-- [ ] Reconcile each repository chain through its normal review/merge workflow and recheck assumptions against the actual target branch.
+- [ ] Push the local backend tracker/B-00/B-01 and the verified frontend reconciliation branch without changing their reviewed ancestry.
+- [ ] Open and review Unit 1 and Unit 2 as separate semantic delivery slices; complete required Full-4R readiness, PR, and CI evidence. Local passing evidence is not remote merge or shipped status.
+- [x] Reconcile the frontend source with refreshed `origin/main` locally and semantically review the 12 incoming commits; merge `5733280` records the result without changing main.
+- [ ] Merge each repository chain through its normal remote workflow and recheck assumptions against the actual target branch.
 - [ ] Keep backend B-01 isolated and deploy it before enabling corrected frontend partial resume.
 - [ ] Accept the approved multiple-interrupted/zero-unfinished supersession recorded above.
 - [ ] Record the Unit 4 URL ownership decision owner and review boundary.
@@ -341,4 +344,4 @@ cd /mnt/d/OneStudySpace && node --check services/intensivePomodoroStartService.j
 
 ## Next review action
 
-Push and open the local backend chain through B-01 and frontend chain through F-06 for review, preserving their feature-branch boundaries and narrow accepted evidence. After both chains are reviewed and integrated, begin Unit 3 with the session-wire parser tests. Do not claim full stabilization until Units 3–9 and the final gate pass.
+Push and open the local backend chain through B-01 and the non-deploying frontend reconciliation branch for review, preserving semantic boundaries and narrow evidence. Complete Full-4R readiness and CI before any remote main merge. After both chains are reviewed and integrated, begin Unit 3 with session-wire parser tests. Do not claim full stabilization until Units 3–9, backend Windows HTTP evidence, R-01–R-35, and the final gate pass.
