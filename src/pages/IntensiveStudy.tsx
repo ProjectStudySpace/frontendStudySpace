@@ -392,6 +392,9 @@ const IntensiveStudy: React.FC = () => {
   const handleResume = async () => {
     if (!currentSession) return;
 
+    // A pending failure from a different command (e.g. a failed Abandon)
+    // must not survive into the resumed view.
+    setCommandFailure(null);
     setResuming(true);
     setHydrated(false);
 
