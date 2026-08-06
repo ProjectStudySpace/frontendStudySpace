@@ -428,4 +428,149 @@ describe("intensive lifecycle commands", () => {
 
     expect(calls).toEqual(["post:/intensive-sessions/1/pause"]);
   });
+
+  runTerminalCommandRetryTests();
 });
+
+/**
+ * RES-203: a terminal command (COMPLETE/ABANDON) is not idempotent on the
+ * backend, so a retry after an ambiguous reconciliation failure must never
+ * blindly replay the POST. Retry reconciles with an authoritative GET first
+ * and only replays the command when that GET proves it never landed.
+ *
+ * Nested inside "intensive lifecycle commands" so it inherits that describe's
+ * beforeEach/afterEach (mock adapter install/teardown, auth/state reset).
+ */
+interface RetryCase {
+  name: string;
+  url: string;
+  successBody: unknown;
+  /** Authoritative detail proving the original command really landed. */
+  landedDetail: TestResponse;
+  invoke: (hook: HookState) => Promise<Outcome>;
+}
+
+const RETRY_CASES: RetryCase[] = [
+  {
+    name: "retryCompleteSession",
+    url: "/intensive-sessions/1/complete",
+    successBody: { session: baseSession({ status: "COMPLETED" }) },
+    landedDetail: detail("COMPLETED", null),
+    invoke: (hook) => hook.retryCompleteSession(1),
+  },
+  {
+    name: "retryAbandonSession",
+    url: "/intensive-sessions/1/abandon",
+    successBody: baseSession({ status: "ABANDONED" }),
+    landedDetail: detail("ABANDONED", null),
+    invoke: (hook) => hook.retryAbandonSession(1),
+  },
+];
+
+function runTerminalCommandRetryTests() {
+  describe("terminal command retry", () => {
+    for (const testCase of RETRY_CASES) {
+      describe(testCase.name, () => {
+        it("adopts the landed terminal session without replaying the command", async () => {
+          postOutcome = () => ({ status: 200, data: testCase.successBody });
+          await renderHookProbe();
+          await hydrate();
+          currentDetail = testCase.landedDetail;
+
+          let outcome: Outcome | undefined;
+          await act(async () => {
+            outcome = await testCase.invoke(latest as HookState);
+          });
+
+          expect(outcome?.status).toBe("success");
+          expect(
+            outcome?.status === "success" ? outcome.snapshot : null,
+          ).not.toBeNull();
+          expect(postCalls()).toEqual([]);
+          expect(calls).toEqual(["get:/intensive-sessions/1"]);
+          expect(latest?.error).toBeNull();
+          expect(latest?.currentSession?.status).not.toBe("ACTIVE");
+        });
+
+        it("replays the command only after the authoritative GET still reports it unlanded", async () => {
+          postOutcome = () => ({ status: 200, data: testCase.successBody });
+          await renderHookProbe();
+          await hydrate();
+
+          let outcome: Outcome | undefined;
+          await act(async () => {
+            outcome = await testCase.invoke(latest as HookState);
+          });
+
+          expect(outcome?.status).toBe("success");
+          expect(calls[0]).toBe("get:/intensive-sessions/1");
+          expect(postCalls()).toEqual([`post:${testCase.url}`]);
+        });
+
+        it("reports a genuine business rejection of the replay honestly", async () => {
+          postOutcome = () => ({
+            status: 409,
+            data: { error: "La sesión no admite esta acción" },
+          });
+          await renderHookProbe();
+          await hydrate();
+          const before = latest?.currentSession;
+
+          let outcome: Outcome | undefined;
+          await act(async () => {
+            outcome = await testCase.invoke(latest as HookState);
+          });
+
+          expect(outcome?.status).toBe("failed");
+          expect(
+            outcome?.status === "failed" ? outcome.error.kind : "missing",
+          ).toBe("business");
+          expect(latest?.currentSession).toBe(before);
+        });
+
+        it("still replays when the reconciliation GET is unavailable", async () => {
+          postOutcome = () => ({ status: 200, data: testCase.successBody });
+          await renderHookProbe();
+          await hydrate();
+          currentDetail = { status: 500, data: { error: "Fallo interno" } };
+
+          let outcome: Outcome | undefined;
+          await act(async () => {
+            outcome = await testCase.invoke(latest as HookState);
+          });
+
+          expect(outcome?.status).toBe("success");
+          expect(postCalls()).toEqual([`post:${testCase.url}`]);
+        });
+      });
+    }
+
+    it("breaks the retry loop for a landed COMPLETE whose reconciliation failed", async () => {
+      postOutcome = () => "network";
+      await renderHookProbe();
+      await hydrate();
+      currentDetail = { status: 500, data: { error: "Fallo interno" } };
+
+      let firstOutcome: Outcome | undefined;
+      await act(async () => {
+        firstOutcome = await latest?.completeSession(1);
+      });
+      expect(firstOutcome?.status).toBe("failed");
+      expect(postCalls()).toEqual(["post:/intensive-sessions/1/complete"]);
+
+      currentDetail = detail("COMPLETED", null);
+      postOutcome = () => ({
+        status: 400,
+        data: { error: "Sesión no encontrada o no está activa" },
+      });
+
+      let retryOutcome: Outcome | undefined;
+      await act(async () => {
+        retryOutcome = await latest?.retryCompleteSession(1);
+      });
+
+      expect(retryOutcome?.status).toBe("success");
+      expect(postCalls()).toEqual(["post:/intensive-sessions/1/complete"]);
+    });
+  });
+}

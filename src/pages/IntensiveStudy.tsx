@@ -42,6 +42,7 @@ import {
   POMODORO_CONFIG,
   PomodoroStatus,
   IntensiveSessionDetail,
+  IntensiveStudySession,
   IntensiveResumeSnapshot,
   PomodoroBlock,
   AbandonInfo,
@@ -56,6 +57,7 @@ import {
   selectVisibleIntensiveError,
   type IntensiveCommand,
   type IntensiveCommandFailure,
+  type IntensiveMutationOutcome,
 } from "../features/intensive-study/state/mutationOutcome";
 import { createSingleFlight } from "../features/intensive-study/state/singleFlight";
 import { IntradayReview } from "../types/intradayReviews";
@@ -90,6 +92,8 @@ const IntensiveStudy: React.FC = () => {
     abandonSession,
     getAbandonInfo,
     completeSession,
+    retryCompleteSession,
+    retryAbandonSession,
     getActiveSession,
     rehydrateSession,
     resumeFromPause,
@@ -422,11 +426,15 @@ const IntensiveStudy: React.FC = () => {
 
   // Enviar el abandono ya confirmado. Se reutiliza al reintentar, para no
   // volver a pedir confirmación de una decisión que el usuario ya tomó.
-  const runAbandon = async () => {
+  const runAbandon = async (
+    send: (
+      id: number,
+    ) => Promise<IntensiveMutationOutcome<IntensiveStudySession>>,
+  ) => {
     if (!currentSession) return;
 
     setCommandFailure(null);
-    const outcome = await abandonSession(currentSession.id);
+    const outcome = await send(currentSession.id);
 
     if (outcome.status !== "success") {
       setCommandFailure({ command: "ABANDON", message: outcome.error.message });
@@ -458,7 +466,7 @@ const IntensiveStudy: React.FC = () => {
           ),
       )
     ) {
-      await runAbandon();
+      await runAbandon(abandonSession);
     }
   };
 
@@ -639,11 +647,15 @@ const IntensiveStudy: React.FC = () => {
   };
 
   // Completar sesión
-  const handleSessionComplete = async () => {
+  const finishSession = async (
+    send: (
+      id: number,
+    ) => Promise<IntensiveMutationOutcome<IntensiveSessionDetail>>,
+  ) => {
     if (!currentSession) return;
 
     setCommandFailure(null);
-    const outcome = await completeSession(currentSession.id);
+    const outcome = await send(currentSession.id);
 
     if (outcome.status !== "success") {
       setCommandFailure({
@@ -662,6 +674,10 @@ const IntensiveStudy: React.FC = () => {
     setCurrentView("RESULTS");
   };
 
+  const handleSessionComplete = () => finishSession(completeSession);
+  // Retry a failed completion without ever replaying a landed POST (RES-203).
+  const retrySessionComplete = () => finishSession(retryCompleteSession);
+
   // Reintentar el último comando fallido sin repetir pasos ya confirmados.
   const retryCommand = (command: IntensiveCommand) => {
     switch (command) {
@@ -669,10 +685,10 @@ const IntensiveStudy: React.FC = () => {
         void handlePause();
         return;
       case "ABANDON":
-        void runAbandon();
+        void runAbandon(retryAbandonSession);
         return;
       case "COMPLETE":
-        void handleSessionComplete();
+        void retrySessionComplete();
         return;
       case "END_BREAK":
         void handleBreakEnd();

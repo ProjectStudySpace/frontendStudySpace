@@ -67,6 +67,12 @@ interface UseIntensiveSessionsReturn {
   completeSession: (
     id: number,
   ) => Promise<IntensiveMutationOutcome<IntensiveSessionDetail>>;
+  retryCompleteSession: (
+    id: number,
+  ) => Promise<IntensiveMutationOutcome<IntensiveSessionDetail>>;
+  retryAbandonSession: (
+    id: number,
+  ) => Promise<IntensiveMutationOutcome<IntensiveStudySession>>;
   getActiveSession: () => Promise<IntensiveStudySession | null>;
   rehydrateSession: (id: number) => Promise<IntensiveResumeSnapshot | null>;
   resumeFromPause: (
@@ -560,6 +566,48 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
     [runCommand],
   );
 
+  /**
+   * Retry a terminal command without ever replaying a landed POST (RES-203).
+   * Reconciles with an authoritative GET first; the non-idempotent command is
+   * re-sent only when the backend does not already report the session TERMINAL.
+   */
+  const retryCompleteSession = useCallback(
+    async (
+      id: number,
+    ): Promise<IntensiveMutationOutcome<IntensiveSessionDetail>> => {
+      const snapshot = await reconcileSession(id);
+      if (snapshot && isCommandConfirmed("COMPLETE", snapshot.phase)) {
+        // The original command landed: adopt the authoritative state instead
+        // of earning a rejection the user cannot act on.
+        setCurrentSession(snapshot.session);
+        setCurrentPomodoro(snapshot.block);
+        setCurrentCard(snapshot.card);
+        setError(null);
+        return { status: "success", data: snapshot.session, snapshot };
+      }
+      return completeSession(id);
+    },
+    [reconcileSession, completeSession],
+  );
+
+  /** Same reconcile-first contract for ABANDON. */
+  const retryAbandonSession = useCallback(
+    async (
+      id: number,
+    ): Promise<IntensiveMutationOutcome<IntensiveStudySession>> => {
+      const snapshot = await reconcileSession(id);
+      if (snapshot && isCommandConfirmed("ABANDON", snapshot.phase)) {
+        setCurrentSession(snapshot.session);
+        setCurrentPomodoro(snapshot.block);
+        setCurrentCard(snapshot.card);
+        setError(null);
+        return { status: "success", data: snapshot.session, snapshot };
+      }
+      return abandonSession(id);
+    },
+    [reconcileSession, abandonSession],
+  );
+
   // ==================== FUNCIONES DE POMODORO ====================
 
   /**
@@ -969,6 +1017,8 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
     abandonSession,
     getAbandonInfo,
     completeSession,
+    retryCompleteSession,
+    retryAbandonSession,
     getActiveSession,
     rehydrateSession,
     resumeFromPause,
