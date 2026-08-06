@@ -9,7 +9,7 @@
  *
  * IMPLEMENTACIÓN: Timer sincronizado con backend usando timestamps UTC
  */
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
@@ -43,6 +43,7 @@ import {
   PomodoroStatus,
   IntensiveSessionDetail,
   IntensiveResumeSnapshot,
+  PomodoroBlock,
   AbandonInfo,
 } from "../types/intensiveSessions";
 import {
@@ -50,6 +51,7 @@ import {
   resumeViewFor,
   shouldShowBlockComplete,
 } from "../features/intensive-study/state/resume";
+import { resolveCompletionDispatch } from "../features/intensive-study/state/timerCompletion";
 import { IntradayReview } from "../types/intradayReviews";
 import { UserBadge } from "../types/gamification";
 
@@ -164,14 +166,45 @@ const IntensiveStudy: React.FC = () => {
     }
   }, [currentPomodoro, pomodoroTimer]);
 
-  // Manejar timer cuando llega a cero
+  // Arrancar un bloque de trabajo en una sola transición atómica.
+  // La duración viaja con la transición, por lo que arrancar no depende del
+  // tiempo restante del bloque anterior (que ya puede ser cero).
+  const startWorkBlock = useCallback(
+    (block: PomodoroBlock) => {
+      pomodoroTimer.transitionTo({
+        phase: "WORK",
+        durationSeconds:
+          block.durationMinutes !== undefined && block.durationMinutes !== null
+            ? block.durationMinutes * 60 // Convertir minutos a segundos
+            : undefined,
+        startedAt: block.startedAt ?? null,
+      });
+    },
+    [pomodoroTimer],
+  );
+
+  // Manejar la expiración natural del timer.
+  // Se escucha la señal de expiración del hook, no el valor cero: hidratar un
+  // bloque ya vencido deja el timer en cero sin emitir señal, así que la
+  // reanudación nunca fabrica una transición en el backend.
+  const lastHandledCompletionRef = useRef(0);
   useEffect(() => {
-    if (pomodoroTimer.timeRemaining === 0 && currentView === "ACTIVE") {
-      handlePomodoroComplete();
-    } else if (pomodoroTimer.timeRemaining === 0 && currentView === "BREAK") {
-      handleBreakEnd();
+    const dispatch = resolveCompletionDispatch({
+      completionTick: pomodoroTimer.completionTick,
+      lastHandledTick: lastHandledCompletionRef.current,
+      view: currentView,
+    });
+
+    if (!dispatch) return;
+
+    lastHandledCompletionRef.current = pomodoroTimer.completionTick;
+
+    if (dispatch === "ACTIVE") {
+      void handlePomodoroComplete();
+    } else {
+      void handleBreakEnd();
     }
-  }, [pomodoroTimer.timeRemaining, currentView]);
+  }, [pomodoroTimer.completionTick, currentView]);
 
   // Efecto para sincronización periódica con backend
   // Sincroniza cada 30 segundos para mantener el timer preciso
@@ -208,12 +241,14 @@ const IntensiveStudy: React.FC = () => {
       }
 
       if (snapshot.timer) {
-        pomodoroTimer.setPhase(snapshot.timer.phase);
-        pomodoroTimer.syncWithBackend(
-          snapshot.timer.startedAt,
-          snapshot.timer.durationSeconds,
-        );
-        pomodoroTimer.start();
+        // Transición atómica sobre los anclajes absolutos del backend. Si el
+        // bloque ya venció, el timer queda en cero y pausado de forma
+        // determinista: la transición la sigue decidiendo el backend.
+        pomodoroTimer.transitionTo({
+          phase: snapshot.timer.phase,
+          durationSeconds: snapshot.timer.durationSeconds,
+          startedAt: snapshot.timer.startedAt,
+        });
       } else {
         // No live backend timer: never invent one.
         pomodoroTimer.pause();
@@ -308,17 +343,7 @@ const IntensiveStudy: React.FC = () => {
         await getNextCard(currentSession.id);
 
         // Iniciar timer con duración del backend (sincronizado con UTC)
-        if (pomodoro.startedAt && pomodoro.durationMinutes) {
-          pomodoroTimer.syncWithBackend(
-            pomodoro.startedAt,
-            pomodoro.durationMinutes * 60, // Convertir minutos a segundos
-          );
-          pomodoroTimer.start();
-        } else {
-          // Fallback: usar valores por defecto
-          pomodoroTimer.setPhase("WORK");
-          pomodoroTimer.start();
-        }
+        startWorkBlock(pomodoro);
 
         setHydrated(true);
         setCurrentView("ACTIVE");
@@ -407,9 +432,9 @@ const IntensiveStudy: React.FC = () => {
       // Completar Pomodoro en backend
       await completePomodoro(currentPomodoro.sessionId, currentPomodoro.id);
 
-      // Iniciar descanso
-      pomodoroTimer.setPhase(nextPhase);
-      pomodoroTimer.start();
+      // Iniciar descanso en una sola transición: la duración viaja con ella,
+      // por lo que el cero del bloque recién vencido no bloquea el arranque.
+      pomodoroTimer.transitionTo({ phase: nextPhase });
 
       setCurrentView("BREAK");
     } catch (err) {
@@ -435,16 +460,7 @@ const IntensiveStudy: React.FC = () => {
 
       if (nextPomodoro) {
         // Sincronizar con la duración del nuevo Pomodoro del backend
-        // Usar durationMinutes y convertir a segundos
-        if (nextPomodoro.startedAt && nextPomodoro.durationMinutes) {
-          pomodoroTimer.syncWithBackend(
-            nextPomodoro.startedAt,
-            nextPomodoro.durationMinutes * 60, // Convertir minutos a segundos
-          );
-        } else {
-          pomodoroTimer.setPhase("WORK");
-        }
-        pomodoroTimer.start();
+        startWorkBlock(nextPomodoro);
 
         // Cargar la primera tarjeta del nuevo bloque
         await getNextCard(currentSession.id);
@@ -468,16 +484,7 @@ const IntensiveStudy: React.FC = () => {
       const nextPomodoro = await startPomodoro(currentSession.id);
       if (nextPomodoro) {
         // Sincronizar con la duración del nuevo Pomodoro del backend
-        // Usar durationMinutes y convertir a segundos
-        if (nextPomodoro.startedAt && nextPomodoro.durationMinutes) {
-          pomodoroTimer.syncWithBackend(
-            nextPomodoro.startedAt,
-            nextPomodoro.durationMinutes * 60, // Convertir minutos a segundos
-          );
-        } else {
-          pomodoroTimer.setPhase("WORK");
-        }
-        pomodoroTimer.start();
+        startWorkBlock(nextPomodoro);
 
         // Cargar la primera tarjeta del nuevo bloque
         await getNextCard(currentSession.id);

@@ -12,6 +12,20 @@ import { POMODORO_CONFIG } from "../src/types/intensiveSessions";
 
 type TimerPhase = "WORK" | "SHORT_BREAK" | "LONG_BREAK";
 
+/**
+ * An atomic phase change. Everything the next phase needs travels with the
+ * transition, so it never depends on state that has not flushed yet.
+ */
+export interface TimerTransition {
+  phase: TimerPhase;
+  /** Total duration of the phase in seconds. Defaults to the phase config. */
+  durationSeconds?: number;
+  /** Backend UTC anchor; the remaining time is derived from it when present. */
+  startedAt?: string | null;
+  /** Start counting down right away. Defaults to `true`. */
+  autoStart?: boolean;
+}
+
 interface UsePomodoroTimerReturn {
   // Estado
   timeRemaining: number;
@@ -20,6 +34,8 @@ interface UsePomodoroTimerReturn {
   phase: TimerPhase;
   blockNumber: number;
   progress: number;
+  /** Monotonic counter raised once each time a running phase reaches zero. */
+  completionTick: number;
 
   // Funciones
   start: () => void;
@@ -28,6 +44,8 @@ interface UsePomodoroTimerReturn {
   setPhase: (phase: TimerPhase, duration?: number) => void;
   setBlockNumber: (block: number) => void;
   setTimeRemaining: (seconds: number) => void;
+  /** Apply a phase change atomically. Returns the remaining seconds applied. */
+  transitionTo: (transition: TimerTransition) => number;
 
   // Nuevas funciones para sincronización con backend
   calculateRemainingTime: (startedAt: string, duration: number) => number;
@@ -40,6 +58,35 @@ interface UsePomodoroTimerReturn {
   BLOCKS_UNTIL_LONG_BREAK: number;
 }
 
+/** Configured duration of a phase, in seconds. */
+const durationForPhase = (phase: TimerPhase): number => {
+  switch (phase) {
+    case "SHORT_BREAK":
+      return POMODORO_CONFIG.SHORT_BREAK_DURATION;
+    case "LONG_BREAK":
+      return POMODORO_CONFIG.LONG_BREAK_DURATION;
+    case "WORK":
+    default:
+      return POMODORO_CONFIG.WORK_DURATION;
+  }
+};
+
+/** Remaining seconds of a phase, clamped to a non-negative value. */
+const remainingFor = (
+  durationSeconds: number,
+  startedAt?: string | null,
+): number => {
+  if (!startedAt) {
+    return Math.max(0, durationSeconds);
+  }
+  const startEpoch = Date.parse(startedAt);
+  if (!Number.isFinite(startEpoch)) {
+    return Math.max(0, durationSeconds);
+  }
+  const elapsed = Math.floor((Date.now() - startEpoch) / 1000);
+  return Math.max(0, Math.min(durationSeconds, durationSeconds - elapsed));
+};
+
 export const usePomodoroTimer = (): UsePomodoroTimerReturn => {
   // Estado
   const [timeRemaining, setTimeRemaining] = useState(
@@ -49,6 +96,8 @@ export const usePomodoroTimer = (): UsePomodoroTimerReturn => {
   const [isRunning, setIsRunning] = useState(false);
   const [phase, setPhaseState] = useState<TimerPhase>("WORK");
   const [blockNumber, setBlockNumber] = useState(1);
+  // Señal de expiración natural: sólo se incrementa al llegar a cero contando.
+  const [completionTick, setCompletionTick] = useState(0);
 
   // Ref para el intervalo
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -56,6 +105,9 @@ export const usePomodoroTimer = (): UsePomodoroTimerReturn => {
   const hasCompletedRef = useRef(false);
   // Ref para almacenar el startedAt del backend
   const backendStartedAtRef = useRef<string | null>(null);
+  // Último tiempo restante conocido, para que start() no lea un valor obsoleto
+  const timeRemainingRef = useRef(timeRemaining);
+  timeRemainingRef.current = timeRemaining;
 
   // Calcular progreso (0-100)
   const progress =
@@ -65,14 +117,7 @@ export const usePomodoroTimer = (): UsePomodoroTimerReturn => {
   useEffect(() => {
     if (isRunning && timeRemaining > 0) {
       intervalRef.current = setInterval(() => {
-        setTimeRemaining((prev) => {
-          if (prev <= 1) {
-            setIsRunning(false);
-            // El componente padre debe manejar onComplete y sincronizar con backend
-            return 0;
-          }
-          return prev - 1;
-        });
+        setTimeRemaining((prev) => (prev <= 1 ? 0 : prev - 1));
       }, 1000);
     }
 
@@ -82,6 +127,22 @@ export const usePomodoroTimer = (): UsePomodoroTimerReturn => {
         intervalRef.current = null;
       }
     };
+  }, [isRunning, timeRemaining]);
+
+  // Expiración natural: sólo cuenta si el timer estaba corriendo y llegó a cero.
+  // Hidratar un bloque ya vencido deja isRunning en false y no emite señal, así
+  // que el backend sigue siendo la única fuente de las transiciones.
+  useEffect(() => {
+    if (timeRemaining > 0) {
+      hasCompletedRef.current = false;
+      return;
+    }
+    if (!isRunning || hasCompletedRef.current) {
+      return;
+    }
+    hasCompletedRef.current = true;
+    setIsRunning(false);
+    setCompletionTick((tick) => tick + 1);
   }, [isRunning, timeRemaining]);
 
   /**
@@ -126,11 +187,13 @@ export const usePomodoroTimer = (): UsePomodoroTimerReturn => {
    * Iniciar el timer
    */
   const start = useCallback(() => {
-    if (timeRemaining > 0) {
+    // Se lee el ref y no el estado: tras un setPhase/sync en el mismo tick el
+    // valor del render todavía es el anterior.
+    if (timeRemainingRef.current > 0) {
       setIsRunning(true);
       hasCompletedRef.current = false;
     }
-  }, [timeRemaining]);
+  }, []);
 
   /**
    * Pausar el timer
@@ -199,6 +262,48 @@ export const usePomodoroTimer = (): UsePomodoroTimerReturn => {
   );
 
   /**
+   * Cambio de fase atómico.
+   *
+   * Calcula fase, duración y tiempo restante a partir de la propia transición,
+   * de modo que arrancar la siguiente fase nunca depende de un estado que aún
+   * no se ha propagado. Un bloque ya vencido queda en cero y pausado, sin
+   * inventar una transición.
+   *
+   * @returns el tiempo restante aplicado, en segundos
+   */
+  const transitionTo = useCallback(
+    ({
+      phase: nextPhase,
+      durationSeconds,
+      startedAt,
+      autoStart = true,
+    }: TimerTransition): number => {
+      const duration =
+        durationSeconds !== undefined && Number.isFinite(durationSeconds)
+          ? Math.max(0, Math.floor(durationSeconds))
+          : durationForPhase(nextPhase);
+      const remaining = remainingFor(duration, startedAt);
+
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+
+      backendStartedAtRef.current = startedAt ?? null;
+      hasCompletedRef.current = false;
+      timeRemainingRef.current = remaining;
+
+      setPhaseState(nextPhase);
+      setTotalTime(duration);
+      setTimeRemaining(remaining);
+      setIsRunning(autoStart && remaining > 0);
+
+      return remaining;
+    },
+    [],
+  );
+
+  /**
    * Formatear tiempo restante como MM:SS
    */
   const formatTime = useCallback((seconds: number): string => {
@@ -224,6 +329,7 @@ export const usePomodoroTimer = (): UsePomodoroTimerReturn => {
     phase,
     blockNumber,
     progress,
+    completionTick,
 
     // Funciones
     start,
@@ -232,6 +338,7 @@ export const usePomodoroTimer = (): UsePomodoroTimerReturn => {
     setPhase,
     setBlockNumber,
     setTimeRemaining,
+    transitionTo,
 
     // Funciones de sincronización
     calculateRemainingTime,
