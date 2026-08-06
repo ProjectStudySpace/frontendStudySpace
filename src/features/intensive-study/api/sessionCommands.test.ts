@@ -337,6 +337,25 @@ describe("intensive lifecycle commands", () => {
         expect(latest?.error).toBeNull();
       });
 
+      it("reports an unconfirmed-state message when the reconciliation GET also fails", async () => {
+        postOutcome = () => "network";
+        await renderHookProbe();
+        await hydrate(testCase.unchangedDetail);
+        currentDetail = { status: 500, data: { error: "Fallo interno" } };
+
+        let outcome: Outcome | undefined;
+        await act(async () => {
+          outcome = await testCase.invoke(latest as HookState);
+        });
+
+        expect(outcome?.status).toBe("failed");
+        expect(latest?.error).toBe(
+          "No se pudo confirmar el estado de la sesión. Reintenta para verificar.",
+        );
+        expect(postCalls()).toEqual([`post:${testCase.url}`]);
+        expect(calls).toContain("get:/intensive-sessions/1");
+      });
+
       it("clears a previous command error once a retry succeeds", async () => {
         postOutcome = () => ({ status: 500, data: { error: "Fallo interno" } });
         await renderHookProbe();

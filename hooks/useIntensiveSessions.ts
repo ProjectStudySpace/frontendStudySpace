@@ -420,6 +420,20 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
             setError(null);
             return { status: "success", data: fromSnapshot(snapshot), snapshot };
           }
+
+          if (!snapshot) {
+            // Reconciliation is unavailable, so "failed" would be a guess: the
+            // command may have landed. Say exactly that and let the reconcile-first
+            // retry paths resolve it against the authoritative session.
+            const message =
+              "No se pudo confirmar el estado de la sesión. Reintenta para verificar.";
+            console.error(
+              `Intensive command unconfirmed [${command}]:`,
+              failure.message,
+            );
+            setError(message);
+            return { status: "failed", error: { ...failure, message } };
+          }
         }
 
         console.error(`Intensive command failed [${command}]:`, failure.message);
