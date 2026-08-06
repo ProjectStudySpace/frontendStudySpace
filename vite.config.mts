@@ -23,5 +23,8 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     include: ["src/features/intensive-study/**/*.test.ts"],
+    // Fail the run on any stray `.only`. Vitest defaults this to `!process.env.CI`,
+    // which lets a focused test silently skip the rest of the suite and still exit 0.
+    allowOnly: false,
   },
 });
