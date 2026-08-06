@@ -610,6 +610,35 @@ describe("resumeFromPause: GET-gated resume without replaying a landed start", (
     expect(secondResult?.phase).toBe("READY");
   });
 
+  it("resumeFromPause surfaces a rejected start without a second reconciliation GET", async () => {
+    // A response-carrying HTTP 500 (not a response-less/network failure) is
+    // used here for the same reason as elsewhere in this file: it is
+    // deterministic with zero interceptor interaction (the auth interceptor
+    // at src/utils/axiosConfig.ts:265-283 only auto-retries response-LESS
+    // idempotent failures), and it additionally proves the backend business
+    // message is what surfaces through the hook's error state.
+    const calls = installSequencedRoutes({
+      get: [{ status: 200, data: { session: pausedSession() } }],
+      post: [{ status: 500, data: { error: "No se pudo iniciar la sesión" } }],
+    });
+    await renderHookProbe();
+
+    let result: Awaited<ReturnType<HookState["resumeFromPause"]>> | undefined;
+    await act(async () => {
+      result = await latest?.resumeFromPause(1);
+    });
+
+    expect(result).toBeNull();
+    expect(
+      calls.filter((call) => call === "post:/intensive-sessions/1/start"),
+    ).toHaveLength(1);
+    expect(
+      calls.filter((call) => call === "get:/intensive-sessions/1"),
+    ).toHaveLength(1);
+    expect(latest?.error).toBe("No se pudo iniciar la sesión");
+    expect(latest?.currentSession?.status).toBe("PAUSED");
+  });
+
   it("resumeFromPause issues no start when the initial reconciliation fails", async () => {
     const calls = installSequencedRoutes({
       get: [{ status: 500, data: { error: "Detalle no disponible" } }],
