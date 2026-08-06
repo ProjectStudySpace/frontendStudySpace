@@ -91,6 +91,7 @@ const IntensiveStudy: React.FC = () => {
     completeSession,
     getActiveSession,
     resumeSession,
+    resumeFromPause,
     startPomodoro,
     completePomodoro,
     endBreak,
@@ -395,12 +396,10 @@ const IntensiveStudy: React.FC = () => {
     setHydrated(false);
 
     try {
-      const resumed = await startSession(currentSession.id);
-      if (!resumed) return;
-
-      // The start acknowledgement is not a state source: reconcile with an
-      // authoritative GET before rendering the active view again.
-      const snapshot = await resumeSession(currentSession.id);
+      // Reconciles with an authoritative GET before ever replaying the
+      // non-idempotent /start command, so a retry after a landed-but-
+      // unhydrated start never re-POSTs.
+      const snapshot = await resumeFromPause(currentSession.id);
       if (!snapshot) return;
 
       applyResumeSnapshot(snapshot);

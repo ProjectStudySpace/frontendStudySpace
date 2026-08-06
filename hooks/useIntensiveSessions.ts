@@ -69,6 +69,9 @@ interface UseIntensiveSessionsReturn {
   ) => Promise<IntensiveMutationOutcome<IntensiveSessionDetail>>;
   getActiveSession: () => Promise<IntensiveStudySession | null>;
   resumeSession: (id: number) => Promise<IntensiveResumeSnapshot | null>;
+  resumeFromPause: (
+    sessionId: number,
+  ) => Promise<IntensiveResumeSnapshot | null>;
 
   // Funciones de Pomodoro
   startPomodoro: (sessionId: number) => Promise<PomodoroBlock | null>;
@@ -919,6 +922,23 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
     [user, getNextCard],
   );
 
+  /**
+   * Resume from the paused view without ever replaying a landed start.
+   * Reconciles with an authoritative GET first; the non-idempotent POST /start
+   * is issued only when the backend still reports the session as PAUSED.
+   */
+  const resumeFromPause = useCallback(
+    async (sessionId: number): Promise<IntensiveResumeSnapshot | null> => {
+      const current = await resumeSession(sessionId); // authoritative GET
+      if (!current) return null;
+      if (current.phase !== "PAUSED") return current; // already live: nothing to start
+      const started = await startSession(sessionId); // POST, genuinely PAUSED only
+      if (!started) return null;
+      return resumeSession(sessionId); // ack is not a state source: re-GET
+    },
+    [resumeSession, startSession],
+  );
+
   // ==================== UTILIDADES ====================
 
   const clearError = useCallback(() => {
@@ -954,6 +974,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
     completeSession,
     getActiveSession,
     resumeSession,
+    resumeFromPause,
 
     // Funciones de Pomodoro
     startPomodoro,
