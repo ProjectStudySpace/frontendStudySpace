@@ -957,7 +957,6 @@ const IntensiveStudy: React.FC = () => {
       {shouldShowBlockComplete({
         hydrated,
         card: currentCard,
-        timeRemaining: pomodoroTimer.timeRemaining,
       }) && (
         <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-xl p-6 text-center">
           <div className="flex flex-col items-center gap-4">
@@ -969,10 +968,15 @@ const IntensiveStudy: React.FC = () => {
                 {t("intensiveStudy.blockCardsComplete", "¡Bloque completado!")}
               </h3>
               <p className="text-emerald-600 dark:text-emerald-400 mt-1">
-                {t(
-                  "intensiveStudy.blockCardsCompleteDesc",
-                  "Has revisado todas las tarjetas de este bloque. Esperando a que termine el tiempo.",
-                )}
+                {pomodoroTimer.timeRemaining === 0
+                  ? t(
+                      "intensiveStudy.blockExpiredDesc",
+                      "El tiempo de este bloque ya terminó. Continúa al descanso.",
+                    )
+                  : t(
+                      "intensiveStudy.blockCardsCompleteDesc",
+                      "Has revisado todas las tarjetas de este bloque. Esperando a que termine el tiempo.",
+                    )}
               </p>
             </div>
             <button

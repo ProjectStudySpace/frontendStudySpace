@@ -297,30 +297,30 @@ describe("intensive resume derivation", () => {
     expect(resumeViewFor("TERMINAL")).toBe("CONFIG");
   });
 
-  it("hides the block-complete state until authoritative hydration finishes", () => {
+  it("shows the block-complete panel when the hydrated block already expired", () => {
+    expect(
+      shouldShowBlockComplete({
+        hydrated: true,
+        card: null,
+      }),
+    ).toBe(true);
+  });
+
+  it("never shows the panel before hydration completes", () => {
     expect(
       shouldShowBlockComplete({
         hydrated: false,
         card: null,
-        timeRemaining: 1500,
       }),
     ).toBe(false);
-    expect(
-      shouldShowBlockComplete({
-        hydrated: true,
-        card: null,
-        timeRemaining: 1500,
-      }),
-    ).toBe(true);
+  });
+
+  it("never shows the panel while a card is assigned", () => {
     expect(
       shouldShowBlockComplete({
         hydrated: true,
         card: makeCard(),
-        timeRemaining: 1500,
       }),
-    ).toBe(false);
-    expect(
-      shouldShowBlockComplete({ hydrated: true, card: null, timeRemaining: 0 }),
     ).toBe(false);
   });
 });

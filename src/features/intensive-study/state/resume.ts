@@ -241,11 +241,9 @@ export function resumeViewFor(phase: ResumePhase): ResumeView {
 export function shouldShowBlockComplete({
   hydrated,
   card,
-  timeRemaining,
 }: {
   hydrated: boolean;
   card: IntensiveSessionCard | null;
-  timeRemaining: number;
 }): boolean {
-  return hydrated && !card && timeRemaining > 0;
+  return hydrated && !card;
 }
