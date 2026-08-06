@@ -3,47 +3,68 @@ import { Note, CreateNoteData, UpdateNoteData } from "../src/types/notes";
 import { useAuth } from "../src/context/AuthContext";
 import { api, deduplicateRequest } from "../src/utils/axiosConfig";
 
-//funcion auxiliar para mapear card del bacekend a nota del frontend
-const mapCardToNote = (card: any, topicId?: number): Note => {
-  let title: string | undefined;
-  let leftContent: string;
+type CardImageWire = {
+  imageUrl: string;
+  imageType: "question" | "answer";
+};
 
-  if (card.title) {
-    title = card.title;
-    leftContent = card.question || "";
-  } else {
-    const questionParts = (card.question || "").split("\n\n");
-    title = questionParts.length > 1 ? questionParts[0].trim() : undefined;
-    leftContent =
-      questionParts.length > 1
-        ? questionParts.slice(1).join("\n\n").trim()
-        : card.question || "";
+export type CardWire = {
+  id: number;
+  question?: string | null;
+  answer?: string | null;
+  type: "FLASHCARD" | "EXPLANATION" | "flashcard" | "explanation";
+  topicId?: number | null;
+  images?: CardImageWire[] | null;
+  createdAt?: string;
+  updatedAt?: string;
+  topic?: Note["topic"];
+};
+
+type CardMutationResponse = {
+  message?: string;
+  card: CardWire;
+};
+
+// Adapter from the backend Card wire contract to the note presentation model.
+export const mapCardToNote = (card: CardWire, topicId?: number): Note => {
+  const resolvedTopicId = card.topicId ?? topicId;
+  if (resolvedTopicId === undefined) {
+    throw new Error("Card response is missing topicId");
   }
 
-  // Obtener TODAS las imágenes por tipo
-  const leftImages =
-    card.images?.filter((img: any) => img.imageType === "question") || [];
-  const rightImages =
-    card.images?.filter((img: any) => img.imageType === "answer") || [];
+  const questionImageUrls =
+    card.images
+      ?.filter((image) => image.imageType === "question")
+      .map((image) => image.imageUrl) ?? [];
+  const answerImageUrls =
+    card.images
+      ?.filter((image) => image.imageType === "answer")
+      .map((image) => image.imageUrl) ?? [];
 
   return {
     id: card.id,
-    title,
-    leftContent,
-    rightContent: card.answer || "",
-    type: card.type,
-    topicId: card.topicId || topicId,
-    // Mantener compatibilidad con una sola imagen
-    leftImageUrl: leftImages[0]?.imageUrl,
-    rightImageUrl: rightImages[0]?.imageUrl,
-    // Arrays de URLs para múltiples imágenes
-    leftImageUrls: leftImages.map((img: any) => img.imageUrl),
-    rightImageUrls: rightImages.map((img: any) => img.imageUrl),
+    leftContent: card.question ?? "",
+    rightContent: card.answer ?? "",
+    type: card.type.toLowerCase() as Note["type"],
+    topicId: resolvedTopicId,
+    leftImageUrl: questionImageUrls[0],
+    rightImageUrl: answerImageUrls[0],
+    leftImageUrls: questionImageUrls,
+    rightImageUrls: answerImageUrls,
     createdAt: card.createdAt,
     updatedAt: card.updatedAt,
     topic: card.topic,
   };
 };
+
+export const mapCreateCardResponseToNote = (
+  response: CardMutationResponse,
+  topicId?: number,
+): Note => mapCardToNote(response.card, topicId);
+
+export const mapUpdateCardResponseToNote = (
+  response: CardMutationResponse,
+): Note => mapCardToNote(response.card);
 
 export const useNotes = () => {
   const [notes, setNotes] = useState<Note[]>([]);
@@ -90,7 +111,7 @@ export const useNotes = () => {
         })
       );
 
-      const cardsArray: any[] = data.cards || [];
+      const cardsArray: CardWire[] = data.cards || [];
 
       // Filtrar solo las cards de tipo "explanation" (notas) y mapear campos
       const notesArray: Note[] = cardsArray.map((card) =>
@@ -155,7 +176,7 @@ export const useNotes = () => {
         api.get(`/cards/search`, { params })
       );
 
-      const cardsArray: any[] = data.cards || [];
+      const cardsArray: CardWire[] = data.cards || [];
 
       const notesArray: Note[] = cardsArray.map((card) =>
         mapCardToNote(card, topicId)
@@ -188,14 +209,11 @@ export const useNotes = () => {
     try {
       const formData = new FormData();
       // Mapear campos de nota a los campos que espera el backend
-      //enviar title como campo separado
-
-      if (noteData.title) {
-        formData.append("title", noteData.title.trim());
-      }
+      // - leftContent → question (título de la nota)
+      // - rightContent → answer (contenido de la nota)
 
       formData.append("question", noteData.leftContent || "");
-      formData.append("answer", noteData.rightContent || "Sin contenido");
+      formData.append("answer", noteData.rightContent || "");
       formData.append("type", (noteData.type || "explanation").toUpperCase());
       formData.append("topicId", noteData.topicId.toString());
 
@@ -213,7 +231,7 @@ export const useNotes = () => {
 
       const { data } = await api.post(`/cards`, formData);
 
-      const mappedNote = mapCardToNote(data, noteData.topicId);
+      const mappedNote = mapCreateCardResponseToNote(data, noteData.topicId);
       // La nueva nota aparece PRIMERA (orderBy: createdAt desc)
       //insertamos al incio y removemos la ultima si excede pageSize
 
@@ -245,9 +263,8 @@ export const useNotes = () => {
     try {
       const formData = new FormData();
       // Mapear campos de nota a los campos que espera el backend
-      if (updates.title !== undefined) {
-        formData.append("title", updates.title.trim() || "");
-      }
+      // - leftContent → question (título de la nota)
+      // - rightContent → answer (contenido de la nota)
       if (updates.leftContent !== undefined) {
         formData.append("question", updates.leftContent);
       }
@@ -271,7 +288,7 @@ export const useNotes = () => {
 
       const { data } = await api.put(`/cards/${id}`, formData);
 
-      const mappedNote = mapCardToNote(data.card);
+      const mappedNote = mapUpdateCardResponseToNote(data);
 
       //actualizar la nota en el estado
       setNotes((prev) =>
