@@ -57,6 +57,7 @@ import {
   type IntensiveCommand,
   type IntensiveCommandFailure,
 } from "../features/intensive-study/state/mutationOutcome";
+import { createSingleFlight } from "../features/intensive-study/state/singleFlight";
 import { IntradayReview } from "../types/intradayReviews";
 import { UserBadge } from "../types/gamification";
 
@@ -198,11 +199,12 @@ const IntensiveStudy: React.FC = () => {
   // bloque ya vencido deja el timer en cero sin emitir señal, así que la
   // reanudación nunca fabrica una transición en el backend.
   const lastHandledCompletionRef = useRef(0);
-  // Synchronous guard against concurrent handlePomodoroComplete invocations
-  // (expiry effect, break panel button, and the card-complete path can all
-  // reach it). Prevents a redundant POST and a break restart at full
-  // duration if a second call lands while the first is still awaiting.
-  const completingPomodoroRef = useRef(false);
+  // Single-flight lock for handlePomodoroComplete: the expiry effect, the
+  // break panel button, and the card-complete path can all reach it. A
+  // second call landing while the first is still awaiting must not restart
+  // the break at full duration or fire a redundant POST. The instance must
+  // stay stable across renders — the ref IS the lock.
+  const completePomodoroOnce = useRef(createSingleFlight()).current;
   useEffect(() => {
     const { dispatch, nextHandledTick } = resolveCompletionDispatch({
       completionTick: pomodoroTimer.completionTick,
@@ -464,36 +466,29 @@ const IntensiveStudy: React.FC = () => {
   const handlePomodoroComplete = async () => {
     if (!currentSession || !currentPomodoro) return;
 
-    // Close the window before any await: a second call arriving while this
-    // one is still in flight (e.g. the panel button clicked during the
-    // completePomodoro request) must not restart the break at full duration
-    // or fire a redundant POST. Cleared in finally so a swallowed backend
-    // error or a throwing transitionTo can never latch it permanently.
-    if (completingPomodoroRef.current) return;
-    completingPomodoroRef.current = true;
+    await completePomodoroOnce(async () => {
+      try {
+        pomodoroTimer.pause();
 
-    try {
-      pomodoroTimer.pause();
+        // Determinar tipo de descanso
+        const isLongBreak =
+          pomodoroTimer.blockNumber %
+            POMODORO_CONFIG.BLOCKS_UNTIL_LONG_BREAK ===
+          0;
+        const nextPhase = isLongBreak ? "LONG_BREAK" : "SHORT_BREAK";
 
-      // Determinar tipo de descanso
-      const isLongBreak =
-        pomodoroTimer.blockNumber % POMODORO_CONFIG.BLOCKS_UNTIL_LONG_BREAK ===
-        0;
-      const nextPhase = isLongBreak ? "LONG_BREAK" : "SHORT_BREAK";
+        // Completar Pomodoro en backend
+        await completePomodoro(currentPomodoro.sessionId, currentPomodoro.id);
 
-      // Completar Pomodoro en backend
-      await completePomodoro(currentPomodoro.sessionId, currentPomodoro.id);
+        // Iniciar descanso en una sola transición: la duración viaja con ella,
+        // por lo que el cero del bloque recién vencido no bloquea el arranque.
+        pomodoroTimer.transitionTo({ phase: nextPhase });
 
-      // Iniciar descanso en una sola transición: la duración viaja con ella,
-      // por lo que el cero del bloque recién vencido no bloquea el arranque.
-      pomodoroTimer.transitionTo({ phase: nextPhase });
-
-      setCurrentView("BREAK");
-    } catch (err) {
-      console.error("Error completing pomodoro:", err);
-    } finally {
-      completingPomodoroRef.current = false;
-    }
+        setCurrentView("BREAK");
+      } catch (err) {
+        console.error("Error completing pomodoro:", err);
+      }
+    });
   };
 
   // Arrancar el bloque siguiente una vez que el descanso quedó cerrado.
