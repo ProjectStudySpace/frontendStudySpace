@@ -969,7 +969,10 @@ const IntensiveStudy: React.FC = () => {
         {currentSession?.totalPomodoros || 4}
       </p>
 
-      {/* Mensaje cuando se completaron las tarjetas del bloque pero el timer sigue.
+      {/* Panel de bloque completado: se revisaron todas las tarjetas del bloque,
+          ya sea que el timer siga corriendo o que ya haya vencido; en ambos casos
+          ofrece pasar al descanso. El caso vencido es deliberado: sin él, reanudar
+          un bloque expirado dejaba la vista congelada en 0:00 sin ninguna acción.
           Solo es válido tras la hidratación autoritativa. */}
       {shouldShowBlockComplete({
         hydrated,
