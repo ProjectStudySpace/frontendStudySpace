@@ -467,28 +467,61 @@ const IntensiveStudy: React.FC = () => {
     if (!currentSession || !currentPomodoro) return;
 
     await completePomodoroOnce(async () => {
-      try {
-        pomodoroTimer.pause();
+      setCommandFailure(null);
 
-        // Determinar tipo de descanso
-        const isLongBreak =
-          pomodoroTimer.blockNumber %
-            POMODORO_CONFIG.BLOCKS_UNTIL_LONG_BREAK ===
-          0;
-        const nextPhase = isLongBreak ? "LONG_BREAK" : "SHORT_BREAK";
+      // The work block is over in substance: stop the countdown before the
+      // POST so a failed completion never keeps burning work time.
+      pomodoroTimer.pause();
 
-        // Completar Pomodoro en backend
-        await completePomodoro(currentPomodoro.sessionId, currentPomodoro.id);
+      const sessionId = currentPomodoro.sessionId;
+      const outcome = await completePomodoro(sessionId, currentPomodoro.id);
 
-        // Iniciar descanso en una sola transición: la duración viaja con ella,
-        // por lo que el cero del bloque recién vencido no bloquea el arranque.
-        pomodoroTimer.transitionTo({ phase: nextPhase });
-
-        setCurrentView("BREAK");
-      } catch (err) {
-        console.error("Error completing pomodoro:", err);
+      if (outcome.status !== "success") {
+        // Stay in ACTIVE: the backend still holds the block ACTIVE, so a
+        // local break would count down time the backend never granted.
+        setCommandFailure({
+          command: "COMPLETE_BLOCK",
+          message: outcome.error.message,
+        });
+        return;
       }
+
+      if (outcome.snapshot) {
+        // Ambiguous failure resolved as landed: adopt the authoritative break.
+        await adoptReconciledBreak(outcome.snapshot, sessionId);
+        return;
+      }
+
+      // Determinar tipo de descanso
+      const isLongBreak =
+        pomodoroTimer.blockNumber % POMODORO_CONFIG.BLOCKS_UNTIL_LONG_BREAK ===
+        0;
+      const nextPhase = isLongBreak ? "LONG_BREAK" : "SHORT_BREAK";
+
+      // Iniciar descanso en una sola transición: la duración viaja con ella,
+      // por lo que el cero del bloque recién vencido no bloquea el arranque.
+      pomodoroTimer.transitionTo({ phase: nextPhase });
+      setCurrentView("BREAK");
     });
+  };
+
+  // Retry a failed block completion without ever replaying a landed POST:
+  // reconcile with an authoritative GET first, replay only if still ACTIVE.
+  const retryPomodoroComplete = async () => {
+    if (!currentSession) return;
+
+    setCommandFailure(null);
+    const snapshot = await rehydrateSession(currentSession.id);
+
+    // Any authoritative phase other than a still-ACTIVE block means either the
+    // original completion landed or the session moved on out of band. Adopt
+    // that state; re-sending would only earn a rejection the user cannot act on.
+    if (snapshot && snapshot.phase !== "ACTIVE") {
+      await adoptReconciledBreak(snapshot, currentSession.id);
+      return;
+    }
+
+    await handlePomodoroComplete();
   };
 
   // Arrancar el bloque siguiente una vez que el descanso quedó cerrado.
@@ -646,6 +679,9 @@ const IntensiveStudy: React.FC = () => {
         return;
       case "SKIP_BREAK":
         void handleSkipBreak();
+        return;
+      case "COMPLETE_BLOCK":
+        void retryPomodoroComplete();
         return;
     }
   };
