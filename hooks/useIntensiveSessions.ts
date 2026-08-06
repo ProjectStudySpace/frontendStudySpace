@@ -78,7 +78,7 @@ interface UseIntensiveSessionsReturn {
   completePomodoro: (
     sessionId: number,
     blockId: number,
-  ) => Promise<PomodoroBlock | null>;
+  ) => Promise<IntensiveMutationOutcome<PomodoroBlock | null>>;
   endBreak: (
     sessionId: number,
     blockId: number,
@@ -633,39 +633,36 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
    * Completar un bloque Pomodoro
    */
   const completePomodoro = useCallback(
-    async (
+    (
       sessionId: number,
       blockId: number,
-    ): Promise<PomodoroBlock | null> => {
-      if (!user) {
-        setError("Usuario no autenticado");
-        return null;
-      }
+    ): Promise<IntensiveMutationOutcome<PomodoroBlock | null>> =>
+      runCommand({
+        command: "COMPLETE_BLOCK",
+        sessionId,
+        fallbackMessage: "Error al completar Pomodoro",
+        fromSnapshot: (snapshot) => snapshot.block,
+        send: async () => {
+          const response = await api.post<any>(
+            `/intensive-sessions/${sessionId}/pomodoro/${blockId}/complete`,
+          );
+          const block = response.data?.block;
 
-      setLoading(true);
-      setError(null);
+          if (!block) {
+            return {
+              status: "failed",
+              error: localIntensiveError(
+                "business",
+                "Error al completar Pomodoro",
+              ),
+            };
+          }
 
-      try {
-        const response = await api.post<any>(
-          `/intensive-sessions/${sessionId}/pomodoro/${blockId}/complete`,
-        );
-
-        if (response.data) {
-          const apiResponse = response.data;
-          const block = apiResponse.block;
           setCurrentPomodoro(block);
-          return block;
-        }
-        return null;
-      } catch (err: any) {
-        const errorMessage = intensiveErrorMessage(err, "Error al completar Pomodoro");
-        setError(errorMessage);
-        return null;
-      } finally {
-        setLoading(false);
-      }
-    },
-    [user],
+          return { status: "success", data: block, snapshot: null };
+        },
+      }),
+    [runCommand],
   );
 
   /**

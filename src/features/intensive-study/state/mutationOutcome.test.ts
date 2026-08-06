@@ -79,12 +79,22 @@ describe("isCommandConfirmed", () => {
       "PAUSE",
       "ABANDON",
       "COMPLETE",
+      "COMPLETE_BLOCK",
       "END_BREAK",
       "SKIP_BREAK",
     ];
     for (const command of commands) {
       expect(isCommandConfirmed(command, null)).toBe(false);
     }
+  });
+
+  it("confirms COMPLETE_BLOCK only when the authoritative phase is BREAK", () => {
+    expect(isCommandConfirmed("COMPLETE_BLOCK", "BREAK")).toBe(true);
+    expect(isCommandConfirmed("COMPLETE_BLOCK", "ACTIVE")).toBe(false);
+    expect(isCommandConfirmed("COMPLETE_BLOCK", "PAUSED")).toBe(false);
+    expect(isCommandConfirmed("COMPLETE_BLOCK", "READY")).toBe(false);
+    expect(isCommandConfirmed("COMPLETE_BLOCK", "TERMINAL")).toBe(false);
+    expect(isCommandConfirmed("COMPLETE_BLOCK", null)).toBe(false);
   });
 });
 

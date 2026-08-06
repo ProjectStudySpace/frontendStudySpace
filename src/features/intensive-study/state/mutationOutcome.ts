@@ -18,6 +18,7 @@ export type IntensiveCommand =
   | "PAUSE"
   | "ABANDON"
   | "COMPLETE"
+  | "COMPLETE_BLOCK"
   | "END_BREAK"
   | "SKIP_BREAK";
 
@@ -62,6 +63,11 @@ export function isCommandConfirmed(
     case "ABANDON":
     case "COMPLETE":
       return phase === "TERMINAL";
+    case "COMPLETE_BLOCK":
+      // The backend moves the block ACTIVE -> ON_BREAK while the session
+      // stays ACTIVE, which derives exactly the BREAK phase. A block still
+      // ACTIVE proves the command never landed.
+      return phase === "BREAK";
     case "END_BREAK":
     case "SKIP_BREAK":
       return phase === "ACTIVE" || phase === "READY";

@@ -132,8 +132,8 @@ function postCalls() {
 }
 
 /** Hydrate authoritative local state so "unchanged" is a meaningful assertion. */
-async function hydrate() {
-  currentDetail = UNCHANGED_DETAIL;
+async function hydrate(unchangedDetail: TestResponse = UNCHANGED_DETAIL) {
+  currentDetail = unchangedDetail;
   await act(async () => {
     await latest?.rehydrateSession(1);
   });
@@ -144,6 +144,14 @@ interface CommandCase {
   name: string;
   url: string;
   successBody: unknown;
+  /**
+   * Authoritative detail hydrated before the command runs. Defaults to
+   * UNCHANGED_DETAIL (session ACTIVE, block ON_BREAK) for the break-lifecycle
+   * commands; completePomodoro needs a still-ACTIVE block instead, since
+   * completing a block that is already ON_BREAK is not a meaningful "before"
+   * state.
+   */
+  unchangedDetail?: TestResponse;
   /** Authoritative detail proving the command really landed. */
   landedDetail: TestResponse;
   invoke: (hook: HookState) => Promise<Outcome>;
@@ -185,6 +193,19 @@ const CASES: CommandCase[] = [
     landedDetail: detail("ACTIVE", WORK_BLOCK),
     invoke: (hook) => hook.skipBreak(1, 102),
   },
+  {
+    name: "completePomodoro",
+    url: "/intensive-sessions/1/pomodoro/102/complete",
+    successBody: {
+      block: BREAK_BLOCK,
+      breakDuration: 5,
+      isLongBreak: false,
+      xpAwarded: 10,
+    },
+    unchangedDetail: detail("ACTIVE", WORK_BLOCK),
+    landedDetail: detail("ACTIVE", BREAK_BLOCK),
+    invoke: (hook) => hook.completePomodoro(1, 102),
+  },
 ];
 
 describe("intensive lifecycle commands", () => {
@@ -217,7 +238,7 @@ describe("intensive lifecycle commands", () => {
       it("reports a single success when the backend accepts the command", async () => {
         postOutcome = () => ({ status: 200, data: testCase.successBody });
         await renderHookProbe();
-        await hydrate();
+        await hydrate(testCase.unchangedDetail);
 
         let outcome: Outcome | undefined;
         await act(async () => {
@@ -235,7 +256,7 @@ describe("intensive lifecycle commands", () => {
       it("keeps the local session untouched on an HTTP error", async () => {
         postOutcome = () => ({ status: 500, data: { error: "Fallo interno" } });
         await renderHookProbe();
-        await hydrate();
+        await hydrate(testCase.unchangedDetail);
         const before = {
           session: latest?.currentSession,
           pomodoro: latest?.currentPomodoro,
@@ -261,7 +282,7 @@ describe("intensive lifecycle commands", () => {
           data: { error: "La sesión no admite esta acción" },
         });
         await renderHookProbe();
-        await hydrate();
+        await hydrate(testCase.unchangedDetail);
         const before = latest?.currentSession;
 
         let outcome: Outcome | undefined;
@@ -281,9 +302,9 @@ describe("intensive lifecycle commands", () => {
       it("keeps the local session untouched when a network failure did not land", async () => {
         postOutcome = () => "network";
         await renderHookProbe();
-        await hydrate();
+        await hydrate(testCase.unchangedDetail);
         const before = latest?.currentSession;
-        currentDetail = UNCHANGED_DETAIL;
+        currentDetail = testCase.unchangedDetail ?? UNCHANGED_DETAIL;
 
         let outcome: Outcome | undefined;
         await act(async () => {
@@ -299,7 +320,7 @@ describe("intensive lifecycle commands", () => {
       it("reconciles an ambiguous network failure through an authoritative GET without replaying the command", async () => {
         postOutcome = () => "network";
         await renderHookProbe();
-        await hydrate();
+        await hydrate(testCase.unchangedDetail);
         currentDetail = testCase.landedDetail;
 
         let outcome: Outcome | undefined;
@@ -319,7 +340,7 @@ describe("intensive lifecycle commands", () => {
       it("clears a previous command error once a retry succeeds", async () => {
         postOutcome = () => ({ status: 500, data: { error: "Fallo interno" } });
         await renderHookProbe();
-        await hydrate();
+        await hydrate(testCase.unchangedDetail);
 
         await act(async () => {
           await testCase.invoke(latest as HookState);
@@ -337,6 +358,26 @@ describe("intensive lifecycle commands", () => {
       });
     });
   }
+
+  it("adopts the on-break block when the completion succeeds", async () => {
+    postOutcome = () => ({
+      status: 200,
+      data: {
+        block: BREAK_BLOCK,
+        breakDuration: 5,
+        isLongBreak: false,
+        xpAwarded: 10,
+      },
+    });
+    await renderHookProbe();
+    await hydrate(detail("ACTIVE", WORK_BLOCK));
+
+    await act(async () => {
+      await latest?.completePomodoro(1, 102);
+    });
+
+    expect(latest?.currentPomodoro?.status).toBe("ON_BREAK");
+  });
 
   it("treats an unsuccessful end-break acknowledgement as a failure", async () => {
     postOutcome = () => ({
