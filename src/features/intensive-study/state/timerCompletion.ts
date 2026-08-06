@@ -19,18 +19,32 @@ export interface CompletionDispatchInput {
   view: string;
 }
 
+export interface CompletionDispatchResolution {
+  /** Non-null only when the current view owns a live phase to complete. */
+  dispatch: TimerCompletionSource | null;
+  /**
+   * Tick value the page must record as handled — advances on every new
+   * tick, dispatched or suppressed, and never decreases. Consuming a tick
+   * even when it cannot be dispatched prevents it from latching and firing
+   * on a later, unrelated session (REL-201).
+   */
+  nextHandledTick: number;
+}
+
 export function resolveCompletionDispatch({
   completionTick,
   lastHandledTick,
   view,
-}: CompletionDispatchInput): TimerCompletionSource | null {
+}: CompletionDispatchInput): CompletionDispatchResolution {
   if (completionTick <= 0 || completionTick === lastHandledTick) {
-    return null;
+    return { dispatch: null, nextHandledTick: lastHandledTick };
   }
+
+  const nextHandledTick = Math.max(completionTick, lastHandledTick);
 
   if (view === "ACTIVE" || view === "BREAK") {
-    return view;
+    return { dispatch: view, nextHandledTick };
   }
 
-  return null;
+  return { dispatch: null, nextHandledTick };
 }

@@ -198,15 +198,18 @@ const IntensiveStudy: React.FC = () => {
   // reanudación nunca fabrica una transición en el backend.
   const lastHandledCompletionRef = useRef(0);
   useEffect(() => {
-    const dispatch = resolveCompletionDispatch({
+    const { dispatch, nextHandledTick } = resolveCompletionDispatch({
       completionTick: pomodoroTimer.completionTick,
       lastHandledTick: lastHandledCompletionRef.current,
       view: currentView,
     });
 
-    if (!dispatch) return;
+    // Always consume the tick, even when it cannot be dispatched, so a stale
+    // expiry raised outside a live view (e.g. after an abandon) cannot latch
+    // and fire on a later, unrelated session (REL-201).
+    lastHandledCompletionRef.current = nextHandledTick;
 
-    lastHandledCompletionRef.current = pomodoroTimer.completionTick;
+    if (!dispatch) return;
 
     if (dispatch === "ACTIVE") {
       void handlePomodoroComplete();
@@ -420,6 +423,11 @@ const IntensiveStudy: React.FC = () => {
       setCommandFailure({ command: "ABANDON", message: outcome.error.message });
       return;
     }
+
+    // Stop the timer at the source so an orphan interval cannot keep running
+    // after the view leaves ACTIVE/BREAK (REL-201). Pausing only after the
+    // backend confirms keeps a failed abandon from freezing a live session.
+    pomodoroTimer.pause();
 
     setCurrentView("RESULTS");
   };
