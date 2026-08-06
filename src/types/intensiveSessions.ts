@@ -15,22 +15,27 @@ export enum StudyIntensity {
 }
 
 /**
- * Estado de la sesión intensiva
+ * Canonical intensive session lifecycle.
+ * Mirrors the backend `IntensiveSessionStatus` enum:
+ * CONFIGURING -> ACTIVE <-> PAUSED, then COMPLETED or ABANDONED.
  */
 export enum SessionStatus {
-  CREATED = "CREATED",
-  IN_PROGRESS = "IN_PROGRESS",
+  CONFIGURING = "CONFIGURING",
+  ACTIVE = "ACTIVE",
   PAUSED = "PAUSED",
   COMPLETED = "COMPLETED",
   ABANDONED = "ABANDONED",
 }
 
 /**
- * Estado del bloque Pomodoro
+ * Canonical Pomodoro block lifecycle.
+ * Mirrors the backend `PomodoroStatus` enum:
+ * PENDING -> ACTIVE -> ON_BREAK -> COMPLETED, with ABANDONED terminal.
  */
 export enum PomodoroStatus {
-  IN_PROGRESS = "IN_PROGRESS",
-  BREAK = "BREAK",
+  PENDING = "PENDING",
+  ACTIVE = "ACTIVE",
+  ON_BREAK = "ON_BREAK",
   COMPLETED = "COMPLETED",
   ABANDONED = "ABANDONED",
 }
@@ -107,8 +112,10 @@ export interface PomodoroBlock {
   blockNumber: number;
   status: PomodoroStatus;
   startedAt?: string;
+  endsAt?: string; // absolute work boundary from the backend
   completedAt?: string;
   breakStartedAt?: string;
+  breakEndsAt?: string; // absolute break boundary from the backend
   breakEndedAt?: string;
   duration?: number; // en segundos (legacy)
   durationMinutes?: number; // en minutos (del backend)
@@ -150,6 +157,35 @@ export interface CreateIntensiveSessionData {
 export interface IntensiveSessionDetail extends IntensiveStudySession {
   pomodoroBlocks: PomodoroBlock[];
   sessionCards: IntensiveSessionCard[];
+}
+
+/**
+ * Phase derived from authoritative backend state when a session is resumed.
+ * TERMINAL covers COMPLETED and ABANDONED sessions, which are never actionable.
+ */
+export type ResumePhase = "READY" | "ACTIVE" | "BREAK" | "PAUSED" | "TERMINAL";
+
+/**
+ * Absolute timer boundaries owned by the backend.
+ * The client only renders them; it never invents them.
+ */
+export interface IntensiveTimerDescriptor {
+  phase: "WORK" | "SHORT_BREAK" | "LONG_BREAK";
+  startedAt: string;
+  endsAt: string;
+  durationSeconds: number;
+}
+
+/**
+ * Everything the UI needs to resume a session, hydrated from the backend
+ * before any actionable view is rendered.
+ */
+export interface IntensiveResumeSnapshot {
+  phase: ResumePhase;
+  session: IntensiveSessionDetail;
+  block: PomodoroBlock | null;
+  card: IntensiveSessionCard | null;
+  timer: IntensiveTimerDescriptor | null;
 }
 
 /**

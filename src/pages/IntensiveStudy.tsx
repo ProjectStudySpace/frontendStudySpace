@@ -38,13 +38,18 @@ import SessionResultsSummary from "../components/SessionResultsSummary";
 
 import {
   StudyIntensity,
-  SessionStatus,
   CardDifficulty,
   POMODORO_CONFIG,
+  PomodoroStatus,
   IntensiveSessionDetail,
-  IntensiveSessionCard,
+  IntensiveResumeSnapshot,
   AbandonInfo,
 } from "../types/intensiveSessions";
+import {
+  buildTimerDescriptor,
+  resumeViewFor,
+  shouldShowBlockComplete,
+} from "../features/intensive-study/state/resume";
 import { IntradayReview } from "../types/intradayReviews";
 import { UserBadge } from "../types/gamification";
 
@@ -78,6 +83,7 @@ const IntensiveStudy: React.FC = () => {
     getAbandonInfo,
     completeSession,
     getActiveSession,
+    resumeSession,
     startPomodoro,
     completePomodoro,
     endBreak,
@@ -111,6 +117,9 @@ const IntensiveStudy: React.FC = () => {
   const [activeSessionError, setActiveSessionError] = useState<string | null>(
     null,
   );
+  // True only once authoritative session/block/card/timer data has been applied.
+  const [hydrated, setHydrated] = useState(false);
+  const [resuming, setResuming] = useState(false);
 
   // Cargar temas al montar
   useEffect(() => {
@@ -143,17 +152,15 @@ const IntensiveStudy: React.FC = () => {
   // Sincronizar timer con backend (para pausas y resume)
   // Usa el timestamp UTC del backend para calcular tiempo restante exacto
   const syncTimerWithBackend = useCallback(() => {
-    if (currentPomodoro && currentPomodoro.startedAt) {
-      const duration = currentPomodoro.breakStartedAt
-        ? currentPomodoro.breakDuration
-        : currentPomodoro.duration;
+    if (!currentPomodoro) return;
 
-      if (duration) {
-        pomodoroTimer.syncWithBackend(
-          currentPomodoro.breakStartedAt || currentPomodoro.startedAt,
-          duration,
-        );
-      }
+    const timer = buildTimerDescriptor(
+      currentPomodoro,
+      currentPomodoro.status === PomodoroStatus.ON_BREAK ? "BREAK" : "ACTIVE",
+    );
+
+    if (timer) {
+      pomodoroTimer.syncWithBackend(timer.startedAt, timer.durationSeconds);
     }
   }, [currentPomodoro, pomodoroTimer]);
 
@@ -187,6 +194,67 @@ const IntensiveStudy: React.FC = () => {
       }
     };
   }, [currentView, currentPomodoro, syncTimerWithBackend]);
+
+  // ==================== REANUDACIÓN AUTORITATIVA ====================
+
+  /**
+   * Apply an authoritative snapshot: block number, phase, absolute timer and
+   * view. Nothing is derived locally, so a resumed session can progress.
+   */
+  const applyResumeSnapshot = useCallback(
+    (snapshot: IntensiveResumeSnapshot) => {
+      if (snapshot.block) {
+        pomodoroTimer.setBlockNumber(snapshot.block.blockNumber);
+      }
+
+      if (snapshot.timer) {
+        pomodoroTimer.setPhase(snapshot.timer.phase);
+        pomodoroTimer.syncWithBackend(
+          snapshot.timer.startedAt,
+          snapshot.timer.durationSeconds,
+        );
+        pomodoroTimer.start();
+      } else {
+        // No live backend timer: never invent one.
+        pomodoroTimer.pause();
+      }
+
+      setShowAnswer(false);
+      setSelectedDifficulty(null);
+      setActiveSessionError(null);
+      setHydrated(true);
+      setCurrentView(resumeViewFor(snapshot.phase));
+    },
+    [pomodoroTimer],
+  );
+
+  /**
+   * Continue the live session: discover it, hydrate it from the backend and
+   * only then render an actionable view.
+   */
+  const handleContinueSession = useCallback(async () => {
+    setResuming(true);
+    setHydrated(false);
+
+    try {
+      const active = await getActiveSession();
+      if (!active) {
+        setActiveSessionError(null);
+        return;
+      }
+
+      const snapshot = await resumeSession(active.id);
+      if (!snapshot) {
+        return;
+      }
+
+      applyResumeSnapshot(snapshot);
+    } catch (err) {
+      console.error("Error continuing session:", err);
+    } finally {
+      setResuming(false);
+    }
+  }, [getActiveSession, resumeSession, applyResumeSnapshot]);
 
   // ==================== FUNCIONES DE MANEJO ====================
 
@@ -237,7 +305,7 @@ const IntensiveStudy: React.FC = () => {
 
       if (pomodoro) {
         // Obtener primera tarjeta
-        const result = await getNextCard(currentSession.id);
+        await getNextCard(currentSession.id);
 
         // Iniciar timer con duración del backend (sincronizado con UTC)
         if (pomodoro.startedAt && pomodoro.durationMinutes) {
@@ -252,6 +320,7 @@ const IntensiveStudy: React.FC = () => {
           pomodoroTimer.start();
         }
 
+        setHydrated(true);
         setCurrentView("ACTIVE");
       }
     } catch (err) {
@@ -276,16 +345,23 @@ const IntensiveStudy: React.FC = () => {
   const handleResume = async () => {
     if (!currentSession) return;
 
+    setResuming(true);
+    setHydrated(false);
+
     try {
       const resumed = await startSession(currentSession.id);
-      if (resumed) {
-        // Sincronizar timer con backend al reanudar
-        syncTimerWithBackend();
-        pomodoroTimer.start();
-        setCurrentView("ACTIVE");
-      }
+      if (!resumed) return;
+
+      // The start acknowledgement is not a state source: reconcile with an
+      // authoritative GET before rendering the active view again.
+      const snapshot = await resumeSession(currentSession.id);
+      if (!snapshot) return;
+
+      applyResumeSnapshot(snapshot);
     } catch (err) {
       console.error("Error resuming session:", err);
+    } finally {
+      setResuming(false);
     }
   };
 
@@ -373,6 +449,7 @@ const IntensiveStudy: React.FC = () => {
         // Cargar la primera tarjeta del nuevo bloque
         await getNextCard(currentSession.id);
 
+        setHydrated(true);
         setCurrentView("ACTIVE");
       }
     } catch (err) {
@@ -405,6 +482,7 @@ const IntensiveStudy: React.FC = () => {
         // Cargar la primera tarjeta del nuevo bloque
         await getNextCard(currentSession.id);
 
+        setHydrated(true);
         setCurrentView("ACTIVE");
       }
     } catch (err) {
@@ -471,6 +549,7 @@ const IntensiveStudy: React.FC = () => {
     setSelectedIntensity(null);
     setShowAnswer(false);
     setSelectedDifficulty(null);
+    setHydrated(false);
     pomodoroTimer.reset();
     clearError();
   };
@@ -532,23 +611,9 @@ const IntensiveStudy: React.FC = () => {
               </p>
               <div className="mt-3 flex gap-2">
                 <button
-                  onClick={async () => {
-                    try {
-                      const active = await getActiveSession();
-                      if (active) {
-                        const detail = await fetchSessionDetail(active.id);
-                        if (detail) {
-                          setCurrentView("ACTIVE");
-                        }
-                      } else {
-                        // Si no hay sesión activa, limpiar el error
-                        setActiveSessionError(null);
-                      }
-                    } catch (err) {
-                      console.error("Error continuing session:", err);
-                    }
-                  }}
-                  className="px-3 py-1.5 text-xs font-medium text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-800/50 rounded hover:bg-amber-200 dark:hover:bg-amber-700/50 transition-colors"
+                  onClick={handleContinueSession}
+                  disabled={resuming}
+                  className="px-3 py-1.5 text-xs font-medium text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-800/50 rounded hover:bg-amber-200 dark:hover:bg-amber-700/50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {t("intensiveStudy.continueSession", "Continuar Sesión")}
                 </button>
@@ -779,8 +844,13 @@ const IntensiveStudy: React.FC = () => {
         {currentSession?.totalPomodoros || 4}
       </p>
 
-      {/* Mensaje cuando se completaron las tarjetas del bloque pero el timer sigue */}
-      {!currentCard && pomodoroTimer.timeRemaining > 0 && (
+      {/* Mensaje cuando se completaron las tarjetas del bloque pero el timer sigue.
+          Solo es válido tras la hidratación autoritativa. */}
+      {shouldShowBlockComplete({
+        hydrated,
+        card: currentCard,
+        timeRemaining: pomodoroTimer.timeRemaining,
+      }) && (
         <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-xl p-6 text-center">
           <div className="flex flex-col items-center gap-4">
             <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-800/50 rounded-full flex items-center justify-center">

@@ -18,8 +18,12 @@ import {
   IntensiveSessionCard,
   StudyIntensity,
   CardDifficulty,
-  SessionStatus,
+  IntensiveResumeSnapshot,
 } from "../src/types/intensiveSessions";
+import {
+  buildResumeSnapshot,
+  isResumableSession,
+} from "../src/features/intensive-study/state/resume";
 
 interface GetNextCardResult {
   card: IntensiveSessionCard | null;
@@ -50,6 +54,7 @@ interface UseIntensiveSessionsReturn {
   getAbandonInfo: (id: number) => Promise<AbandonInfo | null>;
   completeSession: (id: number) => Promise<IntensiveSessionDetail | null>;
   getActiveSession: () => Promise<IntensiveStudySession | null>;
+  resumeSession: (id: number) => Promise<IntensiveResumeSnapshot | null>;
 
   // Funciones de Pomodoro
   startPomodoro: (sessionId: number) => Promise<PomodoroBlock | null>;
@@ -162,11 +167,10 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
         );
         const sessionsData = response.data?.sessions || [];
 
-        // Buscar sesión en progreso o pausada
-        const activeSession = sessionsData.find(
-          (s) =>
-            s.status === SessionStatus.IN_PROGRESS ||
-            s.status === SessionStatus.PAUSED,
+        // Only canonical ACTIVE/PAUSED sessions are live; CONFIGURING and
+        // terminal sessions are not resumable.
+        const activeSession = sessionsData.find((s) =>
+          isResumableSession(s.status),
         );
 
         return activeSession || null;
@@ -748,6 +752,79 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
     [user],
   );
 
+  // ==================== REANUDACIÓN ====================
+
+  /**
+   * Rehydrate a session from authoritative backend data before the UI renders
+   * any actionable view: session detail, current Pomodoro block, assigned card,
+   * derived phase and absolute timer boundaries.
+   *
+   * Returns `null` when the session cannot be trusted (not found, failed
+   * request, or owned by another user) and leaves local state untouched.
+   */
+  const resumeSession = useCallback(
+    async (sessionId: number): Promise<IntensiveResumeSnapshot | null> => {
+      if (!user) {
+        setError("Usuario no autenticado");
+        return null;
+      }
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await api.get<any>(`/intensive-sessions/${sessionId}`);
+        const payload = response.data;
+        const session = payload?.session || null;
+
+        const hydrated = buildResumeSnapshot({
+          session,
+          activeBlock: payload?.activeBlock || null,
+          card: null,
+          userId: user.id ?? null,
+        });
+
+        if (!hydrated) {
+          return null;
+        }
+
+        // The assigned card is only meaningful while a work block is running.
+        let card: IntensiveSessionCard | null = null;
+        if (hydrated.phase === "ACTIVE") {
+          const nextCard = await getNextCard(sessionId);
+          card = nextCard.card;
+        }
+
+        const snapshot = buildResumeSnapshot({
+          session,
+          activeBlock: payload?.activeBlock || null,
+          card,
+          userId: user.id ?? null,
+        });
+
+        if (!snapshot) {
+          return null;
+        }
+
+        setCurrentSession(snapshot.session);
+        setCurrentPomodoro(snapshot.block);
+        setCurrentCard(snapshot.card);
+
+        return snapshot;
+      } catch (err: any) {
+        const errorMessage = intensiveErrorMessage(
+          err,
+          "Error al reanudar sesión",
+        );
+        setError(errorMessage);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [user, getNextCard],
+  );
+
   // ==================== UTILIDADES ====================
 
   const clearError = useCallback(() => {
@@ -782,6 +859,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
     getAbandonInfo,
     completeSession,
     getActiveSession,
+    resumeSession,
 
     // Funciones de Pomodoro
     startPomodoro,
