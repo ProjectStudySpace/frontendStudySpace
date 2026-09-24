@@ -144,6 +144,36 @@ describe("usePomodoroTimer atomic transitions", () => {
     expect(timer().completionTick).toBe(0);
   });
 
+  it("keeps counting after re-applying an identical transition while running", async () => {
+    await act(async () => {
+      timer().transitionTo({ phase: "WORK", durationSeconds: 10 });
+    });
+    // A same-second re-sync of the live block yields identical state.
+    await act(async () => {
+      timer().transitionTo({ phase: "WORK", durationSeconds: 10 });
+    });
+    expect(timer().isRunning).toBe(true);
+
+    await advanceSeconds(3);
+
+    expect(timer().timeRemaining).toBe(7);
+  });
+
+  it("keeps counting when pause and start land in the same batch", async () => {
+    await act(async () => {
+      timer().transitionTo({ phase: "WORK", durationSeconds: 10 });
+    });
+    await act(async () => {
+      timer().pause();
+      timer().start();
+    });
+    expect(timer().isRunning).toBe(true);
+
+    await advanceSeconds(3);
+
+    expect(timer().timeRemaining).toBe(7);
+  });
+
   it("never drives the remaining time below zero", async () => {
     await act(async () => {
       timer().transitionTo({ phase: "WORK", durationSeconds: 1 });

@@ -199,11 +199,9 @@ export const usePomodoroTimer = (): UsePomodoroTimerReturn => {
    * Pausar el timer
    */
   const pause = useCallback(() => {
+    // The tick effect owns the interval: clearing it here would freeze the
+    // timer whenever a batched start() leaves isRunning unchanged.
     setIsRunning(false);
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
     hasCompletedRef.current = false;
   }, []);
 
@@ -284,11 +282,9 @@ export const usePomodoroTimer = (): UsePomodoroTimerReturn => {
           : durationForPhase(nextPhase);
       const remaining = remainingFor(duration, startedAt);
 
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-
+      // The tick effect owns the interval. A changed transition re-runs it
+      // (its cleanup drops the old interval); an identical one keeps the live
+      // interval instead of clearing it without a re-render to recreate it.
       backendStartedAtRef.current = startedAt ?? null;
       hasCompletedRef.current = false;
       timeRemainingRef.current = remaining;
