@@ -8,7 +8,14 @@ import React, {
 } from "react";
 import axios from "axios";
 import { getUserTimezone } from "../utils/dateUtils";
-import { api } from "../utils/axiosConfig";
+import {
+  api,
+  beginAuthenticatedGeneration,
+  clearAuthCredentialsIfOwner,
+  getAuthGenerationIdentity,
+  invalidateAuthGeneration,
+  isAuthGenerationOwner,
+} from "../utils/axiosConfig";
 import { User } from "../types";
 import { useNotification } from "./NotificationContext";
 import { useTranslation } from "react-i18next";
@@ -18,6 +25,8 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isAuthDegraded: boolean;
+  retrySession: () => Promise<void>;
   login: (email: string, password: string) => Promise<boolean>;
   register: (
     name: string,
@@ -65,63 +74,71 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthDegraded, setIsAuthDegraded] = useState(false);
   const isAuthenticated = !!user;
   const { showSuccess, showError } = useNotification();
   const { t, i18n } = useTranslation();
 
-  // Verificar sesión al cargar la aplicación
-  useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const token = localStorage.getItem("token");
+  const checkSession = useCallback(async (): Promise<void> => {
+    setIsLoading(true);
+    setIsAuthDegraded(false);
 
-        if (!token) {
-          setIsLoading(false);
-          setUser(null);
-          return;
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      setIsLoading(false);
+      setUser(null);
+      return;
+    }
+
+    const generation = beginAuthenticatedGeneration();
+    const identity = getAuthGenerationIdentity(generation);
+
+    try {
+      const { data } = await api.get("/users/profile");
+
+      if (data?.user && isAuthGenerationOwner(identity)) {
+        setUser(data.user);
+        setIsAuthDegraded(false);
+        // Persistir zona horaria en localStorage si viene del backend
+        if (data.user?.userTimezone) {
+          localStorage.setItem("userTimezone", data.user.userTimezone);
         }
-
-        const { data } = await api.get("/users/profile");
-
-        if (data?.user) {
-          setUser(data.user);
-          // Persistir zona horaria en localStorage si viene del backend
-          if (data.user?.userTimezone) {
-            localStorage.setItem("userTimezone", data.user.userTimezone);
-          }
-        } else {
-          // Token inválido o expirado
-          localStorage.removeItem("token");
-          setUser(null);
-        }
-      } catch (error: any) {
-        // Handle network errors gracefully during session check
-        if (
-          error.code === "ERR_INSUFFICIENT_RESOURCES" ||
-          error.code === "ERR_NETWORK"
-        ) {
-          console.warn(
-            "Network error during session check, user will need to login again"
-          );
-          localStorage.removeItem("token");
-          setUser(null);
-        } else if (error.response?.status === 401) {
-          // Token expired or invalid
-          localStorage.removeItem("token");
-          localStorage.removeItem("userTimezone");
-          setUser(null);
-        } else {
-          console.error("Error verificando sesión:", error);
-          localStorage.removeItem("token");
+      } else if (!data?.user && isAuthGenerationOwner(identity)) {
+        // Token inválido o expirado
+        if (clearAuthCredentialsIfOwner(identity)) {
           setUser(null);
         }
-      } finally {
+        setIsAuthDegraded(false);
+      }
+    } catch (error: any) {
+      if (error.response?.status === 401) {
+        // A 401 is authoritative: the token is no longer valid.
+        if (clearAuthCredentialsIfOwner(identity)) {
+          setUser(null);
+          setIsAuthDegraded(false);
+        }
+      } else if (isAuthGenerationOwner(identity)) {
+        // Network, timeout, and server failures are ambiguous during bootstrap.
+        // Keep the credential so the caller can retry without logging in again.
+        console.warn("Session bootstrap degraded; credentials are preserved", error.code);
+        setIsAuthDegraded(true);
+      }
+    } finally {
+      if (isAuthGenerationOwner(identity)) {
         setIsLoading(false);
       }
-    };
-
-    checkSession();
+    }
   }, []);
+
+  // Verificar sesión al cargar la aplicación
+  useEffect(() => {
+    void checkSession();
+  }, [checkSession]);
+
+  const retrySession = useCallback(async (): Promise<void> => {
+    await checkSession();
+  }, [checkSession]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
@@ -140,6 +157,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       localStorage.setItem("token", data.token);
+      beginAuthenticatedGeneration();
+      setIsAuthDegraded(false);
       setUser(data.user);
       // Persistir zona horaria en localStorage
       if (data.user?.userTimezone) {
@@ -255,6 +274,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (data) {
           // Save token and set user
           localStorage.setItem("token", data.token);
+          beginAuthenticatedGeneration();
+          setIsAuthDegraded(false);
           setUser(data.user);
           if (data.user?.userTimezone) {
             localStorage.setItem("userTimezone", data.user.userTimezone);
@@ -302,22 +323,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   );
 
   const logout = async (): Promise<void> => {
+    const logoutIdentity = getAuthGenerationIdentity();
+    // Stop expiry ownership before the request, but leave the captured token in
+    // localStorage so the logout endpoint receives its intended credential.
+    invalidateAuthGeneration(logoutIdentity);
+
     try {
       await api.get("/users/logout");
-      showSuccess("Sesión cerrada", "Has cerrado sesión correctamente");
-    } catch (error) {
-      // Ignorar errores del servidor (404, etc.) - el logout local es suficiente
-      if (axios.isAxiosError(error) && error.response?.status === 404) {
-        // Endpoint no existe, continuar con logout local
-        showSuccess("Sesión cerrada", "Has cerrado sesión correctamente");
-      } else {
-        console.error("Error durante logout:", error);
+      if (isAuthGenerationOwner(logoutIdentity)) {
         showSuccess("Sesión cerrada", "Has cerrado sesión correctamente");
       }
+    } catch (error) {
+      // Ignorar errores del servidor (404, etc.) - el logout local es suficiente
+      if (isAuthGenerationOwner(logoutIdentity)) {
+        if (axios.isAxiosError(error) && error.response?.status === 404) {
+          // Endpoint no existe, continuar con logout local
+          showSuccess("Sesión cerrada", "Has cerrado sesión correctamente");
+        } else {
+          console.error("Error durante logout:", error);
+          showSuccess("Sesión cerrada", "Has cerrado sesión correctamente");
+        }
+      }
     } finally {
-      localStorage.removeItem("token");
-      localStorage.removeItem("userTimezone");
-      setUser(null);
+      if (clearAuthCredentialsIfOwner(logoutIdentity)) {
+        setIsAuthDegraded(false);
+        setUser(null);
+      }
     }
   };
 
@@ -358,8 +389,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     if (googleAuth === "success" && token) {
       localStorage.setItem("token", token);
+      const generation = beginAuthenticatedGeneration();
+      setIsAuthDegraded(false);
+      const identity = getAuthGenerationIdentity(generation);
       try {
         const { data } = await api.get("/users/profile");
+        if (!isAuthGenerationOwner(identity)) {
+          return;
+        }
+
         if (data?.user) {
           setUser(data.user);
           if (data.user?.userTimezone) {
@@ -373,8 +411,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           } else {
             showSuccess(t("auth.welcomeBack"), t("auth.googleAuthSuccess"));
           }
-        } else {
-          localStorage.removeItem("token");
+        } else if (clearAuthCredentialsIfOwner(identity)) {
           showError(
             t("auth.googleAuthError"),
             t("auth.googleErrors.callback_failed")
@@ -382,10 +419,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       } catch (err) {
         console.error("Error fetching user profile after Google auth:", err);
-        showError(
-          t("auth.googleAuthError"),
-          t("auth.googleErrors.callback_failed")
-        );
+        if (clearAuthCredentialsIfOwner(identity)) {
+          showError(
+            t("auth.googleAuthError"),
+            t("auth.googleErrors.callback_failed")
+          );
+        }
       }
     }
   }, [showSuccess, showError, t]);
@@ -396,6 +435,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         user,
         isAuthenticated,
         isLoading,
+        isAuthDegraded,
+        retrySession,
         login,
         register,
         logout,
