@@ -12,6 +12,12 @@ export interface UserStats {
   completedToday: number;
   currentStreak: number;
   longestStreak: number;
+  // Fase 2 - Gamificación
+  totalXp: number;
+  level: number;
+  pomodorosCompleted: number;
+  sessionsCompleted: number;
+  sessionsAbandoned: number;
 }
 
 export interface ProfileDashboard {

@@ -12,6 +12,8 @@ import {
   GraduationCap,
   User,
   Settings,
+  Trophy,
+  Zap,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
@@ -113,6 +115,12 @@ const LayoutContent = () => {
       id: "nav-study-sessions",
     },
     {
+      to: "/intensive-study",
+      icon: Zap,
+      label: t("nav.intensiveStudy"),
+      id: "nav-intensive-study",
+    },
+    {
       to: "/calendar",
       icon: Calendar,
       label: t("nav.calendar"),
@@ -123,6 +131,12 @@ const LayoutContent = () => {
       icon: TrendingUp,
       label: t("nav.progress"),
       id: "nav-progress",
+    },
+    {
+      to: "/gamification",
+      icon: Trophy,
+      label: t("nav.gamification"),
+      id: "nav-gamification",
     },
   ];
 
@@ -422,7 +436,7 @@ const LayoutContent = () => {
 };
 
 // Layout component that wraps content with OnboardingProvider
-const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const Layout = () => {
   return (
     <OnboardingProvider>
       <LayoutContent />
