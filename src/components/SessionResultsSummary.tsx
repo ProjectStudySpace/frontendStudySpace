@@ -73,9 +73,10 @@ const SessionResultsSummary: React.FC<SessionResultsSummaryProps> = ({
     };
   }, [session, summary]);
 
+  // A committed session must still render if the payload omits scheduling.
+  const schedulingStatus = summary?.intradayReviewScheduling?.status;
   const reviewSchedulingPending =
-    summary !== null &&
-    summary.intradayReviewScheduling.status !== "completed";
+    schedulingStatus !== undefined && schedulingStatus !== "completed";
 
   // Formatear hora de repaso
   const formatReviewTime = (isoString: string): string => {

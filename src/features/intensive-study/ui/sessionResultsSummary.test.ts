@@ -162,4 +162,15 @@ describe("SessionResultsSummary", () => {
 
     expect(container.querySelector('[role="status"]')).toBeNull();
   });
+
+  it("still renders the totals when the summary omits review scheduling", async () => {
+    // The session is already committed: a partial payload must not break the
+    // results screen.
+    const partial = summary();
+    delete (partial as Partial<SessionCompletionSummary>).intradayReviewScheduling;
+    await render({ session: BARE_SESSION, summary: partial });
+
+    expect(container.textContent ?? "").toContain("12/12");
+    expect(container.querySelector('[role="status"]')).toBeNull();
+  });
 });
