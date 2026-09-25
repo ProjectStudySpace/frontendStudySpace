@@ -77,6 +77,20 @@
       "invalid_state": "Estado de autenticación inválido",
       "callback_failed": "Error en el callback de autenticación"
     },
+    "googleLink": {
+      "successTitle": "Cuenta de Google vinculada",
+      "successMessage": "Ahora puedes iniciar sesión con tu cuenta de Google.",
+      "errorTitle": "Cuenta de Google no vinculada",
+      "errors": {
+        "invalid_state": "La solicitud de vinculación caducó o no se pudo verificar. Vuelve a intentar vincular tu cuenta.",
+        "already_linked": "Esta cuenta de Google ya está vinculada a otro usuario.",
+        "link_failed": "No se pudo vincular tu cuenta de Google. Inténtalo de nuevo.",
+        "google_denied": "La vinculación se canceló en Google. Tu cuenta no se modificó.",
+        "invalid_params": "La solicitud de vinculación estaba incompleta. Inténtalo de nuevo.",
+        "link_init_failed": "No se pudo iniciar la vinculación de tu cuenta de Google. Inténtalo de nuevo.",
+        "unknown": "Se produjo un error al vincular tu cuenta de Google. Inténtalo de nuevo."
+      }
+    },
     "sessionExpired": {
       "title": "Sesión expirada",
       "message": "Tu sesión ha expirado. Serás redirigido al login en unos segundos."
@@ -1701,7 +1715,23 @@
       "integratedTimeManagement": "Gestión integrada de tiempo",
       "pendingSessionsSync": "Las sesiones pendientes se sincronizarán automáticamente",
       "connectWithGoogle": "Conectar con Google",
-      "connectionError": "Error al conectar con Google Calendar. Por favor, intenta de nuevo."
+      "connectionError": "Error al conectar con Google Calendar. Por favor, intenta de nuevo.",
+      "redirect": {
+        "successTitle": "Google Calendar conectado",
+        "successMessage": "Tu cuenta de Google Calendar se conectó correctamente.",
+        "syncTitle": "Sincronización completada",
+        "syncMessage": "{{synced}} de {{total}} elementos sincronizados",
+        "cancelledTitle": "Conexión cancelada",
+        "cancelledMessage": "Google Calendar no se conectó. Puedes conectarlo en cualquier momento.",
+        "errorTitle": "Google Calendar no conectado",
+        "errors": {
+          "invalid_state": "La solicitud de conexión caducó o no se pudo verificar. Vuelve a intentar conectar Google Calendar.",
+          "missing_params": "La solicitud de conexión estaba incompleta. Inténtalo de nuevo.",
+          "invalid_token": "No se pudo confirmar tu sesión. Inicia sesión de nuevo y vuelve a intentar la conexión.",
+          "callback_failed": "No se pudo completar la conexión con Google Calendar. Inténtalo de nuevo.",
+          "unknown": "No se pudo conectar Google Calendar. Inténtalo de nuevo."
+        }
+      }
     },
     "noteList": {
       "noNotes": "No hay notas en este tema",
