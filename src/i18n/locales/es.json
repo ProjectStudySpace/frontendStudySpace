@@ -1712,8 +1712,12 @@
         "features": {
           "advancedSpaced": "Repaso espaciado avanzado",
           "advancedStats": "Estadísticas avanzadas",
-          "prioritySupport": "Soporte prioritario"
+          "prioritySupport": "Soporte prioritario",
+          "focusExtension": "Extensión de navegador para enfoque profundo",
+          "studyAgent": "Tu agente de estudio personalizado en Telegram/WhatsApp",
+          "examCoach": "Tu entrenador personalizado para exámenes oficiales"
         },
+        "connected": "Todo conectado con tu herramienta de repaso espaciado",
         "cta": "Próximamente"
       }
     }

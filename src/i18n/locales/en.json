@@ -1708,8 +1708,12 @@
         "features": {
           "advancedSpaced": "Advanced spaced repetition",
           "advancedStats": "Advanced statistics",
-          "prioritySupport": "Priority support"
+          "prioritySupport": "Priority support",
+          "focusExtension": "Browser extension for deep focus",
+          "studyAgent": "Your personalized study agent on Telegram/WhatsApp",
+          "examCoach": "Your personalized coach for official exams"
         },
+        "connected": "All connected to your spaced repetition tool",
         "cta": "Coming soon"
       }
     }

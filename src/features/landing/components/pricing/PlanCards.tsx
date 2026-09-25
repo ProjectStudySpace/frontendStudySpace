@@ -1,7 +1,16 @@
 import React, { useRef } from "react";
 import { motion, useInView, useReducedMotion } from "motion/react";
 import { useTranslation } from "react-i18next";
-import { ArrowRight, Check, Lock } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  GraduationCap,
+  Link2,
+  Lock,
+  MessageCircle,
+  Puzzle,
+  type LucideIcon,
+} from "lucide-react";
 import { Reveal, RevealItem } from "../Reveal";
 import { EASE_OUT_EXPO, hoverLift, nudgeX } from "../../motion/presets";
 
@@ -13,6 +22,13 @@ const FREE_FEATURES = [
   "progress",
   "intensive",
 ] as const;
+
+/** Planned Pro tools, each linked back to the spaced repetition core. */
+const PRO_TOOLS: ReadonlyArray<{ key: string; Icon: LucideIcon }> = [
+  { key: "focusExtension", Icon: Puzzle },
+  { key: "studyAgent", Icon: MessageCircle },
+  { key: "examCoach", Icon: GraduationCap },
+];
 
 const PRO_FEATURES = ["advancedSpaced", "advancedStats", "prioritySupport"] as const;
 
@@ -141,6 +157,45 @@ export const ProPlanCard: React.FC = () => {
       <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
         {t("landing.pricing.pro.planned")}
       </p>
+      <ul className="relative mb-4 space-y-3">
+        <span
+          aria-hidden="true"
+          className="absolute bottom-3 left-[1.1rem] top-3 border-l-2 border-dashed border-indigo-400/40"
+        />
+        {PRO_TOOLS.map(({ key, Icon }, index) => (
+          <motion.li
+            key={key}
+            className="relative flex items-center gap-3 rounded-xl border border-slate-700 bg-slate-800/70 p-2.5 pr-3 text-sm sm:text-base text-slate-200"
+            initial={{ opacity: 0, x: reducedMotion ? 0 : -12 }}
+            animate={stamped ? { opacity: 1, x: 0 } : { opacity: 0, x: reducedMotion ? 0 : -12 }}
+            transition={{ delay: reducedMotion ? 0 : 0.2 + index * 0.12, duration: 0.5, ease: EASE_OUT_EXPO }}
+          >
+            <span
+              aria-hidden="true"
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-indigo-500/15 text-indigo-300"
+            >
+              <Icon size={16} />
+            </span>
+            {t(`landing.pricing.pro.features.${key}`)}
+          </motion.li>
+        ))}
+      </ul>
+
+      <div className="mb-6 flex items-center gap-2 rounded-xl border border-dashed border-indigo-400/40 px-3 py-2 text-sm text-indigo-200">
+        <span aria-hidden="true" className="relative flex h-2.5 w-2.5 flex-shrink-0">
+          {looping && (
+            <motion.span
+              className="absolute inset-0 rounded-full bg-indigo-400"
+              animate={{ scale: [1, 2.4], opacity: [0.6, 0] }}
+              transition={{ duration: 1.6, repeat: Infinity, ease: "easeOut" }}
+            />
+          )}
+          <span className="relative h-2.5 w-2.5 rounded-full bg-indigo-400" />
+        </span>
+        <Link2 aria-hidden="true" size={16} className="flex-shrink-0" />
+        {t("landing.pricing.pro.connected")}
+      </div>
+
       <ul className="mb-8 space-y-3">
         {PRO_FEATURES.map((feature) => (
           <li key={feature} className="flex items-start gap-3 text-sm sm:text-base text-slate-400">
