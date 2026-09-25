@@ -6,12 +6,16 @@
 // ==================== ENUMS ====================
 
 /**
- * Estado del repaso intradía
+ * Intraday review lifecycle.
+ * Mirrors the backend `IntradayReviewStatus` enum.
  */
 export enum IntradayReviewStatus {
-  PENDING = "PENDING",
+  SCHEDULED = "SCHEDULED",
+  NOTIFIED = "NOTIFIED",
+  ACTIVE = "ACTIVE",
   COMPLETED = "COMPLETED",
-  MISSED = "MISSED",
+  SKIPPED = "SKIPPED",
+  EXPIRED = "EXPIRED",
 }
 
 // ==================== INTERFACES ====================
@@ -28,19 +32,28 @@ export interface IntradayReviewCardInfo {
 }
 
 /**
- * Repaso intradía programado
+ * Scheduled intraday review, mirroring the backend `IntradayReview` row.
+ * Cards are not embedded: only their count is known until the review starts.
  */
 export interface IntradayReview {
   id: number;
   sessionId: number;
   userId: number;
+  reviewNumber: number;
   scheduledFor: string; // ISO date string
+  difficultyFilter?: "EASY" | "MEDIUM" | "HARD" | null;
+  cardCount: number;
   status: IntradayReviewStatus;
-  completedAt?: string;
   notificationSent: boolean;
-  cards: IntradayReviewCardInfo[];
+  cardsReviewed?: number;
+  xpEarned?: number;
+  startedAt?: string | null;
+  completedAt?: string | null;
   createdAt: string;
-  updatedAt: string;
+  /** Present only when the backend includes the session relation. */
+  session?: {
+    topic?: { id: number; name: string; color?: string | null };
+  };
 }
 
 /**

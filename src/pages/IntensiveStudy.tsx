@@ -46,6 +46,8 @@ import {
   IntensiveResumeSnapshot,
   PomodoroBlock,
   AbandonInfo,
+  SessionCompletionResult,
+  SessionCompletionSummary,
 } from "../types/intensiveSessions";
 import {
   buildTimerDescriptor,
@@ -125,6 +127,8 @@ const IntensiveStudy: React.FC = () => {
   const [abandonInfo, setAbandonInfo] = useState<AbandonInfo | null>(null);
   const [sessionResults, setSessionResults] =
     useState<IntensiveSessionDetail | null>(null);
+  const [sessionSummary, setSessionSummary] =
+    useState<SessionCompletionSummary | null>(null);
   const [newBadges, setNewBadges] = useState<UserBadge[]>([]);
   const [intradayReviews, setIntradayReviews] = useState<IntradayReview[]>([]);
   const [activeSessionError, setActiveSessionError] = useState<string | null>(
@@ -650,7 +654,7 @@ const IntensiveStudy: React.FC = () => {
   const finishSession = async (
     send: (
       id: number,
-    ) => Promise<IntensiveMutationOutcome<IntensiveSessionDetail>>,
+    ) => Promise<IntensiveMutationOutcome<SessionCompletionResult>>,
   ) => {
     if (!currentSession) return;
 
@@ -667,8 +671,12 @@ const IntensiveStudy: React.FC = () => {
 
     pomodoroTimer.pause();
     setSessionResults(
-      outcome.snapshot ? outcome.snapshot.session : outcome.data,
+      outcome.snapshot ? outcome.snapshot.session : outcome.data.session,
     );
+    // A reconciled completion carries no summary; the results view then falls
+    // back to the authoritative session relations.
+    setSessionSummary(outcome.data.summary);
+    setIntradayReviews(outcome.data.summary?.nextReviews ?? []);
     // Aquí normalmente vendrían los nuevos badges del backend
     setNewBadges([]);
     setCurrentView("RESULTS");
@@ -1207,6 +1215,7 @@ const IntensiveStudy: React.FC = () => {
   const renderResultsView = () => (
     <SessionResultsSummary
       session={sessionResults || (currentSession as IntensiveSessionDetail)}
+      summary={sessionSummary}
       newBadges={newBadges}
       intradayReviews={intradayReviews}
       onClose={handleBackToConfig}

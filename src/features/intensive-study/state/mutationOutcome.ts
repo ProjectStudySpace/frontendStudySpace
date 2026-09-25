@@ -48,6 +48,32 @@ export function isAmbiguousFailure(error: IntensiveError): boolean {
   return error.kind === "network" || error.kind === "unknown";
 }
 
+/**
+ * Completion commands commit inside a serializable transaction; when the claim
+ * is lost the backend answers 5xx with no code even though the commit may have
+ * landed. Only those commands treat a 5xx as unconfirmed, so every other
+ * command keeps reporting a 5xx as a plain rejection.
+ */
+const COMPLETION_COMMANDS: ReadonlySet<IntensiveCommand> = new Set([
+  "COMPLETE",
+  "COMPLETE_BLOCK",
+]);
+
+/** Decide whether a command failure must be reconciled before it is trusted. */
+export function isUnconfirmedCommandFailure(
+  command: IntensiveCommand,
+  error: IntensiveError,
+): boolean {
+  if (isAmbiguousFailure(error)) {
+    return true;
+  }
+  return (
+    COMPLETION_COMMANDS.has(command) &&
+    error.status !== null &&
+    error.status >= 500
+  );
+}
+
 /** Decide whether an authoritative resume phase proves the command landed. */
 export function isCommandConfirmed(
   command: IntensiveCommand,

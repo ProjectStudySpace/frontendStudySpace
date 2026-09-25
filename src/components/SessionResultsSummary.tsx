@@ -12,13 +12,19 @@ import {
   Calendar,
   ArrowRight,
   Trophy,
+  Info,
 } from "lucide-react";
-import { IntensiveSessionDetail } from "../types/intensiveSessions";
+import {
+  IntensiveSessionDetail,
+  SessionCompletionSummary,
+} from "../types/intensiveSessions";
 import { IntradayReview, IntradayReviewStatus } from "../types/intradayReviews";
 import { UserBadge } from "../types/gamification";
 
 interface SessionResultsSummaryProps {
   session: IntensiveSessionDetail;
+  /** Authoritative completion results; null when completion was reconciled. */
+  summary?: SessionCompletionSummary | null;
   newBadges?: UserBadge[];
   intradayReviews?: IntradayReview[];
   onClose?: () => void;
@@ -27,6 +33,7 @@ interface SessionResultsSummaryProps {
 
 const SessionResultsSummary: React.FC<SessionResultsSummaryProps> = ({
   session,
+  summary = null,
   newBadges = [],
   intradayReviews = [],
   onClose,
@@ -36,6 +43,19 @@ const SessionResultsSummary: React.FC<SessionResultsSummaryProps> = ({
 
   // Calcular estadísticas de la sesión
   const stats = useMemo(() => {
+    if (summary) {
+      // The completion response carries a bare session row, so the summary is
+      // the only source of the completed counts.
+      return {
+        completedCards: summary.cardsCompleted,
+        totalCards: summary.totalCards,
+        completedPomodoros: summary.pomodorosCompleted,
+        totalPomodoros: session.totalPomodoros || 0,
+        xpEarned: summary.xpEarned,
+      };
+    }
+
+    // Reconciled completion: the authoritative GET carries the relations.
     const completedCards =
       session.sessionCards?.filter((c) => c.completed).length || 0;
     const totalCards = session.totalCards || 0;
@@ -51,7 +71,12 @@ const SessionResultsSummary: React.FC<SessionResultsSummaryProps> = ({
       totalPomodoros,
       xpEarned: session.xpEarned || 0,
     };
-  }, [session]);
+  }, [session, summary]);
+
+  // A committed session must still render if the payload omits scheduling.
+  const schedulingStatus = summary?.intradayReviewScheduling?.status;
+  const reviewSchedulingPending =
+    schedulingStatus !== undefined && schedulingStatus !== "completed";
 
   // Formatear hora de repaso
   const formatReviewTime = (isoString: string): string => {
@@ -62,12 +87,9 @@ const SessionResultsSummary: React.FC<SessionResultsSummaryProps> = ({
   // Obtener status color
   const getStatusColor = (status: IntradayReviewStatus) => {
     switch (status) {
-      case IntradayReviewStatus.PENDING:
+      case IntradayReviewStatus.SCHEDULED:
+      case IntradayReviewStatus.NOTIFIED:
         return "text-amber-600 bg-amber-100 dark:bg-amber-900/30";
-      case IntradayReviewStatus.COMPLETED:
-        return "text-green-600 bg-green-100 dark:bg-green-900/30";
-      case IntradayReviewStatus.MISSED:
-        return "text-red-600 bg-red-100 dark:bg-red-900/30";
       default:
         return "text-gray-600 bg-gray-100";
     }
@@ -86,7 +108,9 @@ const SessionResultsSummary: React.FC<SessionResultsSummaryProps> = ({
 
   // Repasos pendientes
   const pendingReviews = intradayReviews.filter(
-    (r) => r.status === IntradayReviewStatus.PENDING,
+    (r) =>
+      r.status === IntradayReviewStatus.SCHEDULED ||
+      r.status === IntradayReviewStatus.NOTIFIED,
   );
 
   return (
@@ -100,7 +124,8 @@ const SessionResultsSummary: React.FC<SessionResultsSummaryProps> = ({
           {t("intensiveStudy.sessionCompleted", "¡Sesión Completada!")}
         </h2>
         <p className="text-gray-600 dark:text-gray-400 mt-2">
-          {session?.topic?.name ||
+          {summary?.topicName ||
+            session?.topic?.name ||
             t("intensiveStudy.intensiveSession", "Sesión Intensiva")}
         </p>
       </div>
@@ -226,7 +251,7 @@ const SessionResultsSummary: React.FC<SessionResultsSummaryProps> = ({
                     {formatReviewTime(review.scheduledFor)}
                   </div>
                   <span className="text-sm text-gray-600 dark:text-gray-300">
-                    {review.cards?.length || 0}{" "}
+                    {review.cardCount}{" "}
                     {t("intensiveStudy.cards", "tarjetas")}
                   </span>
                 </div>
@@ -243,6 +268,17 @@ const SessionResultsSummary: React.FC<SessionResultsSummaryProps> = ({
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Aviso no bloqueante: la sesión ya está completada */}
+      {reviewSchedulingPending && (
+        <div
+          role="status"
+          className="flex items-start gap-2 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 text-sm text-blue-800 dark:text-blue-200"
+        >
+          <Info className="w-5 h-5 shrink-0" aria-hidden="true" />
+          <span>{t("intensiveStudy.results.reviewSchedulingPending")}</span>
         </div>
       )}
 
