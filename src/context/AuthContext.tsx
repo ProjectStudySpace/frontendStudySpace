@@ -101,8 +101,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(data.user);
         setIsAuthDegraded(false);
         // Persistir zona horaria en localStorage si viene del backend
-        if (data.user?.userTimezone) {
-          localStorage.setItem("userTimezone", data.user.userTimezone);
+        if (data.user?.timezone) {
+          localStorage.setItem("userTimezone", data.user.timezone);
         }
       } else if (!data?.user && isAuthGenerationOwner(identity)) {
         // Token inválido o expirado
@@ -379,6 +379,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const error = urlParams.get("error");
     const token = urlParams.get("token");
 
+    // Only a sign-in token or a sign-in error belongs to this handler; the
+    // calendar connection outcome on /topics is read by its own consumer.
+    if (!error && !(googleAuth === "success" && token)) {
+      return;
+    }
+
     //limpiar parametros de la url
     window.history.replaceState({}, document.title, window.location.pathname);
 
@@ -400,8 +406,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         if (data?.user) {
           setUser(data.user);
-          if (data.user?.userTimezone) {
-            localStorage.setItem("userTimezone", data.user.userTimezone);
+          if (data.user?.timezone) {
+            localStorage.setItem("userTimezone", data.user.timezone);
           }
 
           if (isNewUser) {

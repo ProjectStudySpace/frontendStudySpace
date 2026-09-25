@@ -77,6 +77,20 @@
       "invalid_state": "Invalid authentication state",
       "callback_failed": "Authentication callback failed"
     },
+    "googleLink": {
+      "successTitle": "Google account linked",
+      "successMessage": "You can now sign in with your Google account.",
+      "errorTitle": "Google account not linked",
+      "errors": {
+        "invalid_state": "The link request expired or could not be verified. Please try linking your account again.",
+        "already_linked": "This Google account is already linked to another user.",
+        "link_failed": "We could not link your Google account. Please try again.",
+        "google_denied": "Linking was cancelled on Google. Your account was not changed.",
+        "invalid_params": "The link request was incomplete. Please try again.",
+        "link_init_failed": "We could not start linking your Google account. Please try again.",
+        "unknown": "Something went wrong while linking your Google account. Please try again."
+      }
+    },
     "sessionExpired": {
       "title": "Session expired",
       "message": "Your session has expired. You will be redirected to login in a few seconds."
@@ -1697,7 +1711,23 @@
       "integratedTimeManagement": "Integrated time management",
       "pendingSessionsSync": "Pending sessions will be automatically synced",
       "connectWithGoogle": "Connect with Google",
-      "connectionError": "Error connecting to Google Calendar. Please try again."
+      "connectionError": "Error connecting to Google Calendar. Please try again.",
+      "redirect": {
+        "successTitle": "Google Calendar connected",
+        "successMessage": "Your Google Calendar account was connected successfully.",
+        "syncTitle": "Synchronization completed",
+        "syncMessage": "{{synced}} of {{total}} items synced",
+        "cancelledTitle": "Connection cancelled",
+        "cancelledMessage": "Google Calendar was not connected. You can connect it at any time.",
+        "errorTitle": "Google Calendar not connected",
+        "errors": {
+          "invalid_state": "The connection request expired or could not be verified. Please try connecting Google Calendar again.",
+          "missing_params": "The connection request was incomplete. Please try again.",
+          "invalid_token": "Your session could not be confirmed. Please sign in again and retry the connection.",
+          "callback_failed": "We could not finish connecting Google Calendar. Please try again.",
+          "unknown": "We could not connect Google Calendar. Please try again."
+        }
+      }
     },
     "noteList": {
       "noNotes": "No notes in this topic",

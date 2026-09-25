@@ -24,6 +24,7 @@ import { useTopics } from "../../hooks/useTopics";
 import { Topic, CreateTopicData } from "../types/topics";
 import { TopicForm } from "../components/topicForm";
 import { GoogleCalendarAuth } from "../components/googleCalendarAuth";
+import { useGoogleAccountLinkRedirect } from "../hooks/useGoogleAccountLinkRedirect";
 import { useDynamicPagination } from "../../hooks/useDynamicPagination";
 import StudySession from "../components/studySession";
 import { useNotification } from "../context/NotificationContext";
@@ -81,6 +82,9 @@ const Dashboard = () => {
     const timezone = getStoredUserTimezone();
     setUserTimezone(timezone);
   }, []);
+
+  // Report the Google account link outcome appended to /topics
+  useGoogleAccountLinkRedirect();
 
   // Handle Google OAuth callback on dashboard
   useEffect(() => {
