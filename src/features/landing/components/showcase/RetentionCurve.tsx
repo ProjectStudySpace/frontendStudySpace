@@ -1,9 +1,10 @@
-import React, { useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import {
+  animate,
   motion,
+  useInView,
+  useMotionValue,
   useReducedMotion,
-  useScroll,
-  useSpring,
   useTransform,
   type MotionValue,
 } from "motion/react";
@@ -12,6 +13,8 @@ import { REVIEW_INTERVALS, retentionChart } from "../../motion/showcase";
 
 const WIDTH = 600;
 const HEIGHT = 320;
+/** Seconds the curve takes to draw from the first to the last review. */
+const DRAW_DURATION = 3.2;
 
 interface MarkerProps {
   x: number;
@@ -73,9 +76,10 @@ const ReviewMarker: React.FC<MarkerProps> = ({ x, y, at, label, progress }) => {
 };
 
 /**
- * Scroll-scrubbed forgetting curve: as the scene scrolls through the viewport
- * the retention line draws itself and every review marker pops in with the
- * interval that preceded it. Static and complete under reduced motion.
+ * Forgetting curve that plays once when the scene comes into view: the
+ * retention line draws itself, every review marker pops in with the interval
+ * that preceded it, and the chart then stays complete. Static and complete
+ * under reduced motion.
  */
 export const RetentionCurve: React.FC = () => {
   const { t } = useTranslation();
@@ -95,16 +99,21 @@ export const RetentionCurve: React.FC = () => {
     [],
   );
 
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start 0.85", "end 0.35"],
-  });
-  const smooth = useSpring(scrollYProgress, {
-    stiffness: 90,
-    damping: 24,
-    restDelta: 0.001,
-  });
-  const progress = useTransform(smooth, (v) => (reducedMotion ? 1 : v));
+  const inView = useInView(ref, { once: true, amount: 0.5 });
+  const progress = useMotionValue(0);
+
+  useEffect(() => {
+    if (reducedMotion) {
+      progress.set(1);
+      return;
+    }
+    if (!inView) return;
+    const controls = animate(progress, 1, {
+      duration: DRAW_DURATION,
+      ease: "easeInOut",
+    });
+    return () => controls.stop();
+  }, [inView, reducedMotion, progress]);
 
   return (
     <div
