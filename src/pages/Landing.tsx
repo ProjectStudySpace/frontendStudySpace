@@ -4,7 +4,7 @@ import { MotionConfig } from "motion/react";
 import { useAuth } from "../context/AuthContext";
 import { LandingNav } from "../features/landing/components/LandingNav";
 import { HeroSection } from "../features/landing/components/HeroSection";
-import { FeaturesSection } from "../features/landing/components/FeaturesSection";
+import { FeatureShowcase } from "../features/landing/components/showcase/FeatureShowcase";
 import { HowItWorksSection } from "../features/landing/components/HowItWorksSection";
 import { PricingSection } from "../features/landing/components/PricingSection";
 import { CtaSection } from "../features/landing/components/CtaSection";
@@ -36,7 +36,7 @@ const Landing: React.FC = () => {
           onGetStarted={handleGetStarted}
         />
         <HeroSection onGetStarted={handleGetStarted} />
-        <FeaturesSection />
+        <FeatureShowcase />
         <HowItWorksSection />
         <PricingSection onGetStarted={handleGetStarted} />
         <CtaSection onGetStarted={handleGetStarted} />

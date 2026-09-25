@@ -1520,31 +1520,7 @@
     "features": {
       "badge": "Características poderosas",
       "title": "Todo lo que necesitas para aprender mejor",
-      "subtitle": "MemoPal combina tecnología avanzada con principios de aprendizaje probados para maximizar tu retención.",
-      "spacedRepetition": {
-        "title": "Repaso espaciado inteligente",
-        "description": "Algoritmos que programan automáticamente tus sesiones de repaso en el momento óptimo para maximizar la retención a largo plazo."
-      },
-      "calendarIntegration": {
-        "title": "Integración con Google Calendar",
-        "description": "Sincroniza tus sesiones de estudio con tu calendario y recibe recordatorios automáticos para nunca perder una sesión."
-      },
-      "progressTracking": {
-        "title": "Seguimiento de progreso",
-        "description": "Visualiza tu evolución con métricas detalladas, rachas de estudio y análisis de rendimiento en tiempo real."
-      },
-      "streakSystem": {
-        "title": "Sistema de rachas",
-        "description": "Mantén tu motivación alta con un sistema de rachas diarias que te incentiva a estudiar constantemente."
-      },
-      "topicOrganization": {
-        "title": "Organización por temas",
-        "description": "Crea y gestiona tarjetas organizadas por materias con colores personalizados para una mejor organización visual."
-      },
-      "selfAssessment": {
-        "title": "Autoevaluación",
-        "description": "Califica la dificultad de cada tarjeta y MemoPal ajustará automáticamente los intervalos de repaso."
-      }
+      "subtitle": "MemoPal combina tecnología avanzada con principios de aprendizaje probados para maximizar tu retención."
     },
     "howItWorks": {
       "title": "Comienza en minutos",
@@ -1642,6 +1618,101 @@
       "hard": "Difícil",
       "currentStreak": "Racha actual",
       "progress": "Progreso"
+    },
+    "showcase": {
+      "sampleNote": "Ilustración con datos de ejemplo.",
+      "spacedRepetition": {
+        "eyebrow": "Repaso espaciado",
+        "title": "Repasa justo antes de olvidar.",
+        "body": "Cada repaso recupera lo que aprendiste y, cada vez, el recuerdo se desvanece más despacio. MemoPal programa el siguiente repaso por ti, así los intervalos se alargan a medida que el conocimiento se afianza.",
+        "point1": "Repasos programados automáticamente para cada tarjeta",
+        "point2": "Intervalos que crecen mientras sigues recordando",
+        "point3": "Menos tiempo repasando lo que ya sabes",
+        "chartTitle": "Recuerdo a lo largo del tiempo",
+        "chartLabel": "Gráfico: sin repaso, el recuerdo cae con el tiempo; cada repaso lo restablece y las caídas posteriores son más lentas.",
+        "legendWithout": "Sin repaso",
+        "legendWith": "Con repasos",
+        "axisRecall": "Recuerdo",
+        "axisTime": "Tiempo",
+        "interval": "+{{days}} d"
+      },
+      "selfAssessment": {
+        "eyebrow": "Autoevaluación",
+        "title": "Tú dices qué tan difícil fue. MemoPal se adapta.",
+        "body": "Después de cada respuesta, califica la tarjeta como Fácil, Medio o Difícil. Tu calificación define cuándo la volverás a ver: las difíciles regresan antes y las fáciles esperan más.",
+        "point1": "Tres niveles de dificultad sencillos",
+        "point2": "Tu calificación ajusta el intervalo de repaso",
+        "point3": "Pruébalo: voltea la tarjeta y elige una calificación",
+        "sampleTopic": "Geografía",
+        "tapToFlip": "Toca para voltear",
+        "flipLabel": "Voltear la tarjeta de ejemplo",
+        "answerLabel": "Respuesta",
+        "prompt": "¿Qué tan bien lo recordaste?",
+        "waiting": "Califica la tarjeta para programarla",
+        "nextReview_one": "Próximo repaso en {{count}} día",
+        "nextReview_other": "Próximo repaso en {{count}} días"
+      },
+      "topicOrganization": {
+        "eyebrow": "Organización por temas",
+        "title": "Cada materia en su lugar.",
+        "body": "Agrupa tus tarjetas en temas con colores propios y una pila mezclada de material de estudio se convierte en montones claros por color que puedes repasar materia por materia.",
+        "point1": "Colores personalizados para cada tema",
+        "point2": "Notas de estudio junto a tus tarjetas",
+        "point3": "Encuentra cualquier tarjeta rápidamente por materia",
+        "topics": {
+          "biology": "Biología",
+          "languages": "Idiomas",
+          "history": "Historia"
+        },
+        "sorted": "Ordenadas por tema"
+      },
+      "calendarIntegration": {
+        "eyebrow": "Calendario y recordatorios",
+        "title": "Tu plan de estudio, en tu calendario.",
+        "body": "Conecta Google Calendar para sincronizar tus sesiones de estudio y activa las notificaciones push para recibir recordatorios de repaso y un aviso antes de perder tu racha.",
+        "point1": "Sincronización de sesiones con Google Calendar",
+        "point2": "Recordatorios push para los repasos intradía",
+        "point3": "Avisos de racha para que no rompas la cadena",
+        "monthLabel": "Este mes",
+        "synced": "Google Calendar",
+        "legend": "Sesiones de repaso programadas",
+        "notifications": {
+          "review": {
+            "title": "Hora de repasar",
+            "body": "Tus tarjetas están listas para su próximo repaso."
+          },
+          "streak": {
+            "title": "Mantén viva tu racha",
+            "body": "Todavía no has estudiado hoy."
+          }
+        }
+      },
+      "progressTracking": {
+        "eyebrow": "Progreso y rachas",
+        "title": "Mira cómo la constancia se convierte en progreso.",
+        "body": "Sigue tus tarjetas completadas, tus repasos pendientes y tus rachas actual y más larga. Las sesiones de estudio te dan XP y desbloquean insignias a medida que avanzas.",
+        "point1": "Rachas diarias, con tu mejor racha registrada",
+        "point2": "XP por cada sesión completada",
+        "point3": "Insignias por Pomodoros, sesiones, rachas y tarjetas",
+        "streakUnit": "días",
+        "xpLabel": "XP ganada",
+        "completed": "Tarjetas completadas hoy"
+      },
+      "intensiveStudy": {
+        "eyebrow": "Estudio intensivo",
+        "title": "Concentración profunda, un Pomodoro a la vez.",
+        "body": "Inicia una sesión intensiva, elige la intensidad y avanza por tus tarjetas en bloques Pomodoro de 25 minutos con descansos entre ellos. Después, MemoPal programa repasos el mismo día para ayudarte a afianzarlo.",
+        "point1": "Sesiones Relajada, Normal o Intensiva",
+        "point2": "Bloques Pomodoro de 25 minutos con descansos cortos y largos",
+        "point3": "Repasos intradía programados después de la sesión",
+        "cards": {
+          "card1": "¿Cuál es la central energética de la célula?",
+          "card2": "Traduce: \"the library\"",
+          "card3": "¿Cuándo terminó la Segunda Guerra Mundial?",
+          "card4": "¿Cuál es el símbolo químico del oro?",
+          "card5": "¿Cuál es la capital de Japón?"
+        }
+      }
     }
   },
   "components": {

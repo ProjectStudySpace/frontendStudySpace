@@ -1516,31 +1516,7 @@
     "features": {
       "badge": "Powerful features",
       "title": "Everything you need to learn better",
-      "subtitle": "MemoPal combines advanced technology with proven learning principles to maximize your retention.",
-      "spacedRepetition": {
-        "title": "Intelligent Spaced Repetition",
-        "description": "Algorithms that automatically schedule your review sessions at the optimal time to maximize long-term retention."
-      },
-      "calendarIntegration": {
-        "title": "Google Calendar Integration",
-        "description": "Sync your study sessions with your calendar and receive automatic reminders to never miss a session."
-      },
-      "progressTracking": {
-        "title": "Progress Tracking",
-        "description": "Visualize your evolution with detailed metrics, study streaks, and real-time performance analysis."
-      },
-      "streakSystem": {
-        "title": "Streak System",
-        "description": "Keep your motivation high with a daily streak system that encourages you to study consistently."
-      },
-      "topicOrganization": {
-        "title": "Topic Organization",
-        "description": "Create and manage cards organized by subjects with custom colors for better visual organization."
-      },
-      "selfAssessment": {
-        "title": "Self-Assessment",
-        "description": "Rate the difficulty of each card and MemoPal will automatically adjust review intervals."
-      }
+      "subtitle": "MemoPal combines advanced technology with proven learning principles to maximize your retention."
     },
     "howItWorks": {
       "title": "Get Started in Minutes",
@@ -1638,6 +1614,101 @@
       "hard": "Hard",
       "currentStreak": "Current streak",
       "progress": "Progress"
+    },
+    "showcase": {
+      "sampleNote": "Illustration with sample data.",
+      "spacedRepetition": {
+        "eyebrow": "Spaced repetition",
+        "title": "Review right before you forget.",
+        "body": "Every review restores what you learned, and each time the memory fades more slowly. MemoPal schedules the next review for you, so intervals stretch out as knowledge sticks.",
+        "point1": "Reviews scheduled automatically for every card",
+        "point2": "Intervals grow as you keep remembering",
+        "point3": "Less time re-studying what you already know",
+        "chartTitle": "Recall over time",
+        "chartLabel": "Chart: without review, recall drops over time; each review restores it and later drops are slower.",
+        "legendWithout": "Without review",
+        "legendWith": "With reviews",
+        "axisRecall": "Recall",
+        "axisTime": "Time",
+        "interval": "+{{days}}d"
+      },
+      "selfAssessment": {
+        "eyebrow": "Self-assessment",
+        "title": "You say how hard it was. MemoPal adapts.",
+        "body": "After each answer, rate the card Easy, Medium or Hard. Your rating shapes when you will see it again, so tough cards come back sooner and easy ones wait longer.",
+        "point1": "Three simple difficulty levels",
+        "point2": "Your rating adjusts the review interval",
+        "point3": "Try it: flip the card and pick a rating",
+        "sampleTopic": "Geography",
+        "tapToFlip": "Tap to flip",
+        "flipLabel": "Flip the sample card",
+        "answerLabel": "Answer",
+        "prompt": "How well did you remember it?",
+        "waiting": "Rate the card to schedule it",
+        "nextReview_one": "Next review in {{count}} day",
+        "nextReview_other": "Next review in {{count}} days"
+      },
+      "topicOrganization": {
+        "eyebrow": "Topic organization",
+        "title": "Every subject in its place.",
+        "body": "Group cards into topics with their own colors, and a mixed pile of study material becomes clear, color-coded stacks you can work through one subject at a time.",
+        "point1": "Custom colors for every topic",
+        "point2": "Study notes alongside your cards",
+        "point3": "Find any card quickly by subject",
+        "topics": {
+          "biology": "Biology",
+          "languages": "Languages",
+          "history": "History"
+        },
+        "sorted": "Sorted by topic"
+      },
+      "calendarIntegration": {
+        "eyebrow": "Calendar & reminders",
+        "title": "Your study plan, on your calendar.",
+        "body": "Connect Google Calendar to sync your study sessions, and turn on push notifications to get review reminders and a heads-up before a streak slips away.",
+        "point1": "Google Calendar sync for study sessions",
+        "point2": "Push reminders for intraday reviews",
+        "point3": "Streak warnings so you never break the chain",
+        "monthLabel": "This month",
+        "synced": "Google Calendar",
+        "legend": "Scheduled review sessions",
+        "notifications": {
+          "review": {
+            "title": "Time to review",
+            "body": "Your cards are ready for their next review."
+          },
+          "streak": {
+            "title": "Keep your streak alive",
+            "body": "You have not studied yet today."
+          }
+        }
+      },
+      "progressTracking": {
+        "eyebrow": "Progress & streaks",
+        "title": "Watch consistency turn into progress.",
+        "body": "Track completed cards, pending reviews and your current and longest streaks. Study sessions earn XP and unlock badges as you keep going.",
+        "point1": "Daily streaks, with your longest run on record",
+        "point2": "XP for every completed session",
+        "point3": "Badges for Pomodoros, sessions, streaks and cards",
+        "streakUnit": "days",
+        "xpLabel": "XP earned",
+        "completed": "Cards completed today"
+      },
+      "intensiveStudy": {
+        "eyebrow": "Intensive study",
+        "title": "Deep focus, one Pomodoro at a time.",
+        "body": "Start an intensive session, choose an intensity and work through your cards in 25-minute Pomodoro blocks with breaks in between. MemoPal then schedules same-day reviews to help it stick.",
+        "point1": "Relaxed, Normal or Intensive sessions",
+        "point2": "25-minute Pomodoro blocks with short and long breaks",
+        "point3": "Intraday reviews scheduled after the session",
+        "cards": {
+          "card1": "What is the powerhouse of the cell?",
+          "card2": "Translate: \"the library\"",
+          "card3": "When did World War II end?",
+          "card4": "What is the chemical symbol for gold?",
+          "card5": "What is the capital of Japan?"
+        }
+      }
     }
   },
   "components": {
