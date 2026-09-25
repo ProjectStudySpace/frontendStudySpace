@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { LandingNav } from "../features/landing/components/LandingNav";
 import { HeroSection } from "../features/landing/components/HeroSection";
 import { FeatureShowcase } from "../features/landing/components/showcase/FeatureShowcase";
-import { HowItWorksSection } from "../features/landing/components/HowItWorksSection";
+import { HowItWorksStory } from "../features/landing/components/how-it-works/HowItWorksStory";
 import { PricingSection } from "../features/landing/components/PricingSection";
 import { CtaSection } from "../features/landing/components/CtaSection";
 import { LandingFooter } from "../features/landing/components/LandingFooter";
@@ -37,7 +37,7 @@ const Landing: React.FC = () => {
         />
         <HeroSection onGetStarted={handleGetStarted} />
         <FeatureShowcase />
-        <HowItWorksSection />
+        <HowItWorksStory />
         <PricingSection onGetStarted={handleGetStarted} />
         <CtaSection onGetStarted={handleGetStarted} />
         <LandingFooter />

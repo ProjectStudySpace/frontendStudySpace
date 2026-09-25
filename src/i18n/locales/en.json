@@ -1532,6 +1532,16 @@
       "step3": {
         "title": "See Your Progress",
         "description": "Watch your retention improve over time. Maintain daily streaks and achieve your learning goals."
+      },
+      "stepOf": "Step {{current}} of {{total}}",
+      "visuals": {
+        "question": "Question",
+        "answer": "Answer",
+        "topic": "Topic",
+        "saved": "Card saved",
+        "chartTitle": "Cards reviewed this week",
+        "streak_one": "{{count}}-day streak",
+        "streak_other": "{{count}}-day streak"
       }
     },
     "pricing": {
