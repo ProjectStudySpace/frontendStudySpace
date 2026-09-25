@@ -49,3 +49,6 @@ dist/
 odd/
 
 
+
+# CodeGraph local index
+.codegraph/
