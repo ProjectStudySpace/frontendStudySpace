@@ -5,6 +5,11 @@ import { useAuth } from "../context/AuthContext";
 import { useNotification } from "../context/NotificationContext";
 import { API_URL } from "../config";
 import {
+  CALENDAR_CONNECT_PARAMS,
+  readCalendarConnectRedirect,
+  removeSearchParams,
+} from "../utils/googleRedirects";
+import {
   GoogleCalendarAuthProps,
   GoogleCalendarSyncInfo,
 } from "../types/googleCalendar";
@@ -17,48 +22,41 @@ export const GoogleCalendarAuth: React.FC<GoogleCalendarAuthProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [syncInfo, setSyncInfo] = useState<GoogleCalendarSyncInfo | null>(null);
   const { user } = useAuth();
-  const { showSuccess, showError } = useNotification();
+  const { showSuccess, showError, showInfo } = useNotification();
 
   useEffect(() => {
     checkAuthStatus();
   }, [user]);
 
   useEffect(() => {
-    // Detectar si viene del callback de Google
-    const params = new URLSearchParams(window.location.search);
-    const googleAuth = params.get("google_auth");
-    const synced = params.get("synced");
-    const total = params.get("total");
-    const message = params.get("message");
+    // Reportar el resultado de la conexión con Google Calendar y limpiar
+    // solo los parámetros propios de este flujo
+    const notice = readCalendarConnectRedirect(window.location.search);
+    if (!notice) return;
 
-    if (googleAuth === "success") {
-      setIsAuthenticated(true);
-      showSuccess("¡Conectado!", "Tu cuenta de Google Calendar ha sido conectada exitosamente");
+    const show = { success: showSuccess, info: showInfo, error: showError }[notice.tone];
+    show(t(notice.titleKey), t(notice.messageKey));
+    removeSearchParams(CALENDAR_CONNECT_PARAMS);
 
-      // Mostrar información de sincronización si existe
-      if (synced && total) {
-        setSyncInfo({
-          synced: parseInt(synced),
-          total: parseInt(total),
-          message: message ? decodeURIComponent(message) : "",
-        });
+    if (notice.tone !== "success") return;
 
-        // Mostrar notificación de sincronización
-        showSuccess("Sincronización completada", `${synced} de ${total} elementos sincronizados`);
+    setIsAuthenticated(true);
 
-        // Ocultar mensaje de sincronización después de 10 segundos
-        setTimeout(() => {
-          setSyncInfo(null);
-        }, 10000);
-      }
+    // Mostrar información de sincronización si existe
+    if (notice.sync) {
+      setSyncInfo({ ...notice.sync, message: "" });
+      showSuccess(
+        t("components.googleCalendarAuth.redirect.syncTitle"),
+        t("components.googleCalendarAuth.redirect.syncMessage", notice.sync)
+      );
 
-      // Limpiar URL
-      window.history.replaceState({}, "", window.location.pathname);
-      onAuthComplete?.();
-    } else if (googleAuth === "error") {
-      showError("Error de conexión", "No se pudo conectar con Google Calendar");
-      window.history.replaceState({}, "", window.location.pathname);
+      // Ocultar mensaje de sincronización después de 10 segundos
+      setTimeout(() => {
+        setSyncInfo(null);
+      }, 10000);
     }
+
+    onAuthComplete?.();
   }, [onAuthComplete]);
 
   const checkAuthStatus = async () => {

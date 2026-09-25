@@ -3,31 +3,68 @@ import { Note, CreateNoteData, UpdateNoteData } from "../src/types/notes";
 import { useAuth } from "../src/context/AuthContext";
 import { api, deduplicateRequest } from "../src/utils/axiosConfig";
 
-//funcion auxiliar para mapear card del backend a nota del frontend
-const mapCardToNote = (card: any, topicId?: number): Note => {
-  // Para notas de explicación:
-  // - question (backend) → leftContent (frontend) = título de la nota
-  // - answer (backend) → rightContent (frontend) = contenido de la nota
-  const leftContent = card.question || "";
-  const rightContent = card.answer || "";
+type CardImageWire = {
+  imageUrl: string;
+  imageType: "question" | "answer";
+};
+
+export type CardWire = {
+  id: number;
+  question?: string | null;
+  answer?: string | null;
+  type: "FLASHCARD" | "EXPLANATION" | "flashcard" | "explanation";
+  topicId?: number | null;
+  images?: CardImageWire[] | null;
+  createdAt?: string;
+  updatedAt?: string;
+  topic?: Note["topic"];
+};
+
+type CardMutationResponse = {
+  message?: string;
+  card: CardWire;
+};
+
+// Adapter from the backend Card wire contract to the note presentation model.
+export const mapCardToNote = (card: CardWire, topicId?: number): Note => {
+  const resolvedTopicId = card.topicId ?? topicId;
+  if (resolvedTopicId === undefined) {
+    throw new Error("Card response is missing topicId");
+  }
+
+  const questionImageUrls =
+    card.images
+      ?.filter((image) => image.imageType === "question")
+      .map((image) => image.imageUrl) ?? [];
+  const answerImageUrls =
+    card.images
+      ?.filter((image) => image.imageType === "answer")
+      .map((image) => image.imageUrl) ?? [];
 
   return {
     id: card.id,
-    leftContent,
-    rightContent,
-    type: card.type,
-    topicId: card.topicId || topicId,
-    // Mantener compatibilidad con una sola imagen
-    leftImageUrl: card.leftImageUrl,
-    rightImageUrl: card.rightImageUrl,
-    // Arrays de URLs para múltiples imágenes
-    leftImageUrls: card.leftImageUrls || [],
-    rightImageUrls: card.rightImageUrls || [],
+    leftContent: card.question ?? "",
+    rightContent: card.answer ?? "",
+    type: card.type.toLowerCase() as Note["type"],
+    topicId: resolvedTopicId,
+    leftImageUrl: questionImageUrls[0],
+    rightImageUrl: answerImageUrls[0],
+    leftImageUrls: questionImageUrls,
+    rightImageUrls: answerImageUrls,
     createdAt: card.createdAt,
     updatedAt: card.updatedAt,
     topic: card.topic,
   };
 };
+
+export const mapCreateCardResponseToNote = (
+  response: CardMutationResponse,
+  topicId?: number,
+): Note => mapCardToNote(response.card, topicId);
+
+export const mapUpdateCardResponseToNote = (
+  response: CardMutationResponse,
+): Note => mapCardToNote(response.card);
 
 export const useNotes = () => {
   const [notes, setNotes] = useState<Note[]>([]);
@@ -74,7 +111,7 @@ export const useNotes = () => {
         })
       );
 
-      const cardsArray: any[] = data.cards || [];
+      const cardsArray: CardWire[] = data.cards || [];
 
       // Filtrar solo las cards de tipo "explanation" (notas) y mapear campos
       const notesArray: Note[] = cardsArray.map((card) =>
@@ -139,7 +176,7 @@ export const useNotes = () => {
         api.get(`/cards/search`, { params })
       );
 
-      const cardsArray: any[] = data.cards || [];
+      const cardsArray: CardWire[] = data.cards || [];
 
       const notesArray: Note[] = cardsArray.map((card) =>
         mapCardToNote(card, topicId)
@@ -194,7 +231,7 @@ export const useNotes = () => {
 
       const { data } = await api.post(`/cards`, formData);
 
-      const mappedNote = mapCardToNote(data, noteData.topicId);
+      const mappedNote = mapCreateCardResponseToNote(data, noteData.topicId);
       // La nueva nota aparece PRIMERA (orderBy: createdAt desc)
       //insertamos al incio y removemos la ultima si excede pageSize
 
@@ -251,7 +288,7 @@ export const useNotes = () => {
 
       const { data } = await api.put(`/cards/${id}`, formData);
 
-      const mappedNote = mapCardToNote(data.card);
+      const mappedNote = mapUpdateCardResponseToNote(data);
 
       //actualizar la nota en el estado
       setNotes((prev) =>

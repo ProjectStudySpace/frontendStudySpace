@@ -5,7 +5,8 @@
   "scripts": {
     "preview": "vite preview",
     "build": "vite build",
-    "dev": "vite"
+    "dev": "vite",
+    "test:intensive": "vitest run"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -32,9 +33,12 @@
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.1.1",
     "autoprefixer": "^10.4.22",
+    "baseline-browser-mapping": "^2.9.19",
+    "jsdom": "^26.1.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.0",
     "typescript": "^5.9.2",
-    "vite": "^7.2.2"
+    "vite": "^7.2.2",
+    "vitest": "^3.2.6"
   }
 }

@@ -25,6 +25,7 @@ import Settings from "./pages/Settings";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import GoogleCallback from "./pages/GoogleCallback";
+import IntensiveStudy from "./pages/IntensiveStudy";
 import Layout from "./components/layout";
 
 const AppRoutes: React.FC = () => {
@@ -67,6 +68,7 @@ const AppRoutes: React.FC = () => {
           <Route path="/progress" element={<ProgressPage />} />
           <Route path="/profile" element={<Perfil />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/intensive-study" element={<IntensiveStudy />} />
         </Route>
       ) : (
         <>
@@ -79,6 +81,10 @@ const AppRoutes: React.FC = () => {
           <Route path="/progress" element={<Navigate to="/login" replace />} />
           <Route path="/profile" element={<Navigate to="/login" replace />} />
           <Route path="/settings" element={<Navigate to="/login" replace />} />
+          <Route
+            path="/intensive-study"
+            element={<Navigate to="/login" replace />}
+          />
         </>
       )}
       {/*Catch-all: redirigir según estado de autenticación */}
