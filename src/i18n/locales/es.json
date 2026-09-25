@@ -1912,7 +1912,8 @@
       "newBadges": "Nuevos Badges",
       "intradayReviews": "Repasos Programados",
       "backToTopics": "Volver a Temas",
-      "startNewSession": "Nueva Sesión"
+      "startNewSession": "Nueva Sesión",
+      "reviewSchedulingPending": "La sesión se guardó correctamente. Algunos repasos intradía o sus recordatorios aún se están programando y aparecerán en breve."
     },
     "noCards": {
       "title": "Sin tarjetas",

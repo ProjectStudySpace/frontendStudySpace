@@ -10,6 +10,7 @@ import type { IntensiveError } from "../api/errors";
 import {
   isAmbiguousFailure,
   isCommandConfirmed,
+  isUnconfirmedCommandFailure,
   selectVisibleIntensiveError,
   type IntensiveCommand,
 } from "./mutationOutcome";
@@ -47,6 +48,41 @@ describe("isAmbiguousFailure", () => {
 
   it("treats an auth failure as a confirmed rejection", () => {
     expect(isAmbiguousFailure(error({ kind: "auth", status: 401 }))).toBe(false);
+  });
+});
+
+describe("isUnconfirmedCommandFailure", () => {
+  it("treats a 5xx on a completion command as unconfirmed because the backend may have committed it", () => {
+    // A lost completion claim answers 500 with no code: the commit may have landed.
+    expect(
+      isUnconfirmedCommandFailure("COMPLETE", error({ kind: "business", status: 500 })),
+    ).toBe(true);
+    expect(
+      isUnconfirmedCommandFailure(
+        "COMPLETE_BLOCK",
+        error({ kind: "business", status: 503 }),
+      ),
+    ).toBe(true);
+  });
+
+  it("keeps a 4xx on a completion command as a confirmed rejection", () => {
+    expect(
+      isUnconfirmedCommandFailure("COMPLETE", error({ kind: "business", status: 409 })),
+    ).toBe(false);
+  });
+
+  it("keeps a 5xx on a non-completion command as a confirmed rejection", () => {
+    for (const command of ["PAUSE", "ABANDON", "END_BREAK", "SKIP_BREAK"] as const) {
+      expect(
+        isUnconfirmedCommandFailure(command, error({ kind: "business", status: 500 })),
+      ).toBe(false);
+    }
+  });
+
+  it("still treats a response-less failure as unconfirmed for every command", () => {
+    expect(
+      isUnconfirmedCommandFailure("PAUSE", error({ kind: "network", status: null })),
+    ).toBe(true);
   });
 });
 

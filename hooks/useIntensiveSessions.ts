@@ -21,14 +21,16 @@ import {
   StudyIntensity,
   CardDifficulty,
   IntensiveResumeSnapshot,
+  PomodoroCompletionResult,
+  SessionCompletionResult,
 } from "../src/types/intensiveSessions";
 import {
   buildResumeSnapshot,
   isResumableSession,
 } from "../src/features/intensive-study/state/resume";
 import {
-  isAmbiguousFailure,
   isCommandConfirmed,
+  isUnconfirmedCommandFailure,
   type IntensiveCommand,
   type IntensiveMutationOutcome,
 } from "../src/features/intensive-study/state/mutationOutcome";
@@ -66,10 +68,10 @@ interface UseIntensiveSessionsReturn {
   getAbandonInfo: (id: number) => Promise<AbandonInfo | null>;
   completeSession: (
     id: number,
-  ) => Promise<IntensiveMutationOutcome<IntensiveSessionDetail>>;
+  ) => Promise<IntensiveMutationOutcome<SessionCompletionResult>>;
   retryCompleteSession: (
     id: number,
-  ) => Promise<IntensiveMutationOutcome<IntensiveSessionDetail>>;
+  ) => Promise<IntensiveMutationOutcome<SessionCompletionResult>>;
   retryAbandonSession: (
     id: number,
   ) => Promise<IntensiveMutationOutcome<IntensiveStudySession>>;
@@ -84,7 +86,7 @@ interface UseIntensiveSessionsReturn {
   completePomodoro: (
     sessionId: number,
     blockId: number,
-  ) => Promise<IntensiveMutationOutcome<PomodoroBlock | null>>;
+  ) => Promise<IntensiveMutationOutcome<PomodoroCompletionResult>>;
   endBreak: (
     sessionId: number,
     blockId: number,
@@ -409,7 +411,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
           message: intensiveErrorMessage(err, fallbackMessage),
         };
 
-        if (isAmbiguousFailure(failure)) {
+        if (isUnconfirmedCommandFailure(command, failure)) {
           const snapshot = await reconcileSession(sessionId);
           if (snapshot && isCommandConfirmed(command, snapshot.phase)) {
             // The command did land: adopt the authoritative state instead of
@@ -546,19 +548,19 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
    * Completar una sesión
    */
   const completeSession = useCallback(
-    (id: number): Promise<IntensiveMutationOutcome<IntensiveSessionDetail>> =>
+    (id: number): Promise<IntensiveMutationOutcome<SessionCompletionResult>> =>
       runCommand({
         command: "COMPLETE",
         sessionId: id,
         fallbackMessage: "Error al completar sesión",
-        fromSnapshot: (snapshot) => snapshot.session,
+        fromSnapshot: (snapshot) => ({ session: snapshot.session, summary: null }),
         send: async () => {
           const response = await api.post<any>(
             `/intensive-sessions/${id}/complete`,
           );
-          const session = response.data?.session;
+          const row = response.data?.session;
 
-          if (!session) {
+          if (!row) {
             return {
               status: "failed",
               error: localIntensiveError(
@@ -568,13 +570,27 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
             };
           }
 
-          setCurrentSession(session);
+          // The backend answers a bare session row, so keep the relations
+          // already known locally instead of dropping them. Results are read
+          // from `summary`, never recounted from these relations.
+          const session: IntensiveSessionDetail = {
+            pomodoroBlocks: [],
+            sessionCards: [],
+            ...row,
+          };
+          setCurrentSession((prev) =>
+            prev?.id === id ? { ...prev, ...row } : session,
+          );
           setSessions((prev) =>
             prev.map((s) =>
               s.id === id ? { ...s, status: session.status } : s,
             ),
           );
-          return { status: "success", data: session, snapshot: null };
+          return {
+            status: "success",
+            data: { session, summary: response.data?.summary ?? null },
+            snapshot: null,
+          };
         },
       }),
     [runCommand],
@@ -588,7 +604,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
   const retryCompleteSession = useCallback(
     async (
       id: number,
-    ): Promise<IntensiveMutationOutcome<IntensiveSessionDetail>> => {
+    ): Promise<IntensiveMutationOutcome<SessionCompletionResult>> => {
       const snapshot = await reconcileSession(id);
       if (snapshot && isCommandConfirmed("COMPLETE", snapshot.phase)) {
         // The original command landed: adopt the authoritative state instead
@@ -597,7 +613,11 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
         setCurrentPomodoro(snapshot.block);
         setCurrentCard(snapshot.card);
         setError(null);
-        return { status: "success", data: snapshot.session, snapshot };
+        return {
+          status: "success",
+          data: { session: snapshot.session, summary: null },
+          snapshot,
+        };
       }
       return completeSession(id);
     },
@@ -698,12 +718,19 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
     (
       sessionId: number,
       blockId: number,
-    ): Promise<IntensiveMutationOutcome<PomodoroBlock | null>> =>
+    ): Promise<IntensiveMutationOutcome<PomodoroCompletionResult>> =>
       runCommand({
         command: "COMPLETE_BLOCK",
         sessionId,
         fallbackMessage: "Error al completar Pomodoro",
-        fromSnapshot: (snapshot) => snapshot.block,
+        fromSnapshot: (snapshot) => ({
+          block: snapshot.block,
+          breakDuration: null,
+          breakEndsAt: null,
+          isLongBreak: null,
+          xpAwarded: null,
+          badgeEvaluation: null,
+        }),
         send: async () => {
           const response = await api.post<any>(
             `/intensive-sessions/${sessionId}/pomodoro/${blockId}/complete`,
@@ -720,8 +747,20 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
             };
           }
 
+          const payload = response.data;
           setCurrentPomodoro(block);
-          return { status: "success", data: block, snapshot: null };
+          return {
+            status: "success",
+            data: {
+              block,
+              breakDuration: payload.breakDuration ?? null,
+              breakEndsAt: payload.breakEndsAt ?? null,
+              isLongBreak: payload.isLongBreak ?? null,
+              xpAwarded: payload.xpAwarded ?? null,
+              badgeEvaluation: payload.badgeEvaluation ?? null,
+            },
+            snapshot: null,
+          };
         },
       }),
     [runCommand],

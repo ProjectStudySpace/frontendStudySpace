@@ -1908,7 +1908,8 @@
       "newBadges": "New Badges",
       "intradayReviews": "Scheduled Reviews",
       "backToTopics": "Back to Topics",
-      "startNewSession": "New Session"
+      "startNewSession": "New Session",
+      "reviewSchedulingPending": "Your session is saved. Some intraday reviews or their reminders are still being scheduled and will appear shortly."
     },
     "noCards": {
       "title": "No cards",

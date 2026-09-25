@@ -3,6 +3,8 @@
  * Basado en los modelos y enums del backend de MemoPal
  */
 
+import type { IntradayReview } from "./intradayReviews";
+
 // ==================== ENUMS ====================
 
 /**
@@ -157,6 +159,71 @@ export interface CreateIntensiveSessionData {
 export interface IntensiveSessionDetail extends IntensiveStudySession {
   pomodoroBlocks: PomodoroBlock[];
   sessionCards: IntensiveSessionCard[];
+}
+
+/**
+ * Outcome of the best-effort intraday review scheduling that runs after the
+ * session commit. Anything but `completed` means reviews may still be missing
+ * or unnotified and will be reconciled by the backend later.
+ */
+export interface IntradayReviewScheduling {
+  status: "completed" | "notification_pending" | "pending_reconciliation";
+  retryable: boolean;
+}
+
+/** Outcome of the badge evaluation that runs after a block completion commit. */
+export interface BadgeEvaluation {
+  status: "completed" | "failed";
+  retryable: boolean;
+}
+
+/** XP multiplier applied to the session completion reward. */
+export interface AppliedMultiplier {
+  type: string;
+  value: number;
+  label: string;
+}
+
+/**
+ * Authoritative results computed by `POST /intensive-sessions/:id/complete`.
+ * The client renders them as-is instead of recounting session relations.
+ */
+export interface SessionCompletionSummary {
+  topicName: string;
+  cardsCompleted: number;
+  totalCards: number;
+  cardsEasy: number;
+  cardsMedium: number;
+  cardsHard: number;
+  pomodorosCompleted: number;
+  totalDuration: number; // en minutos
+  xpEarned: number;
+  multiplier: number;
+  appliedMultipliers: AppliedMultiplier[];
+  nextReviews: IntradayReview[];
+  intradayReviewScheduling: IntradayReviewScheduling;
+}
+
+/**
+ * A completed session. `summary` is null when completion was confirmed by
+ * reconciliation, since the authoritative GET does not carry it.
+ */
+export interface SessionCompletionResult {
+  session: IntensiveSessionDetail;
+  summary: SessionCompletionSummary | null;
+}
+
+/**
+ * A completed Pomodoro block. Every field but `block` is null when completion
+ * was confirmed by reconciliation instead of by the command response.
+ */
+export interface PomodoroCompletionResult {
+  block: PomodoroBlock | null;
+  breakDuration: number | null; // en minutos
+  breakEndsAt: string | null;
+  isLongBreak: boolean | null;
+  xpAwarded: number | null;
+  badgeEvaluation: BadgeEvaluation | null;
 }
 
 /**
