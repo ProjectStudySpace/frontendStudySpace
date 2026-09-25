@@ -2,6 +2,8 @@
 
 Contract stabilization is the only active Phase 2 delivery track. Units 1–2 are committed locally. Frontend F-01–F-06, its documentation, and the ATL ignore are integrated on the clean local source branch at `61cb205`; a separate non-deploying branch reconciles that source with refreshed `origin/main` at merge `5733280`. Neither local integration is a remote review, main merge, deployment, or shipment. Units 3–9 remain incomplete. Deferred product expansion remains in [Deferred Phase 2 Product Roadmap](deferred-phase-2-product-roadmap.md).
 
+> **Delivery update (2026-09-24):** the frontend Unit 2 work, the `main` reconciliation, and the Unit 3–5 groundwork that followed it are being delivered as a Feature Branch Chain into tracker PR #135 (`feat/intensive-study-delivery`). Delivery statements below describe the state when this plan was written; the tracker PR is the source of truth for push/review/merge status. Absolute paths refer to the authors' local clones.
+
 ## Review path
 
 1. Confirm the delivery boundary and accepted evidence below.
