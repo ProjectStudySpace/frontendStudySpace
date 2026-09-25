@@ -10,7 +10,6 @@ import {
   Star,
   Users,
   BookOpen,
-  Clock,
   Sparkles,
   Target,
   ChevronRight,
@@ -18,6 +17,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
 import { LanguageSelector } from "../components/LanguageSelector";
+import { MotionConfig } from "motion/react";
 
 const Landing: React.FC = () => {
   const navigate = useNavigate();
@@ -46,6 +46,7 @@ const Landing: React.FC = () => {
   };
 
   return (
+    <MotionConfig reducedMotion="user">
     <div className="min-h-screen bg-white">
       {/* Navigation */}
       <nav
@@ -759,6 +760,7 @@ const Landing: React.FC = () => {
         }
       `}</style>
     </div>
+    </MotionConfig>
   );
 };
 
