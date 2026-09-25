@@ -6,7 +6,7 @@ import { LandingNav } from "../features/landing/components/LandingNav";
 import { HeroSection } from "../features/landing/components/HeroSection";
 import { FeatureShowcase } from "../features/landing/components/showcase/FeatureShowcase";
 import { HowItWorksStory } from "../features/landing/components/how-it-works/HowItWorksStory";
-import { PricingSection } from "../features/landing/components/PricingSection";
+import { PricingSection } from "../features/landing/components/pricing/PricingSection";
 import { CtaSection } from "../features/landing/components/CtaSection";
 import { LandingFooter } from "../features/landing/components/LandingFooter";
 

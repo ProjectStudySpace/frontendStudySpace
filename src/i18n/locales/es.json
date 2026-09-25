@@ -1548,55 +1548,6 @@
         "streak_other": "Racha de {{count}} días"
       }
     },
-    "pricing": {
-      "title": "Comienza gratis, crece cuando quieras",
-      "subtitle": "Elige el plan perfecto para tus necesidades de aprendizaje",
-      "free": {
-        "name": "Gratis",
-        "description": "Perfecto para empezar",
-        "price": "$0",
-        "perMonth": "/mes",
-        "features": {
-          "cards": "Hasta 50 tarjetas",
-          "topics": "3 materias",
-          "basicSpaced": "Repaso espaciado básico",
-          "mobileAccess": "Acceso móvil",
-          "basicStats": "Estadísticas básicas"
-        },
-        "cta": "Comenzar gratis"
-      },
-      "pro": {
-        "name": "Pro",
-        "description": "Para estudiantes serios",
-        "price": "$9",
-        "perMonth": "/mes",
-        "features": {
-          "unlimitedCards": "Tarjetas ilimitadas",
-          "unlimitedTopics": "Materias ilimitadas",
-          "advancedSpaced": "Repaso espaciado avanzado",
-          "calendarIntegration": "Integración Google Calendar",
-          "advancedStats": "Estadísticas avanzadas",
-          "prioritySupport": "Soporte prioritario",
-          "noAds": "Sin anuncios"
-        },
-        "cta": "Comenzar prueba"
-      },
-      "team": {
-        "name": "Equipo",
-        "description": "Para grupos de estudio",
-        "price": "$29",
-        "perMonth": "/mes",
-        "features": {
-          "allPro": "Todo en Pro",
-          "members": "Hasta 10 miembros",
-          "sharedCards": "Tarjetas compartidas",
-          "collaborativeBoards": "Tableros colaborativos",
-          "teamManagement": "Gestión de equipo",
-          "groupAnalytics": "Análisis de grupo"
-        },
-        "cta": "Contactar ventas"
-      }
-    },
     "cta": {
       "title": "¿Listo para aprender de forma más inteligente?",
       "subtitle": "Únete a miles de estudiantes que ya están mejorando su memoria con MemoPal",
@@ -1722,6 +1673,48 @@
           "card4": "¿Cuál es el símbolo químico del oro?",
           "card5": "¿Cuál es la capital de Japón?"
         }
+      }
+    },
+    "pricing": {
+      "eyebrow": "Precios",
+      "title": "Gratis durante el acceso anticipado",
+      "subtitle": "MemoPal es gratis mientras está en acceso anticipado. Pronto llegará un plan Pro de pago.",
+      "track": {
+        "nowTitle": "Ahora · Acceso anticipado",
+        "nowBody": "Todo es gratis",
+        "youAreHere": "Estás aquí",
+        "soonTitle": "Próximamente · Plan Pro",
+        "soonBody": "Un plan de pago en preparación"
+      },
+      "free": {
+        "name": "Gratis",
+        "badge": "Plan actual",
+        "description": "Todas las funciones que MemoPal ofrece hoy, completamente desbloqueadas durante el acceso anticipado.",
+        "price": "$0",
+        "perMonth": "/mes",
+        "included": "Incluido hoy",
+        "features": {
+          "spacedRepetition": "Programación de repaso espaciado",
+          "selfAssessment": "Autoevaluación con calificación de dificultad",
+          "topics": "Temas con colores personalizados y notas de estudio",
+          "calendar": "Sincronización con Google Calendar y recordatorios push",
+          "progress": "Progreso, rachas, XP e insignias",
+          "intensive": "Sesiones intensivas con Pomodoro"
+        },
+        "cta": "Comenzar gratis"
+      },
+      "pro": {
+        "name": "Pro",
+        "stamp": "Próximamente",
+        "description": "Un plan de pago para quienes quieren más. Aún no está disponible.",
+        "price": "Precio por anunciar",
+        "planned": "Planeado",
+        "features": {
+          "advancedSpaced": "Repaso espaciado avanzado",
+          "advancedStats": "Estadísticas avanzadas",
+          "prioritySupport": "Soporte prioritario"
+        },
+        "cta": "Próximamente"
       }
     }
   },
