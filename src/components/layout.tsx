@@ -422,7 +422,7 @@ const LayoutContent = () => {
 };
 
 // Layout component that wraps content with OnboardingProvider
-const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const Layout = () => {
   return (
     <OnboardingProvider>
       <LayoutContent />
