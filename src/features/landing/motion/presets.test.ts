@@ -3,6 +3,8 @@ import {
   EASE_OUT_EXPO,
   fadeUp,
   getRevealVariants,
+  hoverLift,
+  nudgeX,
   scaleIn,
   staggerContainer,
 } from "./presets";
@@ -98,5 +100,44 @@ describe("getRevealVariants", () => {
       transition: { duration: 0.3, delay: 0.1, ease: "linear" },
     });
     expect(JSON.stringify(variants)).not.toMatch(/"(y|x|scale)"/);
+  });
+});
+
+describe("hoverLift", () => {
+  it("lifts on hover and compresses on tap, resting at identity", () => {
+    const variants = hoverLift();
+    expect(variants.rest).toEqual({ y: 0, scale: 1 });
+    expect(variants.hover).toEqual({
+      y: -2,
+      transition: { duration: 0.25, ease: EASE_OUT_EXPO },
+    });
+    expect(variants.tap).toEqual({
+      scale: 0.97,
+      transition: { duration: 0.1 },
+    });
+  });
+
+  it("uses a custom lift distance", () => {
+    expect(hoverLift(4).hover).toMatchObject({ y: -4 });
+  });
+
+  it("stays still under reduced motion but keeps the variant labels", () => {
+    const variants = hoverLift(4, true);
+    expect(variants.rest).toEqual({ y: 0, scale: 1 });
+    expect(variants.hover).toEqual({});
+    expect(variants.tap).toEqual({});
+  });
+});
+
+describe("nudgeX", () => {
+  it("nudges horizontally on hover", () => {
+    expect(nudgeX()).toEqual({
+      rest: { x: 0 },
+      hover: { x: 4, transition: { duration: 0.25, ease: EASE_OUT_EXPO } },
+    });
+  });
+
+  it("does not move under reduced motion", () => {
+    expect(nudgeX(6, true)).toEqual({ rest: { x: 0 }, hover: {} });
   });
 });

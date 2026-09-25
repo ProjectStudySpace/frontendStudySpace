@@ -1,5 +1,5 @@
 import React from "react";
-import { motion, useReducedMotion, type Variants } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { useTranslation } from "react-i18next";
 import {
   ArrowRight,
@@ -12,8 +12,9 @@ import {
 } from "lucide-react";
 import { HeroBackground } from "./HeroBackground";
 import {
-  EASE_OUT_EXPO,
   getRevealVariants,
+  hoverLift,
+  nudgeX,
   scaleIn,
   staggerContainer,
 } from "../motion/presets";
@@ -22,20 +23,6 @@ interface HeroSectionProps {
   onGetStarted: () => void;
 }
 
-const HOVER_TRANSITION = { duration: 0.25, ease: EASE_OUT_EXPO };
-
-/** Primary CTA: lifts on hover, nudges its arrow, compresses on tap. */
-const ctaVariants: Variants = {
-  rest: { y: 0, scale: 1 },
-  hover: { y: -2, transition: HOVER_TRANSITION },
-  tap: { scale: 0.97, transition: { duration: 0.1 } },
-};
-
-const arrowVariants: Variants = {
-  rest: { x: 0 },
-  hover: { x: 4, transition: HOVER_TRANSITION },
-};
-
 export const HeroSection: React.FC<HeroSectionProps> = ({ onGetStarted }) => {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion() ?? false;
@@ -43,6 +30,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onGetStarted }) => {
   const visual = reducedMotion
     ? getRevealVariants(true, { delay: 0.3 })
     : scaleIn({ from: 0.96, duration: 0.8, delay: 0.55 });
+  // Primary CTA: lifts on hover, nudges its arrow, compresses on tap.
+  const ctaVariants = hoverLift(2, reducedMotion);
+  const arrowVariants = nudgeX(4, reducedMotion);
 
   return (
     <section className="relative isolate pt-24 sm:pt-28 md:pt-32 pb-12 sm:pb-16 md:pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">

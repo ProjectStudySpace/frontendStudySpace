@@ -101,3 +101,28 @@ export function getRevealVariants(
     },
   };
 }
+
+const HOVER_TRANSITION = { duration: 0.25, ease: EASE_OUT_EXPO };
+
+/**
+ * Pressable microinteraction driven by `rest`/`hover`/`tap` labels: a small
+ * lift on hover and a gentle compression on tap. Under reduced motion the
+ * labels stay valid but nothing moves.
+ */
+export function hoverLift(distance = 2, reducedMotion = false): Variants {
+  if (reducedMotion) return { rest: { y: 0, scale: 1 }, hover: {}, tap: {} };
+  return {
+    rest: { y: 0, scale: 1 },
+    hover: { y: -distance, transition: HOVER_TRANSITION },
+    tap: { scale: 0.97, transition: { duration: 0.1 } },
+  };
+}
+
+/** Horizontal nudge for icons inside a hovered control (e.g. CTA arrows). */
+export function nudgeX(distance = 4, reducedMotion = false): Variants {
+  if (reducedMotion) return { rest: { x: 0 }, hover: {} };
+  return {
+    rest: { x: 0 },
+    hover: { x: distance, transition: HOVER_TRANSITION },
+  };
+}
