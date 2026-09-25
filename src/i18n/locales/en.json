@@ -1539,6 +1539,10 @@
         "answer": "Answer",
         "topic": "Topic",
         "saved": "Card saved",
+        "createQuestion": "Under a network partition, what does the CAP theorem force a distributed store to choose?",
+        "createAnswer": "Consistency or availability: it either rejects some requests or serves possibly stale data.",
+        "studyQuestion": "What separates the ratio decidendi of a judgment from an obiter dictum?",
+        "studyAnswer": "The ratio is the legal reasoning necessary to the decision and binds later courts; an obiter dictum is only persuasive.",
         "chartTitle": "Cards reviewed this week",
         "streak_one": "{{count}}-day streak",
         "streak_other": "{{count}}-day streak"
@@ -1568,8 +1572,8 @@
       "studySession": "Study session",
       "pendingCards": "pending cards",
       "active": "Active",
-      "question": "What is the capital of France?",
-      "answer": "Paris",
+      "question": "Why do NMDA receptors act as coincidence detectors in LTP?",
+      "answer": "They open only when glutamate binds and depolarization expels their Mg²⁺ block, letting Ca²⁺ in.",
       "easy": "Easy",
       "medium": "Medium",
       "hard": "Hard",
@@ -1600,7 +1604,9 @@
         "point1": "Three simple difficulty levels",
         "point2": "Your rating adjusts the review interval",
         "point3": "Try it: flip the card and pick a rating",
-        "sampleTopic": "Geography",
+        "sampleTopic": "Pharmacology",
+        "question": "Why do ACE inhibitors cause a dry cough?",
+        "answer": "ACE also breaks down bradykinin; when it is inhibited, bradykinin builds up in the airways and triggers the cough.",
         "tapToFlip": "Tap to flip",
         "flipLabel": "Flip the sample card",
         "answerLabel": "Answer",
@@ -1608,6 +1614,35 @@
         "waiting": "Rate the card to schedule it",
         "nextReview_one": "Next review in {{count}} day",
         "nextReview_other": "Next review in {{count}} days"
+      },
+      "richContent": {
+        "eyebrow": "Cards & notes",
+        "title": "Flashcards and study notes, with images.",
+        "body": "Some concepts fit on a card; others need pages. Attach images to the question or the answer of a flashcard, and write study notes in a two-page, open-book format for extensive content with its diagrams.",
+        "point1": "Images on the question or the answer of any flashcard",
+        "point2": "Two-page study notes for extensive content",
+        "point3": "Diagrams, ECGs or charts right next to the concept",
+        "flipLabel": "Flip the sample flashcard with an image",
+        "cardTopic": "Cardiology",
+        "cardKind": "With image",
+        "cardQuestion": "Identify the rhythm",
+        "ecgLabel": "ECG strip: irregular R-R intervals, a fibrillating baseline and no P waves.",
+        "answerTitle": "Atrial fibrillation",
+        "answerBody": "Irregularly irregular R-R intervals and no P waves.",
+        "noteTitle": "Cardiac action potential",
+        "noteSubtitle": "Ventricular myocyte",
+        "noteKind": "Study note · 2 pages",
+        "phaseLabel": "Phase {{phase}}:",
+        "phases": {
+          "p0": "Fast Na⁺ influx: rapid upstroke",
+          "p1": "Transient K⁺ efflux (Ito): early repolarization notch",
+          "p2": "L-type Ca²⁺ influx balances K⁺ efflux: plateau",
+          "p3": "Delayed-rectifier K⁺ efflux (IKr, IKs): repolarization",
+          "p4": "IK1 holds the resting potential near −90 mV"
+        },
+        "figureCaption": "Fig. 1 · Ventricular action potential",
+        "figureLabel": "Diagram of a ventricular action potential: rapid upstroke, early notch, plateau, repolarization and resting phase, labeled 0 to 4.",
+        "noteClinical": "Class III antiarrhythmics such as amiodarone block K⁺ channels, prolonging phase 3 and the QT interval."
       },
       "topicOrganization": {
         "eyebrow": "Topic organization",
@@ -1663,11 +1698,11 @@
         "point2": "25-minute Pomodoro blocks with short and long breaks",
         "point3": "Intraday reviews scheduled after the session",
         "cards": {
-          "card1": "What is the powerhouse of the cell?",
-          "card2": "Translate: \"the library\"",
-          "card3": "When did World War II end?",
-          "card4": "What is the chemical symbol for gold?",
-          "card5": "What is the capital of Japan?"
+          "card1": "Why are the eigenvalues of a real symmetric matrix always real?",
+          "card2": "How does quantitative easing lower long-term bond yields?",
+          "card3": "What is the net ATP yield of aerobic glucose oxidation?",
+          "card4": "How does MHC class I antigen presentation differ from class II?",
+          "card5": "Why does an SN1 reaction at a chiral center tend to racemize it?"
         }
       }
     },

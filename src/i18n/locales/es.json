@@ -1543,6 +1543,10 @@
         "answer": "Respuesta",
         "topic": "Tema",
         "saved": "Tarjeta guardada",
+        "createQuestion": "Ante una partición de red, ¿qué obliga a elegir el teorema CAP a un almacén distribuido?",
+        "createAnswer": "Consistencia o disponibilidad: rechaza algunas solicitudes o responde con datos posiblemente desactualizados.",
+        "studyQuestion": "¿Qué distingue la ratio decidendi de una sentencia de un obiter dictum?",
+        "studyAnswer": "La ratio es el razonamiento jurídico necesario para la decisión y vincula a los tribunales posteriores; el obiter dictum solo es persuasivo.",
         "chartTitle": "Tarjetas repasadas esta semana",
         "streak_one": "Racha de {{count}} día",
         "streak_other": "Racha de {{count}} días"
@@ -1572,8 +1576,8 @@
       "studySession": "Sesión de estudio",
       "pendingCards": "tarjetas pendientes",
       "active": "Activo",
-      "question": "¿Cuál es la capital de Francia?",
-      "answer": "París",
+      "question": "¿Por qué los receptores NMDA actúan como detectores de coincidencia en la LTP?",
+      "answer": "Solo se abren si el glutamato se une y la despolarización expulsa su bloqueo de Mg²⁺, lo que permite la entrada de Ca²⁺.",
       "easy": "Fácil",
       "medium": "Medio",
       "hard": "Difícil",
@@ -1604,7 +1608,9 @@
         "point1": "Tres niveles de dificultad sencillos",
         "point2": "Tu calificación ajusta el intervalo de repaso",
         "point3": "Pruébalo: voltea la tarjeta y elige una calificación",
-        "sampleTopic": "Geografía",
+        "sampleTopic": "Farmacología",
+        "question": "¿Por qué los inhibidores de la ECA causan tos seca?",
+        "answer": "La ECA también degrada la bradicinina; al inhibirla, la bradicinina se acumula en las vías respiratorias y desencadena la tos.",
         "tapToFlip": "Toca para voltear",
         "flipLabel": "Voltear la tarjeta de ejemplo",
         "answerLabel": "Respuesta",
@@ -1612,6 +1618,35 @@
         "waiting": "Califica la tarjeta para programarla",
         "nextReview_one": "Próximo repaso en {{count}} día",
         "nextReview_other": "Próximo repaso en {{count}} días"
+      },
+      "richContent": {
+        "eyebrow": "Tarjetas y notas",
+        "title": "Tarjetas y notas de estudio, con imágenes.",
+        "body": "Algunos conceptos caben en una tarjeta; otros necesitan páginas. Adjunta imágenes a la pregunta o a la respuesta de una tarjeta y escribe notas de estudio en formato de libro abierto de dos páginas para contenido extenso con sus diagramas.",
+        "point1": "Imágenes en la pregunta o en la respuesta de cualquier tarjeta",
+        "point2": "Notas de estudio de dos páginas para contenido extenso",
+        "point3": "Diagramas, electrocardiogramas o gráficos junto al concepto",
+        "flipLabel": "Voltear la tarjeta de ejemplo con imagen",
+        "cardTopic": "Cardiología",
+        "cardKind": "Con imagen",
+        "cardQuestion": "Identifica el ritmo",
+        "ecgLabel": "Tira de ECG: intervalos R-R irregulares, línea de base fibrilante y sin ondas P.",
+        "answerTitle": "Fibrilación auricular",
+        "answerBody": "Intervalos R-R irregularmente irregulares y ausencia de ondas P.",
+        "noteTitle": "Potencial de acción cardíaco",
+        "noteSubtitle": "Miocito ventricular",
+        "noteKind": "Nota de estudio · 2 páginas",
+        "phaseLabel": "Fase {{phase}}:",
+        "phases": {
+          "p0": "Entrada rápida de Na⁺: despolarización rápida",
+          "p1": "Salida transitoria de K⁺ (Ito): muesca de repolarización temprana",
+          "p2": "La entrada de Ca²⁺ por canales tipo L equilibra la salida de K⁺: meseta",
+          "p3": "Salida de K⁺ por rectificadores tardíos (IKr, IKs): repolarización",
+          "p4": "IK1 mantiene el potencial de reposo cerca de −90 mV"
+        },
+        "figureCaption": "Fig. 1 · Potencial de acción ventricular",
+        "figureLabel": "Diagrama de un potencial de acción ventricular: despolarización rápida, muesca temprana, meseta, repolarización y fase de reposo, numeradas del 0 al 4.",
+        "noteClinical": "Los antiarrítmicos de clase III, como la amiodarona, bloquean canales de K⁺ y prolongan la fase 3 y el intervalo QT."
       },
       "topicOrganization": {
         "eyebrow": "Organización por temas",
@@ -1667,11 +1702,11 @@
         "point2": "Bloques Pomodoro de 25 minutos con descansos cortos y largos",
         "point3": "Repasos intradía programados después de la sesión",
         "cards": {
-          "card1": "¿Cuál es la central energética de la célula?",
-          "card2": "Traduce: \"the library\"",
-          "card3": "¿Cuándo terminó la Segunda Guerra Mundial?",
-          "card4": "¿Cuál es el símbolo químico del oro?",
-          "card5": "¿Cuál es la capital de Japón?"
+          "card1": "¿Por qué los valores propios de una matriz simétrica real son siempre reales?",
+          "card2": "¿Cómo reduce la flexibilización cuantitativa los rendimientos de los bonos a largo plazo?",
+          "card3": "¿Cuál es el rendimiento neto de ATP de la oxidación aeróbica de la glucosa?",
+          "card4": "¿En qué se diferencia la presentación de antígenos por MHC de clase I de la de clase II?",
+          "card5": "¿Por qué una reacción SN1 en un centro quiral tiende a racemizarlo?"
         }
       }
     },

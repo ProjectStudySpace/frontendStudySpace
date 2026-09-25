@@ -97,8 +97,8 @@ export const FlashcardDemo: React.FC = () => {
               <span className="h-2 w-2 rounded-full bg-indigo-500" />
               {t("landing.showcase.selfAssessment.sampleTopic")}
             </span>
-            <span className="text-lg sm:text-xl font-semibold text-gray-900">
-              {t("landing.mockUI.question")}
+            <span className="text-base sm:text-lg font-semibold leading-snug text-gray-900">
+              {t("landing.showcase.selfAssessment.question")}
             </span>
             <span className="inline-flex items-center gap-1.5 text-xs text-gray-400">
               <RotateCw size={12} aria-hidden="true" />
@@ -112,8 +112,8 @@ export const FlashcardDemo: React.FC = () => {
             <span className="text-xs uppercase tracking-[0.2em] text-indigo-100">
               {t("landing.showcase.selfAssessment.answerLabel")}
             </span>
-            <span className="text-3xl sm:text-4xl font-bold">
-              {t("landing.mockUI.answer")}
+            <span className="text-center text-sm sm:text-base font-medium leading-snug">
+              {t("landing.showcase.selfAssessment.answer")}
             </span>
           </span>
         </motion.button>

@@ -69,14 +69,14 @@ export const CreateCardVisual: React.FC = () => {
         <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
           {t("landing.howItWorks.visuals.question")}
         </p>
-        <p className="mb-4 text-base font-semibold text-gray-900">
-          <TypedText text={t("landing.mockUI.question")} delay={0.3} />
+        <p className="mb-4 text-sm sm:text-base font-semibold leading-snug text-gray-900">
+          <TypedText text={t("landing.howItWorks.visuals.createQuestion")} delay={0.3} />
         </p>
         <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
           {t("landing.howItWorks.visuals.answer")}
         </p>
-        <p className="mb-4 text-base text-gray-700">
-          <TypedText text={t("landing.mockUI.answer")} delay={1.6} duration={0.4} />
+        <p className="mb-4 text-sm leading-snug text-gray-700">
+          <TypedText text={t("landing.howItWorks.visuals.createAnswer")} delay={1.6} duration={0.9} />
         </p>
         <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
           {t("landing.howItWorks.visuals.topic")}
@@ -136,14 +136,16 @@ export const StudySessionVisual: React.FC = () => {
       <motion.div {...fade(0.15)} className="relative mb-4">
         <div className="absolute inset-x-3 -bottom-2 h-full rounded-2xl bg-white/70 border border-gray-100" />
         <div className="relative rounded-2xl bg-white p-5 shadow-xl border border-gray-100">
-          <p className="mb-3 text-base font-semibold text-gray-900">{t("landing.mockUI.question")}</p>
+          <p className="mb-3 text-sm sm:text-base font-semibold leading-snug text-gray-900">
+            {t("landing.howItWorks.visuals.studyQuestion")}
+          </p>
           <motion.div
-            className="rounded-xl bg-indigo-50 px-3 py-2 text-center text-lg font-bold text-indigo-700"
+            className="rounded-xl bg-indigo-50 px-3 py-2 text-center text-sm font-medium leading-snug text-indigo-700"
             initial={{ opacity: 0, rotateX: -90 }}
             animate={{ opacity: 1, rotateX: 0 }}
             transition={{ delay: 0.8, duration: 0.6, ease: EASE_OUT_EXPO }}
           >
-            {t("landing.mockUI.answer")}
+            {t("landing.howItWorks.visuals.studyAnswer")}
           </motion.div>
         </div>
       </motion.div>

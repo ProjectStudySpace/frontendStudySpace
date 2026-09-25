@@ -158,7 +158,7 @@ export const FocusSession: React.FC = () => {
                 i === 0 ? "border-rose-200 shadow-md" : "border-gray-100"
               }`}
             >
-              <span className="truncate text-sm text-gray-800">
+              <span className="line-clamp-2 text-xs sm:text-sm leading-snug text-gray-800">
                 {t(`landing.showcase.intensiveStudy.cards.card${(n % SAMPLE_CARDS) + 1}`)}
               </span>
               {i === 0 && (

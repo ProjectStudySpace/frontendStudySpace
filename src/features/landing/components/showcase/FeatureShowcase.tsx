@@ -7,6 +7,7 @@ import { SectionHeading } from "../SectionHeading";
 import { FeatureScene, type SceneTone } from "./FeatureScene";
 import { RetentionCurve } from "./RetentionCurve";
 import { FlashcardDemo } from "./FlashcardDemo";
+import { RichContentDemo } from "./RichContentDemo";
 import { TopicStacks } from "./TopicStacks";
 import { CalendarReminders } from "./CalendarReminders";
 import { ProgressStreaks } from "./ProgressStreaks";
@@ -15,6 +16,7 @@ import { FocusSession } from "./FocusSession";
 type SceneKey =
   | "spacedRepetition"
   | "selfAssessment"
+  | "richContent"
   | "topicOrganization"
   | "calendarIntegration"
   | "progressTracking"
@@ -29,8 +31,9 @@ interface Scene {
 const SCENES: Scene[] = [
   { key: "spacedRepetition", tone: "light", Illustration: RetentionCurve },
   { key: "selfAssessment", tone: "tint", Illustration: FlashcardDemo },
-  { key: "topicOrganization", tone: "light", Illustration: TopicStacks },
-  { key: "calendarIntegration", tone: "tint", Illustration: CalendarReminders },
+  { key: "richContent", tone: "light", Illustration: RichContentDemo },
+  { key: "topicOrganization", tone: "tint", Illustration: TopicStacks },
+  { key: "calendarIntegration", tone: "light", Illustration: CalendarReminders },
   { key: "progressTracking", tone: "dark", Illustration: ProgressStreaks },
   { key: "intensiveStudy", tone: "light", Illustration: FocusSession },
 ];
