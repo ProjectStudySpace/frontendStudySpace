@@ -10,6 +10,7 @@ import {
   intensiveErrorMessage,
   localIntensiveError,
   normalizeIntensiveError,
+  type IntensiveError,
 } from "../src/features/intensive-study/api/errors";
 import {
   IntensiveStudySession,
@@ -30,10 +31,26 @@ import {
 } from "../src/features/intensive-study/state/resume";
 import {
   isCommandConfirmed,
+  isSessionUnavailable,
   isUnconfirmedCommandFailure,
+  isUnconfirmedStartFailure,
+  SESSION_UNAVAILABLE_MESSAGE,
+  sessionUnavailableError,
   type IntensiveCommand,
   type IntensiveMutationOutcome,
+  type IntensiveSessionReload,
 } from "../src/features/intensive-study/state/mutationOutcome";
+
+/**
+ * Result of re-reading the authoritative session. `unavailable` means the
+ * backend answered that the session cannot be returned (missing or not owned),
+ * which is a definitive answer; `unconfirmed` means the read itself failed or
+ * was unusable, so the command outcome is still unknown.
+ */
+type SessionReconciliation =
+  | { status: "found"; payload: any; snapshot: IntensiveResumeSnapshot | null }
+  | { status: "unavailable"; error: IntensiveError }
+  | { status: "unconfirmed" };
 
 interface GetNextCardResult {
   card: IntensiveSessionCard | null;
@@ -77,12 +94,15 @@ interface UseIntensiveSessionsReturn {
   ) => Promise<IntensiveMutationOutcome<IntensiveStudySession>>;
   getActiveSession: () => Promise<IntensiveStudySession | null>;
   rehydrateSession: (id: number) => Promise<IntensiveResumeSnapshot | null>;
+  reloadSession: (id: number) => Promise<IntensiveSessionReload>;
   resumeFromPause: (
     sessionId: number,
   ) => Promise<IntensiveResumeSnapshot | null>;
 
   // Funciones de Pomodoro
-  startPomodoro: (sessionId: number) => Promise<PomodoroBlock | null>;
+  startPomodoro: (
+    sessionId: number,
+  ) => Promise<IntensiveMutationOutcome<PomodoroBlock>>;
   completePomodoro: (
     sessionId: number,
     blockId: number,
@@ -342,26 +362,55 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
    * issued: a non-idempotent POST is never replayed.
    */
   const reconcileSession = useCallback(
-    async (sessionId: number): Promise<IntensiveResumeSnapshot | null> => {
+    async (sessionId: number): Promise<SessionReconciliation> => {
       try {
         const response = await api.get<any>(`/intensive-sessions/${sessionId}`);
         const payload = response.data;
 
-        return buildResumeSnapshot({
-          session: payload?.session || null,
-          activeBlock: payload?.activeBlock || null,
-          card: null,
-          userId: user?.id ?? null,
-        });
+        return {
+          status: "found",
+          payload,
+          snapshot: buildResumeSnapshot({
+            session: payload?.session || null,
+            activeBlock: payload?.activeBlock || null,
+            card: null,
+            userId: user?.id ?? null,
+          }),
+        };
       } catch (err) {
+        const normalized = normalizeIntensiveError(err);
+        if (isSessionUnavailable(normalized)) {
+          return {
+            status: "unavailable",
+            error: sessionUnavailableError(normalized),
+          };
+        }
         console.warn(
           "Could not reconcile ambiguous intensive command:",
           intensiveErrorMessage(err, "Error al reconciliar la sesión"),
         );
-        return null;
+        return { status: "unconfirmed" };
       }
     },
     [user],
+  );
+
+  /** Adopt a reconciled snapshot that proved the command landed. */
+  const adoptSnapshot = useCallback((snapshot: IntensiveResumeSnapshot) => {
+    setCurrentSession(snapshot.session);
+    setCurrentPomodoro(snapshot.block);
+    setCurrentCard(snapshot.card);
+    setError(null);
+  }, []);
+
+  /** Report an unavailable session without replaying or guessing. */
+  const reportUnavailable = useCallback(
+    <T,>(command: string, error: IntensiveError): IntensiveMutationOutcome<T> => {
+      console.error(`Intensive session unavailable [${command}]`);
+      setError(error.message);
+      return { status: "failed", error };
+    },
+    [],
   );
 
   /**
@@ -412,14 +461,20 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
         };
 
         if (isUnconfirmedCommandFailure(command, failure)) {
-          const snapshot = await reconcileSession(sessionId);
-          if (snapshot && isCommandConfirmed(command, snapshot.phase)) {
+          const reconciliation = await reconcileSession(sessionId);
+          if (reconciliation.status === "unavailable") {
+            return reportUnavailable<T>(command, reconciliation.error);
+          }
+
+          const snapshot =
+            reconciliation.status === "found" ? reconciliation.snapshot : null;
+          if (
+            snapshot &&
+            isCommandConfirmed(command, snapshot.phase, snapshot.session.status)
+          ) {
             // The command did land: adopt the authoritative state instead of
             // sending the request again.
-            setCurrentSession(snapshot.session);
-            setCurrentPomodoro(snapshot.block);
-            setCurrentCard(snapshot.card);
-            setError(null);
+            adoptSnapshot(snapshot);
             return { status: "success", data: fromSnapshot(snapshot), snapshot };
           }
 
@@ -445,7 +500,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
         setLoading(false);
       }
     },
-    [user, reconcileSession],
+    [user, reconcileSession, adoptSnapshot, reportUnavailable],
   );
 
   /**
@@ -553,7 +608,11 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
         command: "COMPLETE",
         sessionId: id,
         fallbackMessage: "Error al completar sesión",
-        fromSnapshot: (snapshot) => ({ session: snapshot.session, summary: null }),
+        fromSnapshot: (snapshot) => ({
+          session: snapshot.session,
+          summary: null,
+          badgeEvaluation: null,
+        }),
         send: async () => {
           const response = await api.post<any>(
             `/intensive-sessions/${id}/complete`,
@@ -588,7 +647,11 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
           );
           return {
             status: "success",
-            data: { session, summary: response.data?.summary ?? null },
+            data: {
+              session,
+              summary: response.data?.summary ?? null,
+              badgeEvaluation: response.data?.badgeEvaluation ?? null,
+            },
             snapshot: null,
           };
         },
@@ -605,23 +668,29 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
     async (
       id: number,
     ): Promise<IntensiveMutationOutcome<SessionCompletionResult>> => {
-      const snapshot = await reconcileSession(id);
-      if (snapshot && isCommandConfirmed("COMPLETE", snapshot.phase)) {
+      const reconciliation = await reconcileSession(id);
+      if (reconciliation.status === "unavailable") {
+        // Replaying against a session that cannot be read cannot succeed.
+        return reportUnavailable("COMPLETE", reconciliation.error);
+      }
+      const snapshot =
+        reconciliation.status === "found" ? reconciliation.snapshot : null;
+      if (
+        snapshot &&
+        isCommandConfirmed("COMPLETE", snapshot.phase, snapshot.session.status)
+      ) {
         // The original command landed: adopt the authoritative state instead
         // of earning a rejection the user cannot act on.
-        setCurrentSession(snapshot.session);
-        setCurrentPomodoro(snapshot.block);
-        setCurrentCard(snapshot.card);
-        setError(null);
+        adoptSnapshot(snapshot);
         return {
           status: "success",
-          data: { session: snapshot.session, summary: null },
+          data: { session: snapshot.session, summary: null, badgeEvaluation: null },
           snapshot,
         };
       }
       return completeSession(id);
     },
-    [reconcileSession, completeSession],
+    [reconcileSession, completeSession, adoptSnapshot, reportUnavailable],
   );
 
   /** Same reconcile-first contract for ABANDON. */
@@ -629,17 +698,22 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
     async (
       id: number,
     ): Promise<IntensiveMutationOutcome<IntensiveStudySession>> => {
-      const snapshot = await reconcileSession(id);
-      if (snapshot && isCommandConfirmed("ABANDON", snapshot.phase)) {
-        setCurrentSession(snapshot.session);
-        setCurrentPomodoro(snapshot.block);
-        setCurrentCard(snapshot.card);
-        setError(null);
+      const reconciliation = await reconcileSession(id);
+      if (reconciliation.status === "unavailable") {
+        return reportUnavailable("ABANDON", reconciliation.error);
+      }
+      const snapshot =
+        reconciliation.status === "found" ? reconciliation.snapshot : null;
+      if (
+        snapshot &&
+        isCommandConfirmed("ABANDON", snapshot.phase, snapshot.session.status)
+      ) {
+        adoptSnapshot(snapshot);
         return { status: "success", data: snapshot.session, snapshot };
       }
       return abandonSession(id);
     },
-    [reconcileSession, abandonSession],
+    [reconcileSession, abandonSession, adoptSnapshot, reportUnavailable],
   );
 
   // ==================== FUNCIONES DE POMODORO ====================
@@ -648,10 +722,11 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
    * Iniciar un bloque Pomodoro
    */
   const startPomodoro = useCallback(
-    async (sessionId: number): Promise<PomodoroBlock | null> => {
+    async (sessionId: number): Promise<IntensiveMutationOutcome<PomodoroBlock>> => {
       if (!user) {
-        setError("Usuario no autenticado");
-        return null;
+        const message = "Usuario no autenticado";
+        setError(message);
+        return { status: "failed", error: localIntensiveError("auth", message) };
       }
 
       setLoading(true);
@@ -662,53 +737,66 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
           `/intensive-sessions/${sessionId}/pomodoro/start`,
         );
 
-        if (response.data) {
-          const apiResponse = response.data;
-          const block = apiResponse.block;
+        const block: PomodoroBlock | undefined = response.data?.block;
+        if (block) {
           setCurrentPomodoro(block);
-          return block;
+          return { status: "success", data: block, snapshot: null };
         }
-        return null;
+
+        const message = "Error al iniciar Pomodoro";
+        setError(message);
+        return {
+          status: "failed",
+          error: localIntensiveError("business", message),
+        };
       } catch (err: any) {
-        const hasHttpResponse = Boolean(err?.response);
-        if (!hasHttpResponse) {
-          try {
-            const snapshotResponse = await api.get<any>(
-              `/intensive-sessions/${sessionId}`,
-            );
-            const snapshot = snapshotResponse.data;
+        const failure: IntensiveError = {
+          ...normalizeIntensiveError(err),
+          message: intensiveErrorMessage(err, "Error al iniciar Pomodoro"),
+        };
+
+        // A lost response or START_UNCONFIRMED may hide a start that landed:
+        // read it back instead of replaying the POST. Other start conflicts
+        // are definitive answers returned with their code to the caller.
+        if (isUnconfirmedStartFailure(failure)) {
+          const reconciliation = await reconcileSession(sessionId);
+          if (reconciliation.status === "unavailable") {
+            setError(reconciliation.error.message);
+            return { status: "failed", error: reconciliation.error };
+          }
+
+          if (reconciliation.status === "found") {
+            const payload = reconciliation.payload;
             const activeBlock =
-              snapshot?.activeBlock ||
-              snapshot?.session?.pomodoroBlocks?.find(
+              payload?.activeBlock ||
+              payload?.session?.pomodoroBlocks?.find(
                 (block: { status?: string }) =>
                   block.status === "ACTIVE" || block.status === "ON_BREAK",
               );
 
             if (activeBlock) {
-              if (snapshot?.session) {
-                setCurrentSession(snapshot.session);
+              if (payload?.session) {
+                setCurrentSession(payload.session);
               }
               setCurrentPomodoro(activeBlock);
-              return activeBlock;
+              // The snapshot carries the authoritative phase, so the caller
+              // adopts it instead of assuming a fresh work block.
+              return {
+                status: "success",
+                data: activeBlock,
+                snapshot: reconciliation.snapshot,
+              };
             }
-          } catch (reconciliationError) {
-            console.warn(
-              "Could not reconcile ambiguous Pomodoro start:",
-              intensiveErrorMessage(
-                reconciliationError,
-                "Error al reconciliar Pomodoro",
-              ),
-            );
           }
         }
 
-        setError(intensiveErrorMessage(err, "Error al iniciar Pomodoro"));
-        return null;
+        setError(failure.message);
+        return { status: "failed", error: failure };
       } finally {
         setLoading(false);
       }
     },
-    [user],
+    [user, reconcileSession],
   );
 
   /**
@@ -950,18 +1038,20 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
   // ==================== REANUDACIÓN ====================
 
   /**
-   * Rehydrate a session from authoritative backend data before the UI renders
+   * Reload a session from authoritative backend data before the UI renders
    * any actionable view: session detail, current Pomodoro block, assigned card,
    * derived phase and absolute timer boundaries.
    *
-   * Returns `null` when the session cannot be trusted (not found, failed
-   * request, or owned by another user) and leaves local state untouched.
+   * `unavailable` means the backend cannot return a session this user owns, a
+   * definitive answer; `failed` means the read itself failed and may be retried.
+   * Local state is only replaced on `found`.
    */
-  const rehydrateSession = useCallback(
-    async (sessionId: number): Promise<IntensiveResumeSnapshot | null> => {
+  const reloadSession = useCallback(
+    async (sessionId: number): Promise<IntensiveSessionReload> => {
       if (!user) {
-        setError("Usuario no autenticado");
-        return null;
+        const message = "Usuario no autenticado";
+        setError(message);
+        return { status: "failed", error: localIntensiveError("auth", message) };
       }
 
       setLoading(true);
@@ -979,45 +1069,67 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
           userId: user.id ?? null,
         });
 
-        if (!hydrated) {
-          return null;
-        }
-
         // The assigned card is only meaningful while a work block is running.
         let card: IntensiveSessionCard | null = null;
-        if (hydrated.phase === "ACTIVE") {
+        if (hydrated?.phase === "ACTIVE") {
           const nextCard = await getNextCard(sessionId);
           card = nextCard.card;
         }
 
-        const snapshot = buildResumeSnapshot({
-          session,
-          activeBlock: payload?.activeBlock || null,
-          card,
-          userId: user.id ?? null,
-        });
+        const snapshot =
+          hydrated &&
+          buildResumeSnapshot({
+            session,
+            activeBlock: payload?.activeBlock || null,
+            card,
+            userId: user.id ?? null,
+          });
 
         if (!snapshot) {
-          return null;
+          // Missing or owned by someone else: not a session this user can use.
+          const error = sessionUnavailableError(
+            localIntensiveError("business", SESSION_UNAVAILABLE_MESSAGE),
+          );
+          setError(error.message);
+          return { status: "unavailable", error };
         }
 
         setCurrentSession(snapshot.session);
         setCurrentPomodoro(snapshot.block);
         setCurrentCard(snapshot.card);
 
-        return snapshot;
+        return { status: "found", snapshot };
       } catch (err: any) {
-        const errorMessage = intensiveErrorMessage(
-          err,
-          "Error al reanudar sesión",
-        );
-        setError(errorMessage);
-        return null;
+        const normalized = normalizeIntensiveError(err);
+        if (isSessionUnavailable(normalized)) {
+          const error = sessionUnavailableError(normalized);
+          setError(error.message);
+          return { status: "unavailable", error };
+        }
+
+        const error = {
+          ...normalized,
+          message: intensiveErrorMessage(err, "Error al reanudar sesión"),
+        };
+        setError(error.message);
+        return { status: "failed", error };
       } finally {
         setLoading(false);
       }
     },
     [user, getNextCard],
+  );
+
+  /**
+   * Rehydrate a session from authoritative backend data. Returns `null` when
+   * the session cannot be trusted and leaves local state untouched.
+   */
+  const rehydrateSession = useCallback(
+    async (sessionId: number): Promise<IntensiveResumeSnapshot | null> => {
+      const reload = await reloadSession(sessionId);
+      return reload.status === "found" ? reload.snapshot : null;
+    },
+    [reloadSession],
   );
 
   /**
@@ -1074,6 +1186,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
     retryAbandonSession,
     getActiveSession,
     rehydrateSession,
+    reloadSession,
     resumeFromPause,
 
     // Funciones de Pomodoro

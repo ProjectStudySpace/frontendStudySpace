@@ -3,10 +3,37 @@ import { api, type AuthRequestMeta } from "../../../utils/axiosConfig";
 
 export type IntensiveErrorKind = "business" | "auth" | "network" | "unknown";
 
+/**
+ * Machine-readable codes the backend sends as HTTP 409 for intensive-study
+ * conflicts. Branch on these, never on the human-readable `error` text.
+ * `SESSION_UNAVAILABLE` is the only client-side code: the authoritative GET
+ * could not return the session, so there is nothing to reconcile against.
+ */
+export const IntensiveErrorCode = {
+  START_UNCONFIRMED: "START_UNCONFIRMED",
+  COMPLETION_UNCONFIRMED: "COMPLETION_UNCONFIRMED",
+  SESSION_NOT_ACTIVE: "SESSION_NOT_ACTIVE",
+  BLOCK_ALREADY_ACTIVE: "BLOCK_ALREADY_ACTIVE",
+  BLOCK_ON_BREAK: "BLOCK_ON_BREAK",
+  BLOCK_NOT_ACTIVE: "BLOCK_NOT_ACTIVE",
+  NO_PENDING_BLOCKS: "NO_PENDING_BLOCKS",
+  NO_CARDS_AVAILABLE: "NO_CARDS_AVAILABLE",
+  PENDING_CARDS: "PENDING_CARDS",
+  SESSION_UNAVAILABLE: "SESSION_UNAVAILABLE",
+} as const;
+
+export type IntensiveErrorCode =
+  (typeof IntensiveErrorCode)[keyof typeof IntensiveErrorCode];
+
 export type IntensiveError = {
   kind: IntensiveErrorKind;
   message: string;
   status: number | null;
+  /**
+   * Code from the error envelope, or null when none was sent. Kept as a plain
+   * string so a code added by the backend later is preserved, not dropped.
+   */
+  code: string | null;
   path: string | null;
   method: string | null;
   raw: unknown;
@@ -71,6 +98,7 @@ export function localIntensiveError(
     kind,
     message,
     status: null,
+    code: null,
     path: null,
     method: null,
     raw: null,
@@ -80,6 +108,7 @@ export function localIntensiveError(
 function readEnvelope(data: unknown): {
   error?: string;
   message?: string;
+  code?: string;
   path?: string;
   method?: string;
 } {
@@ -90,6 +119,10 @@ function readEnvelope(data: unknown): {
   return {
     error: typeof record.error === "string" ? record.error : undefined,
     message: typeof record.message === "string" ? record.message : undefined,
+    code:
+      typeof record.code === "string" && record.code.length > 0
+        ? record.code
+        : undefined,
     path: typeof record.path === "string" ? record.path : undefined,
     method: typeof record.method === "string" ? record.method : undefined,
   };
@@ -109,6 +142,7 @@ export function normalizeIntensiveError(error: unknown): IntensiveError {
     kind: "unknown",
     message: "Unexpected error",
     status: null,
+    code: null,
     path: null,
     method: null,
     raw: error,
@@ -145,6 +179,7 @@ export function normalizeIntensiveError(error: unknown): IntensiveError {
       kind: "auth",
       message,
       status,
+      code: envelope.code ?? null,
       path: envelope.path ?? err.config?.url ?? null,
       method: envelope.method ?? null,
       raw: error,
@@ -156,6 +191,7 @@ export function normalizeIntensiveError(error: unknown): IntensiveError {
       kind: "business",
       message,
       status,
+      code: envelope.code ?? null,
       path: envelope.path ?? err.config?.url ?? null,
       method: envelope.method ?? null,
       raw: error,
@@ -167,6 +203,7 @@ export function normalizeIntensiveError(error: unknown): IntensiveError {
       kind: "network",
       message: message || "Network error",
       status: null,
+      code: null,
       path: err.config?.url ?? null,
       method: null,
       raw: error,

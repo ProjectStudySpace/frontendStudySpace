@@ -208,9 +208,23 @@ export interface SessionCompletionSummary {
  * A completed session. `summary` is null when completion was confirmed by
  * reconciliation, since the authoritative GET does not carry it.
  */
+/**
+ * Badge outcome of a session completion. Badges are evaluated after the commit,
+ * so a deferred evaluation never undoes the completion itself.
+ */
+export interface SessionBadgeEvaluation {
+  status: "completed" | "pending_reconciliation";
+  retryable: boolean;
+}
+
+/**
+ * A completed session. `summary` and `badgeEvaluation` are null when completion
+ * was confirmed by reconciliation instead of by the command response.
+ */
 export interface SessionCompletionResult {
   session: IntensiveSessionDetail;
   summary: SessionCompletionSummary | null;
+  badgeEvaluation: SessionBadgeEvaluation | null;
 }
 
 /**

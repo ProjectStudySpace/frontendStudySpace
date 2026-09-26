@@ -298,6 +298,54 @@ describe("strict transport contracts", () => {
     expect(document.getElementById("notification-container")).toBeNull();
   });
 
+  it("keeps a coded intensive 409 local and exposes its machine-readable code", async () => {
+    installSettlingAdapter(api, () => ({
+      status: 409,
+      data: {
+        error: "No se pudo confirmar la finalización de la sesión",
+        code: "COMPLETION_UNCONFIRMED",
+        path: "/api/intensive-sessions/1/complete",
+        method: "POST",
+      },
+    }));
+
+    const failure = await intensiveApi
+      .post("/intensive-sessions/1/complete")
+      .catch((error) => error);
+
+    expect(normalizeIntensiveError(failure)).toMatchObject({
+      kind: "business",
+      status: 409,
+      code: "COMPLETION_UNCONFIRMED",
+      message: "No se pudo confirmar la finalización de la sesión",
+    });
+    expect(document.getElementById("notification-container")).toBeNull();
+  });
+
+  it("reports a null code when the envelope carries none or a non-string one", () => {
+    const uncoded = normalizeIntensiveError(
+      new AxiosError("fail", "ERR_BAD_RESPONSE", undefined, {}, {
+        status: 500,
+        statusText: "500",
+        headers: {},
+        config: {} as InternalAxiosRequestConfig,
+        data: { error: "Sesión no encontrada" },
+      }),
+    );
+    const malformed = normalizeIntensiveError(
+      new AxiosError("fail", "ERR_BAD_REQUEST", undefined, {}, {
+        status: 409,
+        statusText: "409",
+        headers: {},
+        config: {} as InternalAxiosRequestConfig,
+        data: { error: "Conflicto", code: 42 },
+      }),
+    );
+
+    expect(uncoded.code).toBeNull();
+    expect(malformed.code).toBeNull();
+  });
+
   it("still shows a global notification for ordinary non-login client errors", async () => {
     installSettlingAdapter(api, () => ({
       status: 404,

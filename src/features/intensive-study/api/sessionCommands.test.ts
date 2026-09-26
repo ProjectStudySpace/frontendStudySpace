@@ -140,6 +140,20 @@ async function hydrate(unchangedDetail: TestResponse = UNCHANGED_DETAIL) {
   calls = [];
 }
 
+/**
+ * A gateway error only means the reconciliation read failed. An uncoded 500
+ * is reserved for the backend's "session not found" answer (SESSION_GONE).
+ */
+const READ_FAILED: TestResponse = {
+  status: 503,
+  data: { error: "Servicio no disponible" },
+};
+
+const SESSION_GONE: TestResponse = {
+  status: 500,
+  data: { error: "Sesión no encontrada" },
+};
+
 interface CommandCase {
   name: string;
   url: string;
@@ -341,7 +355,7 @@ describe("intensive lifecycle commands", () => {
         postOutcome = () => "network";
         await renderHookProbe();
         await hydrate(testCase.unchangedDetail);
-        currentDetail = { status: 500, data: { error: "Fallo interno" } };
+        currentDetail = READ_FAILED;
 
         let outcome: Outcome | undefined;
         await act(async () => {
@@ -354,6 +368,25 @@ describe("intensive lifecycle commands", () => {
         );
         expect(postCalls()).toEqual([`post:${testCase.url}`]);
         expect(calls).toContain("get:/intensive-sessions/1");
+      });
+
+      it("reports an unavailable session instead of an unconfirmed state when the GET cannot find it", async () => {
+        postOutcome = () => "network";
+        await renderHookProbe();
+        await hydrate(testCase.unchangedDetail);
+        currentDetail = SESSION_GONE;
+
+        let outcome: Outcome | undefined;
+        await act(async () => {
+          outcome = await testCase.invoke(latest as HookState);
+        });
+
+        expect(outcome?.status).toBe("failed");
+        expect(
+          outcome?.status === "failed" ? outcome.error.code : "missing",
+        ).toBe("SESSION_UNAVAILABLE");
+        expect(latest?.error).toBe("La sesión ya no está disponible.");
+        expect(postCalls()).toEqual([`post:${testCase.url}`]);
       });
 
       it("clears a previous command error once a retry succeeds", async () => {
@@ -547,11 +580,29 @@ function runTerminalCommandRetryTests() {
           expect(latest?.currentSession).toBe(before);
         });
 
-        it("still replays when the reconciliation GET is unavailable", async () => {
+        it("does not replay against a session the GET reports unavailable", async () => {
           postOutcome = () => ({ status: 200, data: testCase.successBody });
           await renderHookProbe();
           await hydrate();
-          currentDetail = { status: 500, data: { error: "Fallo interno" } };
+          currentDetail = SESSION_GONE;
+
+          let outcome: Outcome | undefined;
+          await act(async () => {
+            outcome = await testCase.invoke(latest as HookState);
+          });
+
+          expect(outcome?.status).toBe("failed");
+          expect(
+            outcome?.status === "failed" ? outcome.error.code : "missing",
+          ).toBe("SESSION_UNAVAILABLE");
+          expect(postCalls()).toEqual([]);
+        });
+
+        it("still replays when the reconciliation GET fails", async () => {
+          postOutcome = () => ({ status: 200, data: testCase.successBody });
+          await renderHookProbe();
+          await hydrate();
+          currentDetail = READ_FAILED;
 
           let outcome: Outcome | undefined;
           await act(async () => {
@@ -568,7 +619,7 @@ function runTerminalCommandRetryTests() {
       postOutcome = () => "network";
       await renderHookProbe();
       await hydrate();
-      currentDetail = { status: 500, data: { error: "Fallo interno" } };
+      currentDetail = READ_FAILED;
 
       let firstOutcome: Outcome | undefined;
       await act(async () => {

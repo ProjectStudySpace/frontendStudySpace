@@ -7,7 +7,7 @@
  * on `success`; an ambiguous failure is resolved by an authoritative GET, never
  * by replaying a non-idempotent POST.
  */
-import type { IntensiveError } from "../api/errors";
+import { IntensiveErrorCode, type IntensiveError } from "../api/errors";
 import type {
   IntensiveResumeSnapshot,
   ResumePhase,
@@ -20,7 +20,8 @@ export type IntensiveCommand =
   | "COMPLETE"
   | "COMPLETE_BLOCK"
   | "END_BREAK"
-  | "SKIP_BREAK";
+  | "SKIP_BREAK"
+  | "START";
 
 export type IntensiveMutationOutcome<T> =
   | {
@@ -32,6 +33,15 @@ export type IntensiveMutationOutcome<T> =
        */
       snapshot: IntensiveResumeSnapshot | null;
     }
+  | { status: "failed"; error: IntensiveError };
+
+/**
+ * Result of reloading the authoritative session. `unavailable` is a definitive
+ * answer (missing or not owned); `failed` means only the read failed.
+ */
+export type IntensiveSessionReload =
+  | { status: "found"; snapshot: IntensiveResumeSnapshot }
+  | { status: "unavailable"; error: IntensiveError }
   | { status: "failed"; error: IntensiveError };
 
 /** A command failure the user can retry from the current view. */
@@ -59,6 +69,23 @@ const COMPLETION_COMMANDS: ReadonlySet<IntensiveCommand> = new Set([
   "COMPLETE_BLOCK",
 ]);
 
+/**
+ * Coded conflicts that do not prove a completion failed: the claim was lost
+ * after a possible commit, or the target already left the state the command
+ * expects (possibly because this very command landed). Both are resolved by
+ * reloading the authoritative session. Any other code is a real rejection.
+ */
+const RECONCILE_CODES: Partial<Record<IntensiveCommand, ReadonlySet<string>>> = {
+  COMPLETE: new Set([
+    IntensiveErrorCode.COMPLETION_UNCONFIRMED,
+    IntensiveErrorCode.SESSION_NOT_ACTIVE,
+  ]),
+  COMPLETE_BLOCK: new Set([
+    IntensiveErrorCode.COMPLETION_UNCONFIRMED,
+    IntensiveErrorCode.BLOCK_NOT_ACTIVE,
+  ]),
+};
+
 /** Decide whether a command failure must be reconciled before it is trusted. */
 export function isUnconfirmedCommandFailure(
   command: IntensiveCommand,
@@ -67,6 +94,10 @@ export function isUnconfirmedCommandFailure(
   if (isAmbiguousFailure(error)) {
     return true;
   }
+  if (error.code !== null && RECONCILE_CODES[command]?.has(error.code)) {
+    return true;
+  }
+  // Fallback for a backend that still answers a lost claim with an uncoded 5xx.
   return (
     COMPLETION_COMMANDS.has(command) &&
     error.status !== null &&
@@ -74,10 +105,92 @@ export function isUnconfirmedCommandFailure(
   );
 }
 
-/** Decide whether an authoritative resume phase proves the command landed. */
+/**
+ * A Pomodoro start may have landed when its response was lost or when the
+ * backend reports it could not confirm the start. Other start conflicts are
+ * definitive answers the caller handles on its own.
+ */
+export function isUnconfirmedStartFailure(error: IntensiveError): boolean {
+  return (
+    isAmbiguousFailure(error) ||
+    error.code === IntensiveErrorCode.START_UNCONFIRMED
+  );
+}
+
+/** How the page recovers from a Pomodoro start that did not land. */
+export type StartFailureRecovery =
+  | "RELOAD"
+  | "OFFER_COMPLETION"
+  | "UNAVAILABLE"
+  | "RETRY";
+
+/** The session moved on: its authoritative phase is the answer. */
+const START_RELOAD_CODES: ReadonlySet<string> = new Set([
+  IntensiveErrorCode.SESSION_NOT_ACTIVE,
+  IntensiveErrorCode.BLOCK_ALREADY_ACTIVE,
+  IntensiveErrorCode.BLOCK_ON_BREAK,
+]);
+
+/** Nothing is left to start, so the only way forward is completing it. */
+const START_COMPLETION_CODES: ReadonlySet<string> = new Set([
+  IntensiveErrorCode.NO_PENDING_BLOCKS,
+  IntensiveErrorCode.NO_CARDS_AVAILABLE,
+]);
+
+/**
+ * Choose the recovery for a failed start. Any failure without a definitive
+ * code (including a START_UNCONFIRMED the hook could not resolve) stays
+ * retryable, so the view is never stranded.
+ */
+export function startFailureRecovery(error: IntensiveError): StartFailureRecovery {
+  if (error.code === null) {
+    return "RETRY";
+  }
+  if (error.code === IntensiveErrorCode.SESSION_UNAVAILABLE) {
+    return "UNAVAILABLE";
+  }
+  if (START_RELOAD_CODES.has(error.code)) {
+    return "RELOAD";
+  }
+  if (START_COMPLETION_CODES.has(error.code)) {
+    return "OFFER_COMPLETION";
+  }
+  return "RETRY";
+}
+
+export const SESSION_UNAVAILABLE_MESSAGE = "La sesión ya no está disponible.";
+
+/**
+ * The session GET answers an uncoded 500 (or a 404) when the session does not
+ * exist or belongs to someone else. That is a definitive answer, unlike a lost
+ * response or a gateway error, which only mean the read itself failed.
+ */
+export function isSessionUnavailable(error: IntensiveError): boolean {
+  return (
+    error.kind === "business" &&
+    error.code === null &&
+    (error.status === 404 || error.status === 500)
+  );
+}
+
+/** Tag a failed session read so callers can branch on the unavailable case. */
+export function sessionUnavailableError(error: IntensiveError): IntensiveError {
+  return {
+    ...error,
+    code: IntensiveErrorCode.SESSION_UNAVAILABLE,
+    message: SESSION_UNAVAILABLE_MESSAGE,
+  };
+}
+
+/**
+ * Decide whether an authoritative resume phase proves the command landed.
+ * Terminal commands also need the session status when it is known, because
+ * COMPLETED and ABANDONED both derive the TERMINAL phase.
+ */
 export function isCommandConfirmed(
   command: IntensiveCommand,
   phase: ResumePhase | null,
+  sessionStatus?: string,
 ): boolean {
   if (!phase) {
     return false;
@@ -87,8 +200,15 @@ export function isCommandConfirmed(
     case "PAUSE":
       return phase === "PAUSED";
     case "ABANDON":
+      return (
+        phase === "TERMINAL" &&
+        (sessionStatus === undefined || sessionStatus === "ABANDONED")
+      );
     case "COMPLETE":
-      return phase === "TERMINAL";
+      return (
+        phase === "TERMINAL" &&
+        (sessionStatus === undefined || sessionStatus === "COMPLETED")
+      );
     case "COMPLETE_BLOCK":
       // The backend moves the block ACTIVE -> ON_BREAK while the session
       // stays ACTIVE, which derives exactly the BREAK phase. A block still

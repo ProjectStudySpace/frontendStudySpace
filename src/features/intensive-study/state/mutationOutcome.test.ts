@@ -10,8 +10,12 @@ import type { IntensiveError } from "../api/errors";
 import {
   isAmbiguousFailure,
   isCommandConfirmed,
+  isSessionUnavailable,
   isUnconfirmedCommandFailure,
+  isUnconfirmedStartFailure,
   selectVisibleIntensiveError,
+  sessionUnavailableError,
+  startFailureRecovery,
   type IntensiveCommand,
 } from "./mutationOutcome";
 
@@ -20,6 +24,7 @@ function error(overrides: Partial<IntensiveError> = {}): IntensiveError {
     kind: "business",
     message: "Command rejected",
     status: 409,
+    code: null,
     path: null,
     method: null,
     raw: null,
@@ -84,6 +89,97 @@ describe("isUnconfirmedCommandFailure", () => {
       isUnconfirmedCommandFailure("PAUSE", error({ kind: "network", status: null })),
     ).toBe(true);
   });
+
+  it("reconciles a coded lost completion claim on both completion commands", () => {
+    const lost = error({ status: 409, code: "COMPLETION_UNCONFIRMED" });
+    expect(isUnconfirmedCommandFailure("COMPLETE", lost)).toBe(true);
+    expect(isUnconfirmedCommandFailure("COMPLETE_BLOCK", lost)).toBe(true);
+  });
+
+  it("reloads the authoritative state when the completion target is no longer active", () => {
+    // The target may already be in the state the command wanted to reach.
+    expect(
+      isUnconfirmedCommandFailure(
+        "COMPLETE",
+        error({ status: 409, code: "SESSION_NOT_ACTIVE" }),
+      ),
+    ).toBe(true);
+    expect(
+      isUnconfirmedCommandFailure(
+        "COMPLETE_BLOCK",
+        error({ status: 409, code: "BLOCK_NOT_ACTIVE" }),
+      ),
+    ).toBe(true);
+  });
+
+  it("keeps business rule codes and codes of other commands as confirmed rejections", () => {
+    expect(
+      isUnconfirmedCommandFailure("COMPLETE", error({ code: "PENDING_CARDS" })),
+    ).toBe(false);
+    expect(
+      isUnconfirmedCommandFailure("COMPLETE", error({ code: "BLOCK_NOT_ACTIVE" })),
+    ).toBe(false);
+    expect(
+      isUnconfirmedCommandFailure(
+        "COMPLETE_BLOCK",
+        error({ code: "SESSION_NOT_ACTIVE" }),
+      ),
+    ).toBe(false);
+    for (const command of ["PAUSE", "ABANDON", "END_BREAK", "SKIP_BREAK"] as const) {
+      expect(
+        isUnconfirmedCommandFailure(
+          command,
+          error({ code: "COMPLETION_UNCONFIRMED" }),
+        ),
+      ).toBe(false);
+    }
+  });
+});
+
+describe("isUnconfirmedStartFailure", () => {
+  it("reconciles a start whose outcome the backend could not confirm", () => {
+    expect(
+      isUnconfirmedStartFailure(error({ status: 409, code: "START_UNCONFIRMED" })),
+    ).toBe(true);
+  });
+
+  it("reconciles a response-less start", () => {
+    expect(
+      isUnconfirmedStartFailure(error({ kind: "network", status: null })),
+    ).toBe(true);
+  });
+
+  it("leaves other start conflicts and server errors to the caller", () => {
+    for (const code of ["BLOCK_ALREADY_ACTIVE", "NO_CARDS_AVAILABLE", null]) {
+      expect(isUnconfirmedStartFailure(error({ status: 409, code }))).toBe(false);
+    }
+    expect(isUnconfirmedStartFailure(error({ status: 500 }))).toBe(false);
+  });
+});
+
+describe("isSessionUnavailable", () => {
+  it("treats an uncoded 500 or a 404 from the session GET as an unavailable session", () => {
+    expect(isSessionUnavailable(error({ status: 500 }))).toBe(true);
+    expect(isSessionUnavailable(error({ status: 404 }))).toBe(true);
+  });
+
+  it("keeps gateway errors, coded errors and lost responses as a failed read", () => {
+    expect(isSessionUnavailable(error({ status: 503 }))).toBe(false);
+    expect(isSessionUnavailable(error({ status: 500, code: "X" }))).toBe(false);
+    expect(
+      isSessionUnavailable(error({ kind: "network", status: null })),
+    ).toBe(false);
+    expect(isSessionUnavailable(error({ kind: "auth", status: 401 }))).toBe(
+      false,
+    );
+  });
+
+  it("builds a coded unavailable error the caller can branch on", () => {
+    const unavailable = sessionUnavailableError(error({ status: 500 }));
+    expect(unavailable.code).toBe("SESSION_UNAVAILABLE");
+    expect(unavailable.message).toBe("La sesión ya no está disponible.");
+    expect(unavailable.status).toBe(500);
+  });
 });
 
 describe("isCommandConfirmed", () => {
@@ -108,6 +204,14 @@ describe("isCommandConfirmed", () => {
       expect(isCommandConfirmed(command, "BREAK")).toBe(false);
       expect(isCommandConfirmed(command, "TERMINAL")).toBe(false);
     }
+  });
+
+  it("confirms a terminal command only for its own terminal status", () => {
+    // An abandoned session is TERMINAL too, but it was never completed.
+    expect(isCommandConfirmed("COMPLETE", "TERMINAL", "COMPLETED")).toBe(true);
+    expect(isCommandConfirmed("COMPLETE", "TERMINAL", "ABANDONED")).toBe(false);
+    expect(isCommandConfirmed("ABANDON", "TERMINAL", "ABANDONED")).toBe(true);
+    expect(isCommandConfirmed("ABANDON", "TERMINAL", "COMPLETED")).toBe(false);
   });
 
   it("never confirms a command without an authoritative phase", () => {
@@ -197,5 +301,36 @@ describe("selectVisibleIntensiveError", () => {
         hookError: null,
       }),
     ).toBeNull();
+  });
+});
+
+describe("startFailureRecovery", () => {
+  it.each(["SESSION_NOT_ACTIVE", "BLOCK_ALREADY_ACTIVE", "BLOCK_ON_BREAK"])(
+    "reloads the session when a start is rejected with %s",
+    (code) => {
+      expect(startFailureRecovery(error({ code }))).toBe("RELOAD");
+    },
+  );
+
+  it.each(["NO_PENDING_BLOCKS", "NO_CARDS_AVAILABLE"])(
+    "offers session completion when a start is rejected with %s",
+    (code) => {
+      expect(startFailureRecovery(error({ code }))).toBe("OFFER_COMPLETION");
+    },
+  );
+
+  it("reports an unavailable session without offering a retry", () => {
+    expect(
+      startFailureRecovery(error({ code: "SESSION_UNAVAILABLE" })),
+    ).toBe("UNAVAILABLE");
+  });
+
+  it.each([
+    ["an unresolved START_UNCONFIRMED", error({ code: "START_UNCONFIRMED" })],
+    ["a lost response", error({ kind: "network", status: null })],
+    ["an uncoded rejection", error({ status: 400 })],
+    ["an unknown code", error({ code: "SOMETHING_NEW" })],
+  ])("offers a retry for %s", (_label, failure) => {
+    expect(startFailureRecovery(failure)).toBe("RETRY");
   });
 });
