@@ -57,11 +57,13 @@ import {
 import { resolveCompletionDispatch } from "../features/intensive-study/state/timerCompletion";
 import {
   selectVisibleIntensiveError,
+  startFailureRecovery,
   type IntensiveCommand,
   type IntensiveCommandFailure,
   type IntensiveMutationOutcome,
 } from "../features/intensive-study/state/mutationOutcome";
 import { createSingleFlight } from "../features/intensive-study/state/singleFlight";
+import type { IntensiveError } from "../features/intensive-study/api/errors";
 import { IntradayReview } from "../types/intradayReviews";
 import { UserBadge } from "../types/gamification";
 
@@ -98,6 +100,7 @@ const IntensiveStudy: React.FC = () => {
     retryAbandonSession,
     getActiveSession,
     rehydrateSession,
+    reloadSession,
     resumeFromPause,
     startPomodoro,
     completePomodoro,
@@ -138,6 +141,9 @@ const IntensiveStudy: React.FC = () => {
   // lifecycle stays where it was and the user can retry.
   const [commandFailure, setCommandFailure] =
     useState<IntensiveCommandFailure | null>(null);
+  // Set when a start found no block left to run: the way forward is
+  // completing the session, not retrying the start.
+  const [completionOffered, setCompletionOffered] = useState(false);
   // True only once authoritative session/block/card/timer data has been applied.
   const [hydrated, setHydrated] = useState(false);
   const [resuming, setResuming] = useState(false);
@@ -363,19 +369,7 @@ const IntensiveStudy: React.FC = () => {
     if (!currentSession) return;
 
     try {
-      // Iniciar primer Pomodoro
-      const pomodoro = await startPomodoro(currentSession.id);
-
-      if (pomodoro) {
-        // Obtener primera tarjeta
-        await getNextCard(currentSession.id);
-
-        // Iniciar timer con duración del backend (sincronizado con UTC)
-        startWorkBlock(pomodoro);
-
-        setHydrated(true);
-        setCurrentView("ACTIVE");
-      }
+      await startBlock(currentSession.id);
     } catch (err) {
       console.error("Error starting first pomodoro:", err);
     }
@@ -536,21 +530,98 @@ const IntensiveStudy: React.FC = () => {
     await handlePomodoroComplete();
   };
 
-  // Arrancar el bloque siguiente una vez que el descanso quedó cerrado.
-  const startNextWorkBlock = async (sessionId: number) => {
-    pomodoroTimer.setBlockNumber(pomodoroTimer.blockNumber + 1);
+  // Arrancar un bloque de trabajo (el primero, o el siguiente una vez que el
+  // descanso quedó cerrado). La vista y el número de bloque sólo avanzan
+  // con un inicio confirmado; un inicio rechazado se recupera según su código.
+  const startBlock = async (sessionId: number) => {
+    setCommandFailure(null);
+    setCompletionOffered(false);
 
-    const nextPomodoro = await startPomodoro(sessionId);
-    if (!nextPomodoro) return;
+    const outcome = await startPomodoro(sessionId);
+
+    if (outcome.status !== "success") {
+      await recoverFailedStart(sessionId, outcome.error);
+      return;
+    }
+
+    if (outcome.snapshot) {
+      // Reconciled start: adopt whatever phase the backend reports.
+      await adoptReconciledBreak(outcome.snapshot, sessionId);
+      return;
+    }
+
+    const block = outcome.data;
+    pomodoroTimer.setBlockNumber(
+      block.blockNumber ?? pomodoroTimer.blockNumber + 1,
+    );
 
     // Sincronizar con la duración del nuevo Pomodoro del backend
-    startWorkBlock(nextPomodoro);
+    startWorkBlock(block);
 
     // Cargar la primera tarjeta del nuevo bloque
     await getNextCard(sessionId);
 
     setHydrated(true);
     setCurrentView("ACTIVE");
+  };
+
+  // Recuperar un inicio rechazado sin dejar la vista varada.
+  const recoverFailedStart = async (
+    sessionId: number,
+    error: IntensiveError,
+  ) => {
+    switch (startFailureRecovery(error)) {
+      case "RELOAD":
+        // The session moved on (paused, ended, block running or on break):
+        // its authoritative phase replaces the local one.
+        await adoptReloadedSession(sessionId, error.message);
+        return;
+      case "OFFER_COMPLETION":
+        pomodoroTimer.pause();
+        setCompletionOffered(true);
+        return;
+      case "UNAVAILABLE":
+        // The hook already shows the unavailable message; nothing to retry.
+        return;
+      case "RETRY":
+        setCommandFailure({ command: "START", message: error.message });
+        return;
+    }
+  };
+
+  // Recargar la sesión y adoptar su fase; un fallo de lectura es reintentable.
+  const adoptReloadedSession = async (sessionId: number, message: string) => {
+    const reload = await reloadSession(sessionId);
+    if (reload.status === "found") {
+      await adoptReconciledBreak(reload.snapshot, sessionId);
+    } else if (reload.status === "failed") {
+      setCommandFailure({
+        command: "START",
+        message: reload.error.message || message,
+      });
+    }
+  };
+
+  // Reintentar un inicio sin repetir uno que ya aterrizó: leer primero y
+  // volver a iniciar sólo si la sesión sigue lista para un bloque nuevo.
+  const retryStart = async () => {
+    if (!currentSession) return;
+
+    const sessionId = currentSession.id;
+    setCommandFailure(null);
+    const reload = await reloadSession(sessionId);
+
+    if (reload.status === "unavailable") return;
+    if (reload.status === "failed") {
+      setCommandFailure({ command: "START", message: reload.error.message });
+      return;
+    }
+    if (reload.snapshot.phase !== "READY") {
+      await adoptReconciledBreak(reload.snapshot, sessionId);
+      return;
+    }
+
+    await startBlock(sessionId);
   };
 
   // Adoptar el estado autoritativo tras reconciliar un comando ambiguo.
@@ -589,7 +660,7 @@ const IntensiveStudy: React.FC = () => {
       return;
     }
 
-    await startNextWorkBlock(sessionId);
+    await startBlock(sessionId);
   };
 
   // Saltar descanso
@@ -614,7 +685,7 @@ const IntensiveStudy: React.FC = () => {
       return;
     }
 
-    await startNextWorkBlock(sessionId);
+    await startBlock(sessionId);
   };
 
   // Completar tarjeta
@@ -683,6 +754,11 @@ const IntensiveStudy: React.FC = () => {
   };
 
   const handleSessionComplete = () => finishSession(completeSession);
+  // Completar la sesión ofrecida tras un inicio sin bloques pendientes.
+  const completeOfferedSession = () => {
+    setCompletionOffered(false);
+    return handleSessionComplete();
+  };
   // Retry a failed completion without ever replaying a landed POST (RES-203).
   const retrySessionComplete = () => finishSession(retryCompleteSession);
 
@@ -707,6 +783,9 @@ const IntensiveStudy: React.FC = () => {
       case "COMPLETE_BLOCK":
         void retryPomodoroComplete();
         return;
+      case "START":
+        void retryStart();
+        return;
     }
   };
 
@@ -725,6 +804,7 @@ const IntensiveStudy: React.FC = () => {
     setSelectedDifficulty(null);
     setHydrated(false);
     setCommandFailure(null);
+    setCompletionOffered(false);
     pomodoroTimer.reset();
     clearError();
   };
@@ -1259,6 +1339,30 @@ const IntensiveStudy: React.FC = () => {
               className="px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               {t("intensiveStudy.dismissError", "Descartar")}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Sin bloques por iniciar: el siguiente paso es completar la sesión */}
+      {completionOffered && currentView !== "CONFIG" && (
+        <div
+          role="status"
+          className="max-w-3xl mx-auto mb-6 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-lg p-4"
+        >
+          <p className="text-sm text-indigo-800 dark:text-indigo-200">
+            {t(
+              "intensiveStudy.startNoBlocksLeft",
+              "No quedan bloques por iniciar. Completa la sesión para ver tus resultados.",
+            )}
+          </p>
+          <div className="mt-3">
+            <button
+              onClick={() => void completeOfferedSession()}
+              disabled={loading}
+              className="px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {t("intensiveStudy.actions.complete", "Completar")}
             </button>
           </div>
         </div>

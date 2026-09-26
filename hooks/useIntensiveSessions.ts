@@ -34,9 +34,11 @@ import {
   isSessionUnavailable,
   isUnconfirmedCommandFailure,
   isUnconfirmedStartFailure,
+  SESSION_UNAVAILABLE_MESSAGE,
   sessionUnavailableError,
   type IntensiveCommand,
   type IntensiveMutationOutcome,
+  type IntensiveSessionReload,
 } from "../src/features/intensive-study/state/mutationOutcome";
 
 /**
@@ -92,12 +94,15 @@ interface UseIntensiveSessionsReturn {
   ) => Promise<IntensiveMutationOutcome<IntensiveStudySession>>;
   getActiveSession: () => Promise<IntensiveStudySession | null>;
   rehydrateSession: (id: number) => Promise<IntensiveResumeSnapshot | null>;
+  reloadSession: (id: number) => Promise<IntensiveSessionReload>;
   resumeFromPause: (
     sessionId: number,
   ) => Promise<IntensiveResumeSnapshot | null>;
 
   // Funciones de Pomodoro
-  startPomodoro: (sessionId: number) => Promise<PomodoroBlock | null>;
+  startPomodoro: (
+    sessionId: number,
+  ) => Promise<IntensiveMutationOutcome<PomodoroBlock>>;
   completePomodoro: (
     sessionId: number,
     blockId: number,
@@ -717,10 +722,11 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
    * Iniciar un bloque Pomodoro
    */
   const startPomodoro = useCallback(
-    async (sessionId: number): Promise<PomodoroBlock | null> => {
+    async (sessionId: number): Promise<IntensiveMutationOutcome<PomodoroBlock>> => {
       if (!user) {
-        setError("Usuario no autenticado");
-        return null;
+        const message = "Usuario no autenticado";
+        setError(message);
+        return { status: "failed", error: localIntensiveError("auth", message) };
       }
 
       setLoading(true);
@@ -731,22 +737,32 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
           `/intensive-sessions/${sessionId}/pomodoro/start`,
         );
 
-        if (response.data) {
-          const apiResponse = response.data;
-          const block = apiResponse.block;
+        const block: PomodoroBlock | undefined = response.data?.block;
+        if (block) {
           setCurrentPomodoro(block);
-          return block;
+          return { status: "success", data: block, snapshot: null };
         }
-        return null;
+
+        const message = "Error al iniciar Pomodoro";
+        setError(message);
+        return {
+          status: "failed",
+          error: localIntensiveError("business", message),
+        };
       } catch (err: any) {
+        const failure: IntensiveError = {
+          ...normalizeIntensiveError(err),
+          message: intensiveErrorMessage(err, "Error al iniciar Pomodoro"),
+        };
+
         // A lost response or START_UNCONFIRMED may hide a start that landed:
         // read it back instead of replaying the POST. Other start conflicts
-        // are definitive answers left to the caller.
-        if (isUnconfirmedStartFailure(normalizeIntensiveError(err))) {
+        // are definitive answers returned with their code to the caller.
+        if (isUnconfirmedStartFailure(failure)) {
           const reconciliation = await reconcileSession(sessionId);
           if (reconciliation.status === "unavailable") {
             setError(reconciliation.error.message);
-            return null;
+            return { status: "failed", error: reconciliation.error };
           }
 
           if (reconciliation.status === "found") {
@@ -763,13 +779,19 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
                 setCurrentSession(payload.session);
               }
               setCurrentPomodoro(activeBlock);
-              return activeBlock;
+              // The snapshot carries the authoritative phase, so the caller
+              // adopts it instead of assuming a fresh work block.
+              return {
+                status: "success",
+                data: activeBlock,
+                snapshot: reconciliation.snapshot,
+              };
             }
           }
         }
 
-        setError(intensiveErrorMessage(err, "Error al iniciar Pomodoro"));
-        return null;
+        setError(failure.message);
+        return { status: "failed", error: failure };
       } finally {
         setLoading(false);
       }
@@ -1016,18 +1038,20 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
   // ==================== REANUDACIÓN ====================
 
   /**
-   * Rehydrate a session from authoritative backend data before the UI renders
+   * Reload a session from authoritative backend data before the UI renders
    * any actionable view: session detail, current Pomodoro block, assigned card,
    * derived phase and absolute timer boundaries.
    *
-   * Returns `null` when the session cannot be trusted (not found, failed
-   * request, or owned by another user) and leaves local state untouched.
+   * `unavailable` means the backend cannot return a session this user owns, a
+   * definitive answer; `failed` means the read itself failed and may be retried.
+   * Local state is only replaced on `found`.
    */
-  const rehydrateSession = useCallback(
-    async (sessionId: number): Promise<IntensiveResumeSnapshot | null> => {
+  const reloadSession = useCallback(
+    async (sessionId: number): Promise<IntensiveSessionReload> => {
       if (!user) {
-        setError("Usuario no autenticado");
-        return null;
+        const message = "Usuario no autenticado";
+        setError(message);
+        return { status: "failed", error: localIntensiveError("auth", message) };
       }
 
       setLoading(true);
@@ -1045,45 +1069,67 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
           userId: user.id ?? null,
         });
 
-        if (!hydrated) {
-          return null;
-        }
-
         // The assigned card is only meaningful while a work block is running.
         let card: IntensiveSessionCard | null = null;
-        if (hydrated.phase === "ACTIVE") {
+        if (hydrated?.phase === "ACTIVE") {
           const nextCard = await getNextCard(sessionId);
           card = nextCard.card;
         }
 
-        const snapshot = buildResumeSnapshot({
-          session,
-          activeBlock: payload?.activeBlock || null,
-          card,
-          userId: user.id ?? null,
-        });
+        const snapshot =
+          hydrated &&
+          buildResumeSnapshot({
+            session,
+            activeBlock: payload?.activeBlock || null,
+            card,
+            userId: user.id ?? null,
+          });
 
         if (!snapshot) {
-          return null;
+          // Missing or owned by someone else: not a session this user can use.
+          const error = sessionUnavailableError(
+            localIntensiveError("business", SESSION_UNAVAILABLE_MESSAGE),
+          );
+          setError(error.message);
+          return { status: "unavailable", error };
         }
 
         setCurrentSession(snapshot.session);
         setCurrentPomodoro(snapshot.block);
         setCurrentCard(snapshot.card);
 
-        return snapshot;
+        return { status: "found", snapshot };
       } catch (err: any) {
-        const errorMessage = intensiveErrorMessage(
-          err,
-          "Error al reanudar sesión",
-        );
-        setError(errorMessage);
-        return null;
+        const normalized = normalizeIntensiveError(err);
+        if (isSessionUnavailable(normalized)) {
+          const error = sessionUnavailableError(normalized);
+          setError(error.message);
+          return { status: "unavailable", error };
+        }
+
+        const error = {
+          ...normalized,
+          message: intensiveErrorMessage(err, "Error al reanudar sesión"),
+        };
+        setError(error.message);
+        return { status: "failed", error };
       } finally {
         setLoading(false);
       }
     },
     [user, getNextCard],
+  );
+
+  /**
+   * Rehydrate a session from authoritative backend data. Returns `null` when
+   * the session cannot be trusted and leaves local state untouched.
+   */
+  const rehydrateSession = useCallback(
+    async (sessionId: number): Promise<IntensiveResumeSnapshot | null> => {
+      const reload = await reloadSession(sessionId);
+      return reload.status === "found" ? reload.snapshot : null;
+    },
+    [reloadSession],
   );
 
   /**
@@ -1140,6 +1186,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
     retryAbandonSession,
     getActiveSession,
     rehydrateSession,
+    reloadSession,
     resumeFromPause,
 
     // Funciones de Pomodoro

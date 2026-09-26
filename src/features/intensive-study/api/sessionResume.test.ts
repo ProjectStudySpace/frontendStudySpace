@@ -405,7 +405,9 @@ describe("intensive session discovery and authoritative resume", () => {
 
     expect(snapshot).toBeNull();
     expect(latest?.currentSession).toBeNull();
-    expect(latest?.error).toBe("Detalle no disponible");
+    // An uncoded 500 is the backend's "missing or not owned" answer, rendered
+    // with the same unavailable message as a reconciliation read.
+    expect(latest?.error).toBe("La sesión ya no está disponible.");
   });
 });
 

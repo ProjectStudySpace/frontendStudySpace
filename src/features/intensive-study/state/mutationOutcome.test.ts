@@ -15,6 +15,7 @@ import {
   isUnconfirmedStartFailure,
   selectVisibleIntensiveError,
   sessionUnavailableError,
+  startFailureRecovery,
   type IntensiveCommand,
 } from "./mutationOutcome";
 
@@ -300,5 +301,36 @@ describe("selectVisibleIntensiveError", () => {
         hookError: null,
       }),
     ).toBeNull();
+  });
+});
+
+describe("startFailureRecovery", () => {
+  it.each(["SESSION_NOT_ACTIVE", "BLOCK_ALREADY_ACTIVE", "BLOCK_ON_BREAK"])(
+    "reloads the session when a start is rejected with %s",
+    (code) => {
+      expect(startFailureRecovery(error({ code }))).toBe("RELOAD");
+    },
+  );
+
+  it.each(["NO_PENDING_BLOCKS", "NO_CARDS_AVAILABLE"])(
+    "offers session completion when a start is rejected with %s",
+    (code) => {
+      expect(startFailureRecovery(error({ code }))).toBe("OFFER_COMPLETION");
+    },
+  );
+
+  it("reports an unavailable session without offering a retry", () => {
+    expect(
+      startFailureRecovery(error({ code: "SESSION_UNAVAILABLE" })),
+    ).toBe("UNAVAILABLE");
+  });
+
+  it.each([
+    ["an unresolved START_UNCONFIRMED", error({ code: "START_UNCONFIRMED" })],
+    ["a lost response", error({ kind: "network", status: null })],
+    ["an uncoded rejection", error({ status: 400 })],
+    ["an unknown code", error({ code: "SOMETHING_NEW" })],
+  ])("offers a retry for %s", (_label, failure) => {
+    expect(startFailureRecovery(failure)).toBe("RETRY");
   });
 });
