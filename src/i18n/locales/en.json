@@ -1736,13 +1736,13 @@
     "pricing": {
       "eyebrow": "Pricing",
       "title": "Free while in early access",
-      "subtitle": "MemoPal is free while in early access. A paid Pro plan is coming soon.",
+      "subtitle": "MemoPal is free while in early access, and new experiences are on the way.",
       "track": {
         "nowTitle": "Now · Early access",
         "nowBody": "Everything is free",
         "youAreHere": "You are here",
-        "soonTitle": "Coming soon · Pro plan",
-        "soonBody": "A paid plan is in the works"
+        "soonTitle": "Coming soon · New experiences",
+        "soonBody": "Deep focus, mobile and exam assistance"
       },
       "free": {
         "name": "Free",
@@ -1761,22 +1761,16 @@
         },
         "cta": "Get Started Free"
       },
-      "pro": {
-        "name": "Pro",
+      "upcoming": {
+        "name": "What's next",
         "stamp": "Coming soon",
-        "description": "A paid plan for students who want more. It is not available yet.",
-        "price": "Price to be announced",
-        "planned": "Planned",
-        "features": {
-          "advancedSpaced": "Advanced spaced repetition",
-          "advancedStats": "Advanced statistics",
-          "prioritySupport": "Priority support",
-          "focusExtension": "Browser extension for deep focus",
-          "studyAgent": "Your personalized study agent on Telegram/WhatsApp",
-          "examCoach": "Your personalized coach for official exams"
+        "description": "New experiences in development to take your study further.",
+        "items": {
+          "focusBrowser": "A deep focus experience in your browser",
+          "mobile": "A personalized, easy-to-reach experience on your phone",
+          "examAssistant": "Smart assistance for your official exam challenges"
         },
-        "connected": "All connected to your spaced repetition tool",
-        "cta": "Coming soon"
+        "connected": "All connected to your spaced repetition tool"
       }
     }
   },

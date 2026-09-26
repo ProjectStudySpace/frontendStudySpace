@@ -1,13 +1,13 @@
 import React, { useRef } from "react";
 import { motion, useInView, useReducedMotion } from "motion/react";
 import { useTranslation } from "react-i18next";
-import { Lock } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { EASE_OUT_EXPO } from "../../motion/presets";
 
 /**
  * Pricing timeline: a glowing, fully drawn "now" segment with a pulsing
  * "you are here" marker, followed by a dashed, not-yet-reached segment that
- * ends at the locked Pro plan.
+ * ends at the upcoming experiences.
  */
 export const EarlyAccessTrack: React.FC = () => {
   const { t } = useTranslation();
@@ -75,7 +75,7 @@ export const EarlyAccessTrack: React.FC = () => {
           />
         </svg>
         <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-dashed border-white/30 text-slate-400">
-          <Lock size={14} />
+          <Sparkles size={14} />
         </span>
       </div>
 

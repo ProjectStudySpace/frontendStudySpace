@@ -2,16 +2,16 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { Reveal, RevealItem } from "../Reveal";
 import { EarlyAccessTrack } from "./EarlyAccessTrack";
-import { FreePlanCard, ProPlanCard } from "./PlanCards";
+import { ComingSoonCard, FreePlanCard } from "./PlanCards";
 
 interface PricingSectionProps {
   onGetStarted: () => void;
 }
 
 /**
- * Pricing, told honestly: MemoPal is free during early access and a paid Pro
- * plan is coming. A timeline shows where we are; the plans show what that
- * means today.
+ * Pricing, told honestly: MemoPal is free during early access and new
+ * experiences are on the way. A timeline shows where we are; the cards show
+ * what is included today and what comes next.
  */
 export const PricingSection: React.FC<PricingSectionProps> = ({ onGetStarted }) => {
   const { t } = useTranslation();
@@ -49,7 +49,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onGetStarted }) 
             <FreePlanCard onGetStarted={onGetStarted} />
           </RevealItem>
           <RevealItem distance={24}>
-            <ProPlanCard />
+            <ComingSoonCard />
           </RevealItem>
         </Reveal>
       </div>

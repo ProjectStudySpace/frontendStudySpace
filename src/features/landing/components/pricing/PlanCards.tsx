@@ -2,13 +2,13 @@ import React, { useRef } from "react";
 import { motion, useInView, useReducedMotion } from "motion/react";
 import { useTranslation } from "react-i18next";
 import {
+  AppWindow,
   ArrowRight,
   Check,
   GraduationCap,
   Link2,
-  Lock,
-  MessageCircle,
-  Puzzle,
+  Smartphone,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import { Reveal, RevealItem } from "../Reveal";
@@ -23,14 +23,12 @@ const FREE_FEATURES = [
   "intensive",
 ] as const;
 
-/** Planned Pro tools, each linked back to the spaced repetition core. */
-const PRO_TOOLS: ReadonlyArray<{ key: string; Icon: LucideIcon }> = [
-  { key: "focusExtension", Icon: Puzzle },
-  { key: "studyAgent", Icon: MessageCircle },
-  { key: "examCoach", Icon: GraduationCap },
+/** Upcoming experiences, each linked back to the spaced repetition core. */
+const UPCOMING: ReadonlyArray<{ key: string; Icon: LucideIcon }> = [
+  { key: "focusBrowser", Icon: AppWindow },
+  { key: "mobile", Icon: Smartphone },
+  { key: "examAssistant", Icon: GraduationCap },
 ];
-
-const PRO_FEATURES = ["advancedSpaced", "advancedStats", "prioritySupport"] as const;
 
 interface FreePlanCardProps {
   onGetStarted: () => void;
@@ -104,15 +102,15 @@ export const FreePlanCard: React.FC<FreePlanCardProps> = ({ onGetStarted }) => {
   );
 };
 
-/** Blueprint grid drawn with CSS gradients, used behind the coming-soon plan. */
+/** Blueprint grid drawn with CSS gradients, used behind the coming-soon card. */
 const BLUEPRINT_STYLE: React.CSSProperties = {
   backgroundImage:
     "linear-gradient(rgba(148,163,184,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.12) 1px, transparent 1px)",
   backgroundSize: "22px 22px",
 };
 
-/** The future plan as a blueprint: dimmed, locked, stamped "coming soon". */
-export const ProPlanCard: React.FC = () => {
+/** What comes next, drawn as a blueprint and stamped "coming soon". */
+export const ComingSoonCard: React.FC = () => {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion() ?? false;
   const ref = useRef<HTMLDivElement>(null);
@@ -133,36 +131,32 @@ export const ProPlanCard: React.FC = () => {
         animate={stamped ? { opacity: 1, scale: 1, rotate: -8 } : { opacity: 0, scale: 1.8, rotate: -14 }}
         transition={{ delay: reducedMotion ? 0 : 0.5, duration: 0.45, ease: EASE_OUT_EXPO }}
       >
-        {t("landing.pricing.pro.stamp")}
+        {t("landing.pricing.upcoming.stamp")}
       </motion.span>
 
       <div className="mb-6 flex items-center gap-3 pr-28">
         <motion.span
-          className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl border border-slate-600 bg-slate-800 text-slate-300"
-          animate={looping ? { rotate: [0, -10, 8, -4, 0] } : { rotate: 0 }}
+          className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl border border-slate-600 bg-slate-800 text-amber-300"
+          animate={looping ? { scale: [1, 1.12, 1], rotate: [0, 8, 0] } : { scale: 1, rotate: 0 }}
           transition={
             looping
-              ? { duration: 1.1, repeat: Infinity, repeatDelay: 2.4, ease: "easeInOut" }
+              ? { duration: 1.4, repeat: Infinity, repeatDelay: 2.2, ease: "easeInOut" }
               : { duration: 0 }
           }
         >
-          <Lock size={20} />
+          <Sparkles size={20} />
         </motion.span>
-        <h3 className="text-2xl font-bold text-white">{t("landing.pricing.pro.name")}</h3>
+        <h3 className="text-2xl font-bold text-white">{t("landing.pricing.upcoming.name")}</h3>
       </div>
 
-      <p className="mb-6 text-sm text-slate-400">{t("landing.pricing.pro.description")}</p>
-      <p className="mb-6 text-lg font-semibold text-slate-200">{t("landing.pricing.pro.price")}</p>
+      <p className="mb-6 text-sm text-slate-400">{t("landing.pricing.upcoming.description")}</p>
 
-      <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-        {t("landing.pricing.pro.planned")}
-      </p>
       <ul className="relative mb-4 space-y-3">
         <span
           aria-hidden="true"
           className="absolute bottom-3 left-[1.1rem] top-3 border-l-2 border-dashed border-indigo-400/40"
         />
-        {PRO_TOOLS.map(({ key, Icon }, index) => (
+        {UPCOMING.map(({ key, Icon }, index) => (
           <motion.li
             key={key}
             className="relative flex items-center gap-3 rounded-xl border border-slate-700 bg-slate-800/70 p-2.5 pr-3 text-sm sm:text-base text-slate-200"
@@ -176,12 +170,12 @@ export const ProPlanCard: React.FC = () => {
             >
               <Icon size={16} />
             </span>
-            {t(`landing.pricing.pro.features.${key}`)}
+            {t(`landing.pricing.upcoming.items.${key}`)}
           </motion.li>
         ))}
       </ul>
 
-      <div className="mb-6 flex items-center gap-2 rounded-xl border border-dashed border-indigo-400/40 px-3 py-2 text-sm text-indigo-200">
+      <div className="mt-auto flex items-center gap-2 rounded-xl border border-dashed border-indigo-400/40 px-3 py-2 text-sm text-indigo-200">
         <span aria-hidden="true" className="relative flex h-2.5 w-2.5 flex-shrink-0">
           {looping && (
             <motion.span
@@ -193,28 +187,8 @@ export const ProPlanCard: React.FC = () => {
           <span className="relative h-2.5 w-2.5 rounded-full bg-indigo-400" />
         </span>
         <Link2 aria-hidden="true" size={16} className="flex-shrink-0" />
-        {t("landing.pricing.pro.connected")}
+        {t("landing.pricing.upcoming.connected")}
       </div>
-
-      <ul className="mb-8 space-y-3">
-        {PRO_FEATURES.map((feature) => (
-          <li key={feature} className="flex items-start gap-3 text-sm sm:text-base text-slate-400">
-            <span
-              aria-hidden="true"
-              className="mt-0.5 h-5 w-5 flex-shrink-0 rounded-full border border-dashed border-slate-500"
-            />
-            {t(`landing.pricing.pro.features.${feature}`)}
-          </li>
-        ))}
-      </ul>
-
-      <button
-        type="button"
-        disabled
-        className="mt-auto w-full cursor-not-allowed rounded-xl border border-slate-600 py-3 font-semibold text-slate-400"
-      >
-        {t("landing.pricing.pro.cta")}
-      </button>
     </div>
   );
 };

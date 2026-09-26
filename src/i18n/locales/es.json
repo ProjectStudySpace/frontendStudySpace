@@ -1740,13 +1740,13 @@
     "pricing": {
       "eyebrow": "Precios",
       "title": "Gratis durante el acceso anticipado",
-      "subtitle": "MemoPal es gratis mientras está en acceso anticipado. Pronto llegará un plan Pro de pago.",
+      "subtitle": "MemoPal es gratis mientras está en acceso anticipado, y vienen nuevas experiencias en camino.",
       "track": {
         "nowTitle": "Ahora · Acceso anticipado",
         "nowBody": "Todo es gratis",
         "youAreHere": "Estás aquí",
-        "soonTitle": "Próximamente · Plan Pro",
-        "soonBody": "Un plan de pago en preparación"
+        "soonTitle": "Próximamente · Nuevas experiencias",
+        "soonBody": "Enfoque profundo, móvil y asistencia para exámenes"
       },
       "free": {
         "name": "Gratis",
@@ -1765,22 +1765,16 @@
         },
         "cta": "Comenzar gratis"
       },
-      "pro": {
-        "name": "Pro",
+      "upcoming": {
+        "name": "Lo que viene",
         "stamp": "Próximamente",
-        "description": "Un plan de pago para quienes quieren más. Aún no está disponible.",
-        "price": "Precio por anunciar",
-        "planned": "Planeado",
-        "features": {
-          "advancedSpaced": "Repaso espaciado avanzado",
-          "advancedStats": "Estadísticas avanzadas",
-          "prioritySupport": "Soporte prioritario",
-          "focusExtension": "Extensión de navegador para enfoque profundo",
-          "studyAgent": "Tu agente de estudio personalizado en Telegram/WhatsApp",
-          "examCoach": "Tu entrenador personalizado para exámenes oficiales"
+        "description": "Nuevas experiencias en desarrollo para llevar tu estudio más lejos.",
+        "items": {
+          "focusBrowser": "Experiencia de enfoque profundo en tu navegador",
+          "mobile": "Experiencia personalizada y de fácil acceso en tu celular",
+          "examAssistant": "Asistencia inteligente para tus retos en exámenes oficiales"
         },
-        "connected": "Todo conectado con tu herramienta de repaso espaciado",
-        "cta": "Próximamente"
+        "connected": "Todo conectado con tu herramienta de repaso espaciado"
       }
     }
   },
