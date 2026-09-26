@@ -1516,31 +1516,7 @@
     "features": {
       "badge": "Powerful features",
       "title": "Everything you need to learn better",
-      "subtitle": "MemoPal combines advanced technology with proven learning principles to maximize your retention.",
-      "spacedRepetition": {
-        "title": "Intelligent Spaced Repetition",
-        "description": "Algorithms that automatically schedule your review sessions at the optimal time to maximize long-term retention."
-      },
-      "calendarIntegration": {
-        "title": "Google Calendar Integration",
-        "description": "Sync your study sessions with your calendar and receive automatic reminders to never miss a session."
-      },
-      "progressTracking": {
-        "title": "Progress Tracking",
-        "description": "Visualize your evolution with detailed metrics, study streaks, and real-time performance analysis."
-      },
-      "streakSystem": {
-        "title": "Streak System",
-        "description": "Keep your motivation high with a daily streak system that encourages you to study consistently."
-      },
-      "topicOrganization": {
-        "title": "Topic Organization",
-        "description": "Create and manage cards organized by subjects with custom colors for better visual organization."
-      },
-      "selfAssessment": {
-        "title": "Self-Assessment",
-        "description": "Rate the difficulty of each card and MemoPal will automatically adjust review intervals."
-      }
+      "subtitle": "MemoPal combines advanced technology with proven learning principles to maximize your retention."
     },
     "howItWorks": {
       "title": "Get Started in Minutes",
@@ -1556,55 +1532,20 @@
       "step3": {
         "title": "See Your Progress",
         "description": "Watch your retention improve over time. Maintain daily streaks and achieve your learning goals."
-      }
-    },
-    "pricing": {
-      "title": "Start Free, Grow When You Want",
-      "subtitle": "Choose the perfect plan for your learning needs",
-      "free": {
-        "name": "Free",
-        "description": "Perfect to get started",
-        "price": "$0",
-        "perMonth": "/month",
-        "features": {
-          "cards": "Up to 50 cards",
-          "topics": "3 subjects",
-          "basicSpaced": "Basic spaced repetition",
-          "mobileAccess": "Mobile access",
-          "basicStats": "Basic statistics"
-        },
-        "cta": "Get Started Free"
       },
-      "pro": {
-        "name": "Pro",
-        "description": "For serious students",
-        "price": "$9",
-        "perMonth": "/month",
-        "features": {
-          "unlimitedCards": "Unlimited cards",
-          "unlimitedTopics": "Unlimited subjects",
-          "advancedSpaced": "Advanced spaced repetition",
-          "calendarIntegration": "Google Calendar integration",
-          "advancedStats": "Advanced statistics",
-          "prioritySupport": "Priority support",
-          "noAds": "No ads"
-        },
-        "cta": "Start Trial"
-      },
-      "team": {
-        "name": "Team",
-        "description": "For study groups",
-        "price": "$29",
-        "perMonth": "/month",
-        "features": {
-          "allPro": "Everything in Pro",
-          "members": "Up to 10 members",
-          "sharedCards": "Shared cards",
-          "collaborativeBoards": "Collaborative boards",
-          "teamManagement": "Team management",
-          "groupAnalytics": "Group analytics"
-        },
-        "cta": "Contact Sales"
+      "stepOf": "Step {{current}} of {{total}}",
+      "visuals": {
+        "question": "Question",
+        "answer": "Answer",
+        "topic": "Topic",
+        "saved": "Card saved",
+        "createQuestion": "What is the capital of France?",
+        "createAnswer": "Paris",
+        "studyQuestion": "What separates the ratio decidendi of a judgment from an obiter dictum?",
+        "studyAnswer": "The ratio is the legal reasoning necessary to the decision and binds later courts; an obiter dictum is only persuasive.",
+        "chartTitle": "Cards reviewed this week",
+        "streak_one": "{{count}}-day streak",
+        "streak_other": "{{count}}-day streak"
       }
     },
     "cta": {
@@ -1631,13 +1572,206 @@
       "studySession": "Study session",
       "pendingCards": "pending cards",
       "active": "Active",
-      "question": "What is the capital of France?",
-      "answer": "Paris",
+      "question": "Why do NMDA receptors act as coincidence detectors in LTP?",
+      "answer": "They open only when glutamate binds and depolarization expels their Mg²⁺ block, letting Ca²⁺ in.",
       "easy": "Easy",
       "medium": "Medium",
       "hard": "Hard",
       "currentStreak": "Current streak",
       "progress": "Progress"
+    },
+    "showcase": {
+      "sampleNote": "Illustration with sample data.",
+      "spacedRepetition": {
+        "eyebrow": "Spaced repetition",
+        "title": "Review right before you forget.",
+        "body": "Every review restores what you learned, and each time the memory fades more slowly. MemoPal schedules the next review for you, so intervals stretch out as knowledge sticks.",
+        "point1": "Reviews scheduled automatically for every card",
+        "point2": "Intervals grow as you keep remembering",
+        "point3": "Less time re-studying what you already know",
+        "chartTitle": "Recall over time",
+        "chartLabel": "Chart: without review, recall drops over time; each review restores it and later drops are slower.",
+        "legendWithout": "Without review",
+        "legendWith": "With reviews",
+        "axisRecall": "Recall",
+        "axisTime": "Time",
+        "interval": "+{{days}}d"
+      },
+      "selfAssessment": {
+        "eyebrow": "Self-assessment",
+        "title": "You say how hard it was. MemoPal adapts.",
+        "body": "After each answer, rate the card Easy, Medium or Hard. Your rating shapes when you will see it again, so tough cards come back sooner and easy ones wait longer.",
+        "point1": "Three simple difficulty levels",
+        "point2": "Your rating adjusts the review interval",
+        "point3": "Try it: flip the card and pick a rating",
+        "sampleTopic": "Pharmacology",
+        "question": "Why do ACE inhibitors cause a dry cough?",
+        "answer": "ACE also breaks down bradykinin; when it is inhibited, bradykinin builds up in the airways and triggers the cough.",
+        "tapToFlip": "Tap to flip",
+        "flipLabel": "Flip the sample card",
+        "answerLabel": "Answer",
+        "prompt": "How well did you remember it?",
+        "waiting": "Rate the card to schedule it",
+        "nextReview_one": "Next review in {{count}} day",
+        "nextReview_other": "Next review in {{count}} days"
+      },
+      "imageFlashcards": {
+        "eyebrow": "Image flashcards",
+        "title": "Flashcards that show, not just tell.",
+        "body": "Some answers start with a picture. Attach images to the question or to the answer of a flashcard, such as an ECG strip, a histology slide or a map, and practice recalling what you see, not only what you read.",
+        "point1": "Images on the question, the answer, or both",
+        "point2": "More than one image per side when one is not enough",
+        "point3": "Try it: tap the card to reveal the answer",
+        "flipLabel": "Flip the sample flashcard with an image",
+        "cardTopic": "Cardiology",
+        "cardKind": "With image",
+        "cardQuestion": "Identify the rhythm",
+        "ecgLabel": "ECG strip: irregular R-R intervals, a fibrillating baseline and no P waves.",
+        "answerTitle": "Atrial fibrillation",
+        "answerBody": "Irregularly irregular R-R intervals and no P waves.",
+        "answerImageLabel": "Annotated ECG strip: brackets of different widths mark the irregular R-R intervals.",
+        "sideQuestion": "Image on the question",
+        "sideAnswer": "Image on the answer"
+      },
+      "studyNotes": {
+        "eyebrow": "Study notes",
+        "title": "Long-form notes that open like a book.",
+        "body": "When a topic needs more than a card, write a study note: two facing pages for longer explanations, each with its own images, so the diagram sits right beside the text that explains it.",
+        "point1": "Two facing pages for extensive content",
+        "point2": "Images on the left page, the right page, or both",
+        "point3": "Notes live in the same topic as their flashcards",
+        "noteTitle": "Cardiac physiology",
+        "noteKind": "Study note · 2 pages",
+        "leftHeading": "1 · Heart anatomy",
+        "heartLabel": "Anterior view of the heart: right atrium and right ventricle in blue on the viewer's left, left atrium and left ventricle in red on the viewer's right, with the aorta, pulmonary trunk, superior and inferior venae cavae, the tricuspid and mitral valves and the sinoatrial node labeled.",
+        "heartCaption": "Fig. 1 · Anterior view: the patient's right side appears on your left",
+        "heart": {
+          "svc": { "abbr": "SVC", "name": "Superior vena cava" },
+          "ivc": { "abbr": "IVC", "name": "Inferior vena cava" },
+          "ra": { "abbr": "RA", "name": "Right atrium" },
+          "rv": { "abbr": "RV", "name": "Right ventricle" },
+          "pt": { "abbr": "PT", "name": "Pulmonary trunk" },
+          "ao": { "abbr": "Ao", "name": "Aorta" },
+          "la": { "abbr": "LA", "name": "Left atrium" },
+          "lv": { "abbr": "LV", "name": "Left ventricle" },
+          "sa": { "abbr": "SA", "name": "Sinoatrial node" }
+        },
+        "valves": "Valves: tricuspid (RA → RV) and mitral (LA → LV).",
+        "leftText": "Deoxygenated blood returns through the venae cavae to the right atrium, passes to the right ventricle and is pumped into the pulmonary trunk. Oxygenated blood from the lungs enters the left atrium, and the left ventricle ejects it into the aorta.",
+        "rightHeading": "2 · Ventricular action potential",
+        "phaseLabel": "Phase {{phase}}:",
+        "phases": {
+          "p0": "Fast Na⁺ influx: rapid upstroke",
+          "p1": "Transient K⁺ efflux (Ito): early repolarization notch",
+          "p2": "L-type Ca²⁺ influx balances K⁺ efflux: plateau",
+          "p3": "Delayed-rectifier K⁺ efflux (IKr, IKs): repolarization",
+          "p4": "IK1 holds the resting potential near −90 mV"
+        },
+        "figureCaption": "Fig. 2 · Ventricular action potential",
+        "figureLabel": "Diagram of a ventricular action potential: rapid upstroke, early notch, plateau, repolarization and resting phase, labeled 0 to 4.",
+        "noteClinical": "Class III antiarrhythmics such as amiodarone block K⁺ channels, prolonging phase 3 and the QT interval."
+      },
+      "topicOrganization": {
+        "eyebrow": "Topic organization",
+        "title": "Every subject in its place.",
+        "body": "Group cards into topics with their own colors, and a mixed pile of study material becomes clear, color-coded stacks you can work through one subject at a time.",
+        "point1": "Custom colors for every topic",
+        "point2": "Study notes alongside your cards",
+        "point3": "Find any card quickly by subject",
+        "topics": {
+          "biology": "Biology",
+          "languages": "Languages",
+          "history": "History"
+        },
+        "sorted": "Sorted by topic"
+      },
+      "calendarIntegration": {
+        "eyebrow": "Calendar & reminders",
+        "title": "Your study plan, on your calendar.",
+        "body": "Connect Google Calendar to sync your study sessions, and turn on push notifications to get review reminders and a heads-up before a streak slips away.",
+        "point1": "Google Calendar sync for study sessions",
+        "point2": "Push reminders for intraday reviews",
+        "point3": "Streak warnings so you never break the chain",
+        "monthLabel": "This month",
+        "synced": "Google Calendar",
+        "legend": "Scheduled review sessions",
+        "notifications": {
+          "review": {
+            "title": "Time to review",
+            "body": "Your cards are ready for their next review."
+          },
+          "streak": {
+            "title": "Keep your streak alive",
+            "body": "You have not studied yet today."
+          }
+        }
+      },
+      "progressTracking": {
+        "eyebrow": "Progress & streaks",
+        "title": "Watch consistency turn into progress.",
+        "body": "Track completed cards, pending reviews and your current and longest streaks. Study sessions earn XP and unlock badges as you keep going.",
+        "point1": "Daily streaks, with your longest run on record",
+        "point2": "XP for every completed session",
+        "point3": "Badges for Pomodoros, sessions, streaks and cards",
+        "streakUnit": "days",
+        "xpLabel": "XP earned",
+        "completed": "Cards completed today"
+      },
+      "intensiveStudy": {
+        "eyebrow": "Intensive study",
+        "title": "Deep focus, one Pomodoro at a time.",
+        "body": "Start an intensive session, choose an intensity and work through your cards in 25-minute Pomodoro blocks with breaks in between. MemoPal then schedules same-day reviews to help it stick.",
+        "point1": "Relaxed, Normal or Intensive sessions",
+        "point2": "25-minute Pomodoro blocks with short and long breaks",
+        "point3": "Intraday reviews scheduled after the session",
+        "cards": {
+          "card1": "Why are the eigenvalues of a real symmetric matrix always real?",
+          "card2": "How does quantitative easing lower long-term bond yields?",
+          "card3": "What is the net ATP yield of aerobic glucose oxidation?",
+          "card4": "How does MHC class I antigen presentation differ from class II?",
+          "card5": "Why does an SN1 reaction at a chiral center tend to racemize it?"
+        }
+      }
+    },
+    "pricing": {
+      "eyebrow": "Pricing",
+      "title": "Free while in early access",
+      "subtitle": "MemoPal is free while in early access, and new experiences are on the way.",
+      "track": {
+        "nowTitle": "Now · Early access",
+        "nowBody": "Everything is free",
+        "youAreHere": "You are here",
+        "soonTitle": "Coming soon · New experiences",
+        "soonBody": "Deep focus, mobile and exam assistance"
+      },
+      "free": {
+        "name": "Free",
+        "badge": "Current plan",
+        "description": "Every feature MemoPal offers today, fully unlocked during early access.",
+        "price": "$0",
+        "perMonth": "/month",
+        "included": "Included today",
+        "features": {
+          "spacedRepetition": "Spaced repetition scheduling",
+          "selfAssessment": "Self-assessment with difficulty ratings",
+          "topics": "Topics with custom colors and study notes",
+          "calendar": "Google Calendar sync and push reminders",
+          "progress": "Progress, streaks, XP and badges",
+          "intensive": "Intensive sessions with Pomodoro"
+        },
+        "cta": "Get Started Free"
+      },
+      "upcoming": {
+        "name": "What's next",
+        "stamp": "Coming soon",
+        "description": "New experiences in development to take your study further.",
+        "items": {
+          "focusBrowser": "A deep focus experience in your browser",
+          "mobile": "A personalized, easy-to-reach experience on your phone",
+          "examAssistant": "Smart assistance for your official exam challenges"
+        },
+        "connected": "All connected to your spaced repetition tool"
+      }
     }
   },
   "components": {

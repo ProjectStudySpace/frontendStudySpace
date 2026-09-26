@@ -1520,31 +1520,7 @@
     "features": {
       "badge": "Características poderosas",
       "title": "Todo lo que necesitas para aprender mejor",
-      "subtitle": "MemoPal combina tecnología avanzada con principios de aprendizaje probados para maximizar tu retención.",
-      "spacedRepetition": {
-        "title": "Repaso espaciado inteligente",
-        "description": "Algoritmos que programan automáticamente tus sesiones de repaso en el momento óptimo para maximizar la retención a largo plazo."
-      },
-      "calendarIntegration": {
-        "title": "Integración con Google Calendar",
-        "description": "Sincroniza tus sesiones de estudio con tu calendario y recibe recordatorios automáticos para nunca perder una sesión."
-      },
-      "progressTracking": {
-        "title": "Seguimiento de progreso",
-        "description": "Visualiza tu evolución con métricas detalladas, rachas de estudio y análisis de rendimiento en tiempo real."
-      },
-      "streakSystem": {
-        "title": "Sistema de rachas",
-        "description": "Mantén tu motivación alta con un sistema de rachas diarias que te incentiva a estudiar constantemente."
-      },
-      "topicOrganization": {
-        "title": "Organización por temas",
-        "description": "Crea y gestiona tarjetas organizadas por materias con colores personalizados para una mejor organización visual."
-      },
-      "selfAssessment": {
-        "title": "Autoevaluación",
-        "description": "Califica la dificultad de cada tarjeta y MemoPal ajustará automáticamente los intervalos de repaso."
-      }
+      "subtitle": "MemoPal combina tecnología avanzada con principios de aprendizaje probados para maximizar tu retención."
     },
     "howItWorks": {
       "title": "Comienza en minutos",
@@ -1560,55 +1536,20 @@
       "step3": {
         "title": "Ve tu progreso",
         "description": "Observa cómo mejora tu retención con el tiempo. Mantén rachas diarias y alcanza tus metas de aprendizaje."
-      }
-    },
-    "pricing": {
-      "title": "Comienza gratis, crece cuando quieras",
-      "subtitle": "Elige el plan perfecto para tus necesidades de aprendizaje",
-      "free": {
-        "name": "Gratis",
-        "description": "Perfecto para empezar",
-        "price": "$0",
-        "perMonth": "/mes",
-        "features": {
-          "cards": "Hasta 50 tarjetas",
-          "topics": "3 materias",
-          "basicSpaced": "Repaso espaciado básico",
-          "mobileAccess": "Acceso móvil",
-          "basicStats": "Estadísticas básicas"
-        },
-        "cta": "Comenzar gratis"
       },
-      "pro": {
-        "name": "Pro",
-        "description": "Para estudiantes serios",
-        "price": "$9",
-        "perMonth": "/mes",
-        "features": {
-          "unlimitedCards": "Tarjetas ilimitadas",
-          "unlimitedTopics": "Materias ilimitadas",
-          "advancedSpaced": "Repaso espaciado avanzado",
-          "calendarIntegration": "Integración Google Calendar",
-          "advancedStats": "Estadísticas avanzadas",
-          "prioritySupport": "Soporte prioritario",
-          "noAds": "Sin anuncios"
-        },
-        "cta": "Comenzar prueba"
-      },
-      "team": {
-        "name": "Equipo",
-        "description": "Para grupos de estudio",
-        "price": "$29",
-        "perMonth": "/mes",
-        "features": {
-          "allPro": "Todo en Pro",
-          "members": "Hasta 10 miembros",
-          "sharedCards": "Tarjetas compartidas",
-          "collaborativeBoards": "Tableros colaborativos",
-          "teamManagement": "Gestión de equipo",
-          "groupAnalytics": "Análisis de grupo"
-        },
-        "cta": "Contactar ventas"
+      "stepOf": "Paso {{current}} de {{total}}",
+      "visuals": {
+        "question": "Pregunta",
+        "answer": "Respuesta",
+        "topic": "Tema",
+        "saved": "Tarjeta guardada",
+        "createQuestion": "¿Cuál es la capital de Francia?",
+        "createAnswer": "París",
+        "studyQuestion": "¿Qué distingue la ratio decidendi de una sentencia de un obiter dictum?",
+        "studyAnswer": "La ratio es el razonamiento jurídico necesario para la decisión y vincula a los tribunales posteriores; el obiter dictum solo es persuasivo.",
+        "chartTitle": "Tarjetas repasadas esta semana",
+        "streak_one": "Racha de {{count}} día",
+        "streak_other": "Racha de {{count}} días"
       }
     },
     "cta": {
@@ -1635,13 +1576,206 @@
       "studySession": "Sesión de estudio",
       "pendingCards": "tarjetas pendientes",
       "active": "Activo",
-      "question": "¿Cuál es la capital de Francia?",
-      "answer": "París",
+      "question": "¿Por qué los receptores NMDA actúan como detectores de coincidencia en la LTP?",
+      "answer": "Solo se abren si el glutamato se une y la despolarización expulsa su bloqueo de Mg²⁺, lo que permite la entrada de Ca²⁺.",
       "easy": "Fácil",
       "medium": "Medio",
       "hard": "Difícil",
       "currentStreak": "Racha actual",
       "progress": "Progreso"
+    },
+    "showcase": {
+      "sampleNote": "Ilustración con datos de ejemplo.",
+      "spacedRepetition": {
+        "eyebrow": "Repaso espaciado",
+        "title": "Repasa justo antes de olvidar.",
+        "body": "Cada repaso recupera lo que aprendiste y, cada vez, el recuerdo se desvanece más despacio. MemoPal programa el siguiente repaso por ti, así los intervalos se alargan a medida que el conocimiento se afianza.",
+        "point1": "Repasos programados automáticamente para cada tarjeta",
+        "point2": "Intervalos que crecen mientras sigues recordando",
+        "point3": "Menos tiempo repasando lo que ya sabes",
+        "chartTitle": "Recuerdo a lo largo del tiempo",
+        "chartLabel": "Gráfico: sin repaso, el recuerdo cae con el tiempo; cada repaso lo restablece y las caídas posteriores son más lentas.",
+        "legendWithout": "Sin repaso",
+        "legendWith": "Con repasos",
+        "axisRecall": "Recuerdo",
+        "axisTime": "Tiempo",
+        "interval": "+{{days}} d"
+      },
+      "selfAssessment": {
+        "eyebrow": "Autoevaluación",
+        "title": "Tú dices qué tan difícil fue. MemoPal se adapta.",
+        "body": "Después de cada respuesta, califica la tarjeta como Fácil, Medio o Difícil. Tu calificación define cuándo la volverás a ver: las difíciles regresan antes y las fáciles esperan más.",
+        "point1": "Tres niveles de dificultad sencillos",
+        "point2": "Tu calificación ajusta el intervalo de repaso",
+        "point3": "Pruébalo: voltea la tarjeta y elige una calificación",
+        "sampleTopic": "Farmacología",
+        "question": "¿Por qué los inhibidores de la ECA causan tos seca?",
+        "answer": "La ECA también degrada la bradicinina; al inhibirla, la bradicinina se acumula en las vías respiratorias y desencadena la tos.",
+        "tapToFlip": "Toca para voltear",
+        "flipLabel": "Voltear la tarjeta de ejemplo",
+        "answerLabel": "Respuesta",
+        "prompt": "¿Qué tan bien lo recordaste?",
+        "waiting": "Califica la tarjeta para programarla",
+        "nextReview_one": "Próximo repaso en {{count}} día",
+        "nextReview_other": "Próximo repaso en {{count}} días"
+      },
+      "imageFlashcards": {
+        "eyebrow": "Tarjetas con imágenes",
+        "title": "Tarjetas que muestran, no solo cuentan.",
+        "body": "Algunas respuestas empiezan con una imagen. Adjunta imágenes a la pregunta o a la respuesta de una tarjeta, como una tira de ECG, una lámina de histología o un mapa, y practica recordar lo que ves, no solo lo que lees.",
+        "point1": "Imágenes en la pregunta, en la respuesta o en ambas",
+        "point2": "Más de una imagen por lado cuando una no basta",
+        "point3": "Pruébalo: toca la tarjeta para ver la respuesta",
+        "flipLabel": "Voltear la tarjeta de ejemplo con imagen",
+        "cardTopic": "Cardiología",
+        "cardKind": "Con imagen",
+        "cardQuestion": "Identifica el ritmo",
+        "ecgLabel": "Tira de ECG: intervalos R-R irregulares, línea de base fibrilante y sin ondas P.",
+        "answerTitle": "Fibrilación auricular",
+        "answerBody": "Intervalos R-R irregularmente irregulares y ausencia de ondas P.",
+        "answerImageLabel": "Tira de ECG anotada: corchetes de distinto ancho marcan los intervalos R-R irregulares.",
+        "sideQuestion": "Imagen en la pregunta",
+        "sideAnswer": "Imagen en la respuesta"
+      },
+      "studyNotes": {
+        "eyebrow": "Notas de estudio",
+        "title": "Notas extensas que se abren como un libro.",
+        "body": "Cuando un tema necesita más que una tarjeta, escribe una nota de estudio: dos páginas enfrentadas para explicaciones largas, cada una con sus propias imágenes, para que el diagrama quede justo al lado del texto que lo explica.",
+        "point1": "Dos páginas enfrentadas para contenido extenso",
+        "point2": "Imágenes en la página izquierda, en la derecha o en ambas",
+        "point3": "Las notas viven en el mismo tema que sus tarjetas",
+        "noteTitle": "Fisiología cardíaca",
+        "noteKind": "Nota de estudio · 2 páginas",
+        "leftHeading": "1 · Anatomía del corazón",
+        "heartLabel": "Vista anterior del corazón: aurícula derecha y ventrículo derecho en azul a la izquierda del observador, aurícula izquierda y ventrículo izquierdo en rojo a la derecha del observador, con la aorta, el tronco pulmonar, las venas cavas superior e inferior, las válvulas tricúspide y mitral y el nodo sinoauricular señalados.",
+        "heartCaption": "Fig. 1 · Vista anterior: el lado derecho del paciente aparece a tu izquierda",
+        "heart": {
+          "svc": { "abbr": "VCS", "name": "Vena cava superior" },
+          "ivc": { "abbr": "VCI", "name": "Vena cava inferior" },
+          "ra": { "abbr": "AD", "name": "Aurícula derecha" },
+          "rv": { "abbr": "VD", "name": "Ventrículo derecho" },
+          "pt": { "abbr": "TP", "name": "Tronco pulmonar" },
+          "ao": { "abbr": "Ao", "name": "Aorta" },
+          "la": { "abbr": "AI", "name": "Aurícula izquierda" },
+          "lv": { "abbr": "VI", "name": "Ventrículo izquierdo" },
+          "sa": { "abbr": "NSA", "name": "Nodo sinoauricular" }
+        },
+        "valves": "Válvulas: tricúspide (AD → VD) y mitral (AI → VI).",
+        "leftText": "La sangre desoxigenada regresa por las venas cavas a la aurícula derecha, pasa al ventrículo derecho y se bombea al tronco pulmonar. La sangre oxigenada de los pulmones entra en la aurícula izquierda y el ventrículo izquierdo la expulsa hacia la aorta.",
+        "rightHeading": "2 · Potencial de acción ventricular",
+        "phaseLabel": "Fase {{phase}}:",
+        "phases": {
+          "p0": "Entrada rápida de Na⁺: despolarización rápida",
+          "p1": "Salida transitoria de K⁺ (Ito): muesca de repolarización temprana",
+          "p2": "La entrada de Ca²⁺ por canales tipo L equilibra la salida de K⁺: meseta",
+          "p3": "Salida de K⁺ por rectificadores tardíos (IKr, IKs): repolarización",
+          "p4": "IK1 mantiene el potencial de reposo cerca de −90 mV"
+        },
+        "figureCaption": "Fig. 2 · Potencial de acción ventricular",
+        "figureLabel": "Diagrama de un potencial de acción ventricular: despolarización rápida, muesca temprana, meseta, repolarización y fase de reposo, numeradas del 0 al 4.",
+        "noteClinical": "Los antiarrítmicos de clase III, como la amiodarona, bloquean canales de K⁺ y prolongan la fase 3 y el intervalo QT."
+      },
+      "topicOrganization": {
+        "eyebrow": "Organización por temas",
+        "title": "Cada materia en su lugar.",
+        "body": "Agrupa tus tarjetas en temas con colores propios y una pila mezclada de material de estudio se convierte en montones claros por color que puedes repasar materia por materia.",
+        "point1": "Colores personalizados para cada tema",
+        "point2": "Notas de estudio junto a tus tarjetas",
+        "point3": "Encuentra cualquier tarjeta rápidamente por materia",
+        "topics": {
+          "biology": "Biología",
+          "languages": "Idiomas",
+          "history": "Historia"
+        },
+        "sorted": "Ordenadas por tema"
+      },
+      "calendarIntegration": {
+        "eyebrow": "Calendario y recordatorios",
+        "title": "Tu plan de estudio, en tu calendario.",
+        "body": "Conecta Google Calendar para sincronizar tus sesiones de estudio y activa las notificaciones push para recibir recordatorios de repaso y un aviso antes de perder tu racha.",
+        "point1": "Sincronización de sesiones con Google Calendar",
+        "point2": "Recordatorios push para los repasos intradía",
+        "point3": "Avisos de racha para que no rompas la cadena",
+        "monthLabel": "Este mes",
+        "synced": "Google Calendar",
+        "legend": "Sesiones de repaso programadas",
+        "notifications": {
+          "review": {
+            "title": "Hora de repasar",
+            "body": "Tus tarjetas están listas para su próximo repaso."
+          },
+          "streak": {
+            "title": "Mantén viva tu racha",
+            "body": "Todavía no has estudiado hoy."
+          }
+        }
+      },
+      "progressTracking": {
+        "eyebrow": "Progreso y rachas",
+        "title": "Mira cómo la constancia se convierte en progreso.",
+        "body": "Sigue tus tarjetas completadas, tus repasos pendientes y tus rachas actual y más larga. Las sesiones de estudio te dan XP y desbloquean insignias a medida que avanzas.",
+        "point1": "Rachas diarias, con tu mejor racha registrada",
+        "point2": "XP por cada sesión completada",
+        "point3": "Insignias por Pomodoros, sesiones, rachas y tarjetas",
+        "streakUnit": "días",
+        "xpLabel": "XP ganada",
+        "completed": "Tarjetas completadas hoy"
+      },
+      "intensiveStudy": {
+        "eyebrow": "Estudio intensivo",
+        "title": "Concentración profunda, un Pomodoro a la vez.",
+        "body": "Inicia una sesión intensiva, elige la intensidad y avanza por tus tarjetas en bloques Pomodoro de 25 minutos con descansos entre ellos. Después, MemoPal programa repasos el mismo día para ayudarte a afianzarlo.",
+        "point1": "Sesiones Relajada, Normal o Intensiva",
+        "point2": "Bloques Pomodoro de 25 minutos con descansos cortos y largos",
+        "point3": "Repasos intradía programados después de la sesión",
+        "cards": {
+          "card1": "¿Por qué los valores propios de una matriz simétrica real son siempre reales?",
+          "card2": "¿Cómo reduce la flexibilización cuantitativa los rendimientos de los bonos a largo plazo?",
+          "card3": "¿Cuál es el rendimiento neto de ATP de la oxidación aeróbica de la glucosa?",
+          "card4": "¿En qué se diferencia la presentación de antígenos por MHC de clase I de la de clase II?",
+          "card5": "¿Por qué una reacción SN1 en un centro quiral tiende a racemizarlo?"
+        }
+      }
+    },
+    "pricing": {
+      "eyebrow": "Precios",
+      "title": "Gratis durante el acceso anticipado",
+      "subtitle": "MemoPal es gratis mientras está en acceso anticipado, y vienen nuevas experiencias en camino.",
+      "track": {
+        "nowTitle": "Ahora · Acceso anticipado",
+        "nowBody": "Todo es gratis",
+        "youAreHere": "Estás aquí",
+        "soonTitle": "Próximamente · Nuevas experiencias",
+        "soonBody": "Enfoque profundo, móvil y asistencia para exámenes"
+      },
+      "free": {
+        "name": "Gratis",
+        "badge": "Plan actual",
+        "description": "Todas las funciones que MemoPal ofrece hoy, completamente desbloqueadas durante el acceso anticipado.",
+        "price": "$0",
+        "perMonth": "/mes",
+        "included": "Incluido hoy",
+        "features": {
+          "spacedRepetition": "Programación de repaso espaciado",
+          "selfAssessment": "Autoevaluación con calificación de dificultad",
+          "topics": "Temas con colores personalizados y notas de estudio",
+          "calendar": "Sincronización con Google Calendar y recordatorios push",
+          "progress": "Progreso, rachas, XP e insignias",
+          "intensive": "Sesiones intensivas con Pomodoro"
+        },
+        "cta": "Comenzar gratis"
+      },
+      "upcoming": {
+        "name": "Lo que viene",
+        "stamp": "Próximamente",
+        "description": "Nuevas experiencias en desarrollo para llevar tu estudio más lejos.",
+        "items": {
+          "focusBrowser": "Experiencia de enfoque profundo en tu navegador",
+          "mobile": "Experiencia personalizada y de fácil acceso en tu celular",
+          "examAssistant": "Asistencia inteligente para tus retos en exámenes oficiales"
+        },
+        "connected": "Todo conectado con tu herramienta de repaso espaciado"
+      }
     }
   },
   "components": {

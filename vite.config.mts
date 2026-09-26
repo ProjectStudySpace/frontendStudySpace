@@ -22,7 +22,10 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
-    include: ["src/features/intensive-study/**/*.test.ts"],
+    include: [
+      "src/features/intensive-study/**/*.test.ts",
+      "src/features/landing/**/*.test.ts",
+    ],
     setupFiles: ["src/test/setup.ts"],
     // Fail the run on any stray `.only`. Vitest defaults this to `!process.env.CI`,
     // which lets a focused test silently skip the rest of the suite and still exit 0.
