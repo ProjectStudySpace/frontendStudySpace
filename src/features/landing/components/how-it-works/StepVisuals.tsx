@@ -69,14 +69,14 @@ export const CreateCardVisual: React.FC = () => {
         <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
           {t("landing.howItWorks.visuals.question")}
         </p>
-        <p className="mb-4 text-sm sm:text-base font-semibold leading-snug text-gray-900">
+        <p className="mb-4 text-base font-semibold text-gray-900">
           <TypedText text={t("landing.howItWorks.visuals.createQuestion")} delay={0.3} />
         </p>
         <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
           {t("landing.howItWorks.visuals.answer")}
         </p>
-        <p className="mb-4 text-sm leading-snug text-gray-700">
-          <TypedText text={t("landing.howItWorks.visuals.createAnswer")} delay={1.6} duration={0.9} />
+        <p className="mb-4 text-base text-gray-700">
+          <TypedText text={t("landing.howItWorks.visuals.createAnswer")} delay={1.6} duration={0.4} />
         </p>
         <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
           {t("landing.howItWorks.visuals.topic")}
