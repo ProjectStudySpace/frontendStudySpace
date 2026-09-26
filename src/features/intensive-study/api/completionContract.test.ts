@@ -145,6 +145,20 @@ const LOST_CLAIM: TestResponse = {
   },
 };
 
+/** A coded 409 from the completion endpoints (backend conflict contract). */
+function conflict(code: string, error = "Conflicto"): TestResponse {
+  return { status: 409, data: { error, code, path: "/api", method: "POST" } };
+}
+
+/** The session GET answers an uncoded 500 for a missing or foreign session. */
+const SESSION_GONE: TestResponse = {
+  status: 500,
+  data: { error: "Sesión no encontrada", path: "/api", method: "GET" },
+};
+
+type CompleteOutcome = Awaited<ReturnType<HookState["completeSession"]>>;
+type BlockOutcome = Awaited<ReturnType<HookState["completePomodoro"]>>;
+
 let currentDetail: TestResponse = detail("ACTIVE", WORK_BLOCK);
 let postResponse: TestResponse | null = null;
 let calls: string[] = [];
@@ -223,6 +237,104 @@ describe("intensive completion contract", () => {
       if (outcome?.status !== "success") return;
       expect(outcome.data.summary).toEqual(SUMMARY);
       expect(outcome.data.session.status).toBe("COMPLETED");
+    });
+
+    it("passes the badge evaluation outcome through with the completion", async () => {
+      postResponse = {
+        status: 200,
+        data: {
+          message: "ok",
+          session: bareSessionRow({ status: "COMPLETED" }),
+          summary: SUMMARY,
+          badgeEvaluation: { status: "pending_reconciliation", retryable: true },
+        },
+      };
+      await renderHookProbe();
+      await hydrate(detail("ACTIVE", WORK_BLOCK));
+
+      let outcome: CompleteOutcome | undefined;
+      await act(async () => {
+        outcome = await latest?.completeSession(1);
+      });
+
+      expect(outcome?.status).toBe("success");
+      if (outcome?.status !== "success") return;
+      expect(outcome.data.badgeEvaluation).toEqual({
+        status: "pending_reconciliation",
+        retryable: true,
+      });
+    });
+
+    for (const code of ["COMPLETION_UNCONFIRMED", "SESSION_NOT_ACTIVE"]) {
+      it(`confirms a completed session behind a ${code} conflict without replaying`, async () => {
+        postResponse = conflict(code);
+        await renderHookProbe();
+        await hydrate(detail("ACTIVE", WORK_BLOCK));
+        currentDetail = detail("COMPLETED", null);
+
+        let outcome: CompleteOutcome | undefined;
+        await act(async () => {
+          outcome = await latest?.completeSession(1);
+        });
+
+        expect(outcome?.status).toBe("success");
+        if (outcome?.status !== "success") return;
+        expect(outcome.snapshot?.session.status).toBe("COMPLETED");
+        expect(outcome.data.badgeEvaluation).toBeNull();
+        expect(postCalls()).toEqual(["post:/intensive-sessions/1/complete"]);
+        expect(latest?.error).toBeNull();
+      });
+    }
+
+    it("does not report an abandoned session as completed", async () => {
+      postResponse = conflict("SESSION_NOT_ACTIVE", "Sesión no activa");
+      await renderHookProbe();
+      await hydrate(detail("ACTIVE", WORK_BLOCK));
+      currentDetail = detail("ABANDONED", null);
+
+      let outcome: CompleteOutcome | undefined;
+      await act(async () => {
+        outcome = await latest?.completeSession(1);
+      });
+
+      expect(outcome?.status).toBe("failed");
+      expect(calls).toContain("get:/intensive-sessions/1");
+      expect(latest?.error).toBe("Sesión no activa");
+    });
+
+    it("keeps pending cards as a plain rejection without reconciling", async () => {
+      postResponse = conflict("PENDING_CARDS", "Aún tienes 2 tarjetas pendientes");
+      await renderHookProbe();
+      await hydrate(detail("ACTIVE", WORK_BLOCK));
+
+      let outcome: CompleteOutcome | undefined;
+      await act(async () => {
+        outcome = await latest?.completeSession(1);
+      });
+
+      expect(outcome?.status).toBe("failed");
+      if (outcome?.status !== "failed") return;
+      expect(outcome.error.code).toBe("PENDING_CARDS");
+      expect(calls).toEqual(["post:/intensive-sessions/1/complete"]);
+      expect(latest?.error).toBe("Aún tienes 2 tarjetas pendientes");
+    });
+
+    it("reports an unavailable session when the reconciliation GET cannot find it", async () => {
+      postResponse = conflict("COMPLETION_UNCONFIRMED");
+      await renderHookProbe();
+      await hydrate(detail("ACTIVE", WORK_BLOCK));
+      currentDetail = SESSION_GONE;
+
+      let outcome: CompleteOutcome | undefined;
+      await act(async () => {
+        outcome = await latest?.completeSession(1);
+      });
+
+      expect(outcome?.status).toBe("failed");
+      if (outcome?.status !== "failed") return;
+      expect(outcome.error.code).toBe("SESSION_UNAVAILABLE");
+      expect(latest?.error).toBe("La sesión ya no está disponible.");
+      expect(postCalls()).toEqual(["post:/intensive-sessions/1/complete"]);
     });
 
     it("keeps the known relations when the completion answers a bare session row", async () => {
@@ -328,5 +440,27 @@ describe("intensive completion contract", () => {
       ]);
       expect(latest?.error).toBeNull();
     });
+
+    for (const code of ["COMPLETION_UNCONFIRMED", "BLOCK_NOT_ACTIVE"]) {
+      it(`confirms a block already on break behind a ${code} conflict`, async () => {
+        postResponse = conflict(code);
+        await renderHookProbe();
+        await hydrate(detail("ACTIVE", WORK_BLOCK));
+        currentDetail = detail("ACTIVE", BREAK_BLOCK);
+
+        let outcome: BlockOutcome | undefined;
+        await act(async () => {
+          outcome = await latest?.completePomodoro(1, 102);
+        });
+
+        expect(outcome?.status).toBe("success");
+        if (outcome?.status !== "success") return;
+        expect(outcome.snapshot?.phase).toBe("BREAK");
+        expect(postCalls()).toEqual([
+          "post:/intensive-sessions/1/pomodoro/102/complete",
+        ]);
+        expect(latest?.error).toBeNull();
+      });
+    }
   });
 });
