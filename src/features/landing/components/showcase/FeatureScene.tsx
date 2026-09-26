@@ -5,6 +5,9 @@ import { getRevealVariants, scaleIn } from "../../motion/presets";
 
 export type SceneTone = "light" | "tint" | "dark";
 
+/** `wide` gives the illustration three fifths of the row, from `lg` up. */
+export type SceneLayout = "split" | "wide";
+
 interface FeatureSceneProps {
   id: string;
   /** 1-based position, shown as the eyebrow counter. */
@@ -16,6 +19,7 @@ interface FeatureSceneProps {
   /** Illustration on the left on wide screens. */
   reverse?: boolean;
   tone?: SceneTone;
+  layout?: SceneLayout;
   children: React.ReactNode;
 }
 
@@ -46,6 +50,26 @@ const TONES: Record<
   },
 };
 
+const LAYOUTS: Record<
+  SceneLayout,
+  { grid: string; text: string; stage: string; textLast: string; stageFirst: string }
+> = {
+  split: {
+    grid: "md:grid-cols-2 gap-10 md:gap-16",
+    text: "",
+    stage: "",
+    textLast: "md:order-2",
+    stageFirst: "md:order-1",
+  },
+  wide: {
+    grid: "lg:grid-cols-5 gap-10 lg:gap-14",
+    text: "lg:col-span-2",
+    stage: "lg:col-span-3",
+    textLast: "lg:order-2",
+    stageFirst: "lg:order-1",
+  },
+};
+
 /**
  * One chapter of the feature story: eyebrow counter, headline, short body and
  * a few points beside a living illustration. Sides alternate between scenes.
@@ -59,10 +83,12 @@ export const FeatureScene: React.FC<FeatureSceneProps> = ({
   points,
   reverse = false,
   tone = "light",
+  layout = "split",
   children,
 }) => {
   const reducedMotion = useReducedMotion() ?? false;
   const colors = TONES[tone];
+  const grid = LAYOUTS[layout];
   const stageVariants = reducedMotion
     ? getRevealVariants(true)
     : scaleIn({ from: 0.94, duration: 0.9, delay: 0.1 });
@@ -73,11 +99,11 @@ export const FeatureScene: React.FC<FeatureSceneProps> = ({
       aria-labelledby={`${id}-title`}
       className={`scroll-mt-20 px-4 sm:px-6 lg:px-8 py-16 sm:py-20 md:py-28 ${colors.section}`}
     >
-      <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-10 md:gap-16 items-center">
+      <div className={`max-w-6xl mx-auto grid items-center ${grid.grid}`}>
         <Reveal
           stagger={0.08}
           amount={0.3}
-          className={reverse ? "md:order-2" : undefined}
+          className={`${grid.text} ${reverse ? grid.textLast : ""}`}
         >
           <RevealItem className="flex items-center gap-3 mb-5">
             <span
@@ -123,7 +149,7 @@ export const FeatureScene: React.FC<FeatureSceneProps> = ({
         </Reveal>
 
         <motion.div
-          className={`min-w-0 ${reverse ? "md:order-1" : ""}`}
+          className={`min-w-0 ${grid.stage} ${reverse ? grid.stageFirst : ""}`}
           variants={stageVariants}
           initial="hidden"
           whileInView="visible"

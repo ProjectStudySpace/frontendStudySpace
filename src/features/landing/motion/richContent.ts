@@ -1,6 +1,6 @@
 /**
- * Pure geometry and timeline behind the "flashcards and study notes, with
- * images" illustration. Deterministic sample data for the landing page only.
+ * Pure geometry and timelines behind the "flashcards with images" and
+ * "study notes" illustrations. Deterministic sample data for the landing page only.
  */
 
 /**
@@ -80,24 +80,39 @@ export function rrIntervals(beats: readonly number[]): number[] {
   return beats.slice(1).map((beat, i) => beat - beats[i]);
 }
 
-export interface RichContentFrame {
-  bookOpen: boolean;
-  diagramDrawn: boolean;
-  cardFlipped: boolean;
+/** Ticks in one loop of the image flashcard: question, question, answer, answer. */
+export const IMAGE_CARD_LOOP = 4;
+
+export interface ImageCardFrame {
+  flipped: boolean;
+  /** Completed loops so far; used to redraw the ECG once per loop. */
+  loop: number;
 }
 
-/** Ticks in one loop of the illustration. */
-export const RICH_CONTENT_LOOP = 6;
+/** One frame of the looping image flashcard: the question, then its answer. */
+export function imageCardFrame(tick: number): ImageCardFrame {
+  const safe = Math.max(0, Math.floor(tick));
+  return {
+    flipped: safe % IMAGE_CARD_LOOP >= 2,
+    loop: Math.floor(safe / IMAGE_CARD_LOOP),
+  };
+}
+
+export interface StudyNoteFrame {
+  open: boolean;
+  anatomyShown: boolean;
+  potentialDrawn: boolean;
+}
 
 /**
- * One frame of the looping illustration: the note opens and draws its
- * diagram, the image flashcard flips to its answer, then both reset.
+ * One frame of the study note: it opens once, labels the heart anatomy,
+ * draws the action potential, and then rests fully open. It never closes.
  */
-export function richContentFrame(tick: number): RichContentFrame {
-  const phase = Math.max(0, Math.floor(tick)) % RICH_CONTENT_LOOP;
+export function studyNoteFrame(tick: number): StudyNoteFrame {
+  const safe = Math.max(0, Math.floor(tick));
   return {
-    bookOpen: phase >= 1 && phase <= 4,
-    diagramDrawn: phase >= 2 && phase <= 4,
-    cardFlipped: phase >= 3 && phase <= 4,
+    open: safe >= 1,
+    anatomyShown: safe >= 2,
+    potentialDrawn: safe >= 3,
   };
 }

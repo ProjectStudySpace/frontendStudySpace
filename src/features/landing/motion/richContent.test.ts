@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   AFIB_BEATS,
-  RICH_CONTENT_LOOP,
+  IMAGE_CARD_LOOP,
   ecgStripPath,
-  richContentFrame,
+  imageCardFrame,
   rrIntervals,
+  studyNoteFrame,
 } from "./richContent";
 
 const box = { width: 300, height: 60 };
@@ -68,32 +69,54 @@ describe("rrIntervals", () => {
   });
 });
 
-describe("richContentFrame", () => {
-  it("starts with a closed note and the question side of the card", () => {
-    expect(richContentFrame(0)).toEqual({
-      bookOpen: false,
-      diagramDrawn: false,
-      cardFlipped: false,
+describe("imageCardFrame", () => {
+  it("starts on the question side of the card, in the first loop", () => {
+    expect(imageCardFrame(0)).toEqual({ flipped: false, loop: 0 });
+  });
+
+  it("shows the question first, then flips to the answer", () => {
+    expect(imageCardFrame(1).flipped).toBe(false);
+    expect(imageCardFrame(2).flipped).toBe(true);
+    expect(imageCardFrame(IMAGE_CARD_LOOP - 1).flipped).toBe(true);
+  });
+
+  it("repeats every loop, counting loops, and treats negative ticks as the first frame", () => {
+    for (let t = 0; t < IMAGE_CARD_LOOP; t++) {
+      expect(imageCardFrame(t + IMAGE_CARD_LOOP)).toEqual({
+        flipped: imageCardFrame(t).flipped,
+        loop: 1,
+      });
+    }
+    expect(imageCardFrame(-3)).toEqual(imageCardFrame(0));
+  });
+});
+
+describe("studyNoteFrame", () => {
+  it("starts closed with nothing drawn", () => {
+    expect(studyNoteFrame(0)).toEqual({
+      open: false,
+      anatomyShown: false,
+      potentialDrawn: false,
     });
   });
 
-  it("opens the note, draws its diagram, then flips the card", () => {
-    expect(richContentFrame(1).bookOpen).toBe(true);
-    expect(richContentFrame(1).cardFlipped).toBe(false);
-    expect(richContentFrame(2).diagramDrawn).toBe(true);
-    expect(richContentFrame(3).cardFlipped).toBe(true);
+  it("opens, then labels the anatomy, then draws the action potential", () => {
+    expect(studyNoteFrame(1)).toEqual({
+      open: true,
+      anatomyShown: false,
+      potentialDrawn: false,
+    });
+    expect(studyNoteFrame(2).anatomyShown).toBe(true);
+    expect(studyNoteFrame(2).potentialDrawn).toBe(false);
+    expect(studyNoteFrame(3).potentialDrawn).toBe(true);
   });
 
-  it("repeats every loop and treats negative ticks as the first frame", () => {
-    for (let t = 0; t < RICH_CONTENT_LOOP; t++) {
-      expect(richContentFrame(t + RICH_CONTENT_LOOP)).toEqual(richContentFrame(t));
-    }
-    expect(richContentFrame(-4)).toEqual(richContentFrame(0));
+  it("opens once and stays open: every later tick rests fully open", () => {
+    const rest = { open: true, anatomyShown: true, potentialDrawn: true };
+    [3, 4, 10, 99].forEach((tick) => expect(studyNoteFrame(tick)).toEqual(rest));
   });
 
-  it("closes everything again before the loop restarts", () => {
-    const last = richContentFrame(RICH_CONTENT_LOOP - 1);
-    expect(last.bookOpen).toBe(false);
-    expect(last.cardFlipped).toBe(false);
+  it("treats negative ticks as the closed first frame", () => {
+    expect(studyNoteFrame(-2)).toEqual(studyNoteFrame(0));
   });
 });

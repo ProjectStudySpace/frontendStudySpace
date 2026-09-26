@@ -1615,13 +1615,13 @@
         "nextReview_one": "Next review in {{count}} day",
         "nextReview_other": "Next review in {{count}} days"
       },
-      "richContent": {
-        "eyebrow": "Cards & notes",
-        "title": "Flashcards and study notes, with images.",
-        "body": "Some concepts fit on a card; others need pages. Attach images to the question or the answer of a flashcard, and write study notes in a two-page, open-book format for extensive content with its diagrams.",
-        "point1": "Images on the question or the answer of any flashcard",
-        "point2": "Two-page study notes for extensive content",
-        "point3": "Diagrams, ECGs or charts right next to the concept",
+      "imageFlashcards": {
+        "eyebrow": "Image flashcards",
+        "title": "Flashcards that show, not just tell.",
+        "body": "Some answers start with a picture. Attach images to the question or to the answer of a flashcard, such as an ECG strip, a histology slide or a map, and practice recalling what you see, not only what you read.",
+        "point1": "Images on the question, the answer, or both",
+        "point2": "More than one image per side when one is not enough",
+        "point3": "Try it: tap the card to reveal the answer",
         "flipLabel": "Flip the sample flashcard with an image",
         "cardTopic": "Cardiology",
         "cardKind": "With image",
@@ -1629,9 +1629,36 @@
         "ecgLabel": "ECG strip: irregular R-R intervals, a fibrillating baseline and no P waves.",
         "answerTitle": "Atrial fibrillation",
         "answerBody": "Irregularly irregular R-R intervals and no P waves.",
-        "noteTitle": "Cardiac action potential",
-        "noteSubtitle": "Ventricular myocyte",
+        "answerImageLabel": "Annotated ECG strip: brackets of different widths mark the irregular R-R intervals.",
+        "sideQuestion": "Image on the question",
+        "sideAnswer": "Image on the answer"
+      },
+      "studyNotes": {
+        "eyebrow": "Study notes",
+        "title": "Long-form notes that open like a book.",
+        "body": "When a topic needs more than a card, write a study note: two facing pages for longer explanations, each with its own images, so the diagram sits right beside the text that explains it.",
+        "point1": "Two facing pages for extensive content",
+        "point2": "Images on the left page, the right page, or both",
+        "point3": "Notes live in the same topic as their flashcards",
+        "noteTitle": "Cardiac physiology",
         "noteKind": "Study note · 2 pages",
+        "leftHeading": "1 · Heart anatomy",
+        "heartLabel": "Anterior view of the heart: right atrium and right ventricle in blue on the viewer's left, left atrium and left ventricle in red on the viewer's right, with the aorta, pulmonary trunk, superior and inferior venae cavae, the tricuspid and mitral valves and the sinoatrial node labeled.",
+        "heartCaption": "Fig. 1 · Anterior view: the patient's right side appears on your left",
+        "heart": {
+          "svc": { "abbr": "SVC", "name": "Superior vena cava" },
+          "ivc": { "abbr": "IVC", "name": "Inferior vena cava" },
+          "ra": { "abbr": "RA", "name": "Right atrium" },
+          "rv": { "abbr": "RV", "name": "Right ventricle" },
+          "pt": { "abbr": "PT", "name": "Pulmonary trunk" },
+          "ao": { "abbr": "Ao", "name": "Aorta" },
+          "la": { "abbr": "LA", "name": "Left atrium" },
+          "lv": { "abbr": "LV", "name": "Left ventricle" },
+          "sa": { "abbr": "SA", "name": "Sinoatrial node" }
+        },
+        "valves": "Valves: tricuspid (RA → RV) and mitral (LA → LV).",
+        "leftText": "Deoxygenated blood returns through the venae cavae to the right atrium, passes to the right ventricle and is pumped into the pulmonary trunk. Oxygenated blood from the lungs enters the left atrium, and the left ventricle ejects it into the aorta.",
+        "rightHeading": "2 · Ventricular action potential",
         "phaseLabel": "Phase {{phase}}:",
         "phases": {
           "p0": "Fast Na⁺ influx: rapid upstroke",
@@ -1640,7 +1667,7 @@
           "p3": "Delayed-rectifier K⁺ efflux (IKr, IKs): repolarization",
           "p4": "IK1 holds the resting potential near −90 mV"
         },
-        "figureCaption": "Fig. 1 · Ventricular action potential",
+        "figureCaption": "Fig. 2 · Ventricular action potential",
         "figureLabel": "Diagram of a ventricular action potential: rapid upstroke, early notch, plateau, repolarization and resting phase, labeled 0 to 4.",
         "noteClinical": "Class III antiarrhythmics such as amiodarone block K⁺ channels, prolonging phase 3 and the QT interval."
       },

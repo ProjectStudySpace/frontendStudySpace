@@ -4,10 +4,11 @@ import { useTranslation } from "react-i18next";
 import { ArrowDown } from "lucide-react";
 import { Reveal, RevealItem } from "../Reveal";
 import { SectionHeading } from "../SectionHeading";
-import { FeatureScene, type SceneTone } from "./FeatureScene";
+import { FeatureScene, type SceneLayout, type SceneTone } from "./FeatureScene";
 import { RetentionCurve } from "./RetentionCurve";
 import { FlashcardDemo } from "./FlashcardDemo";
-import { RichContentDemo } from "./RichContentDemo";
+import { ImageFlashcardDemo } from "./ImageFlashcardDemo";
+import { StudyNoteDemo } from "./StudyNoteDemo";
 import { TopicStacks } from "./TopicStacks";
 import { CalendarReminders } from "./CalendarReminders";
 import { ProgressStreaks } from "./ProgressStreaks";
@@ -16,7 +17,8 @@ import { FocusSession } from "./FocusSession";
 type SceneKey =
   | "spacedRepetition"
   | "selfAssessment"
-  | "richContent"
+  | "imageFlashcards"
+  | "studyNotes"
   | "topicOrganization"
   | "calendarIntegration"
   | "progressTracking"
@@ -25,15 +27,17 @@ type SceneKey =
 interface Scene {
   key: SceneKey;
   tone: SceneTone;
+  layout?: SceneLayout;
   Illustration: React.FC;
 }
 
 const SCENES: Scene[] = [
   { key: "spacedRepetition", tone: "light", Illustration: RetentionCurve },
   { key: "selfAssessment", tone: "tint", Illustration: FlashcardDemo },
-  { key: "richContent", tone: "light", Illustration: RichContentDemo },
-  { key: "topicOrganization", tone: "tint", Illustration: TopicStacks },
-  { key: "calendarIntegration", tone: "light", Illustration: CalendarReminders },
+  { key: "imageFlashcards", tone: "light", Illustration: ImageFlashcardDemo },
+  { key: "studyNotes", tone: "tint", layout: "wide", Illustration: StudyNoteDemo },
+  { key: "topicOrganization", tone: "light", Illustration: TopicStacks },
+  { key: "calendarIntegration", tone: "tint", Illustration: CalendarReminders },
   { key: "progressTracking", tone: "dark", Illustration: ProgressStreaks },
   { key: "intensiveStudy", tone: "light", Illustration: FocusSession },
 ];
@@ -94,12 +98,13 @@ export const FeatureShowcase: React.FC = () => {
         </div>
       </section>
 
-      {SCENES.map(({ key, tone, Illustration }, index) => (
+      {SCENES.map(({ key, tone, layout, Illustration }, index) => (
         <FeatureScene
           key={key}
           id={sceneId(key)}
           index={index + 1}
           tone={tone}
+          layout={layout}
           reverse={index % 2 === 1}
           eyebrow={t(`landing.showcase.${key}.eyebrow`)}
           title={t(`landing.showcase.${key}.title`)}
