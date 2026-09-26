@@ -99,20 +99,18 @@ export function imageCardFrame(tick: number): ImageCardFrame {
 }
 
 export interface StudyNoteFrame {
-  open: boolean;
   anatomyShown: boolean;
   potentialDrawn: boolean;
 }
 
 /**
- * One frame of the study note: it opens once, labels the heart anatomy,
- * draws the action potential, and then rests fully open. It never closes.
+ * One frame of the always-open study note: it labels the heart anatomy,
+ * draws the action potential, and then rests fully drawn.
  */
 export function studyNoteFrame(tick: number): StudyNoteFrame {
   const safe = Math.max(0, Math.floor(tick));
   return {
-    open: safe >= 1,
-    anatomyShown: safe >= 2,
-    potentialDrawn: safe >= 3,
+    anatomyShown: safe >= 1,
+    potentialDrawn: safe >= 2,
   };
 }

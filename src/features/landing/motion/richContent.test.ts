@@ -92,31 +92,27 @@ describe("imageCardFrame", () => {
 });
 
 describe("studyNoteFrame", () => {
-  it("starts closed with nothing drawn", () => {
+  it("starts as an open note with nothing drawn yet", () => {
     expect(studyNoteFrame(0)).toEqual({
-      open: false,
       anatomyShown: false,
       potentialDrawn: false,
     });
   });
 
-  it("opens, then labels the anatomy, then draws the action potential", () => {
+  it("labels the anatomy, then draws the action potential", () => {
     expect(studyNoteFrame(1)).toEqual({
-      open: true,
-      anatomyShown: false,
+      anatomyShown: true,
       potentialDrawn: false,
     });
-    expect(studyNoteFrame(2).anatomyShown).toBe(true);
-    expect(studyNoteFrame(2).potentialDrawn).toBe(false);
-    expect(studyNoteFrame(3).potentialDrawn).toBe(true);
+    expect(studyNoteFrame(2).potentialDrawn).toBe(true);
   });
 
-  it("opens once and stays open: every later tick rests fully open", () => {
-    const rest = { open: true, anatomyShown: true, potentialDrawn: true };
-    [3, 4, 10, 99].forEach((tick) => expect(studyNoteFrame(tick)).toEqual(rest));
+  it("plays once and then rests fully drawn", () => {
+    const rest = { anatomyShown: true, potentialDrawn: true };
+    [2, 3, 10, 99].forEach((tick) => expect(studyNoteFrame(tick)).toEqual(rest));
   });
 
-  it("treats negative ticks as the closed first frame", () => {
+  it("treats negative ticks as the first frame", () => {
     expect(studyNoteFrame(-2)).toEqual(studyNoteFrame(0));
   });
 });
