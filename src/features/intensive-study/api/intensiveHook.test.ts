@@ -177,4 +177,84 @@ describe("useIntensiveSessions corrective production seams", () => {
       "get:/intensive-sessions/1",
     ]);
   });
+
+  it("reconciles a START_UNCONFIRMED conflict like a lost response", async () => {
+    const calls: string[] = [];
+    installSettlingAdapter(api, (config) => {
+      calls.push(`${config.method}:${config.url}`);
+      if (config.method === "post") {
+        return {
+          status: 409,
+          data: { error: "Inicio sin confirmar", code: "START_UNCONFIRMED" },
+        };
+      }
+      return {
+        status: 200,
+        data: {
+          session: { id: 1, status: "ACTIVE", pomodoroBlocks: [] },
+          activeBlock: { id: 101, sessionId: 1, status: "ACTIVE", blockNumber: 1 },
+        },
+      };
+    });
+    await renderHookProbe();
+
+    let result: Awaited<ReturnType<HookState["startPomodoro"]>> | undefined;
+    await act(async () => {
+      result = await latest?.startPomodoro(1);
+    });
+
+    expect(result?.id).toBe(101);
+    expect(latest?.currentPomodoro?.id).toBe(101);
+    expect(latest?.error).toBeNull();
+    expect(calls).toEqual([
+      "post:/intensive-sessions/1/pomodoro/start",
+      "get:/intensive-sessions/1",
+    ]);
+  });
+
+  it("reports an unavailable session when an unconfirmed start cannot be read back", async () => {
+    const calls: string[] = [];
+    installSettlingAdapter(api, (config) => {
+      calls.push(`${config.method}:${config.url}`);
+      if (config.method === "post") {
+        return {
+          status: 409,
+          data: { error: "Inicio sin confirmar", code: "START_UNCONFIRMED" },
+        };
+      }
+      return { status: 500, data: { error: "Sesión no encontrada" } };
+    });
+    await renderHookProbe();
+
+    let result: Awaited<ReturnType<HookState["startPomodoro"]>> | undefined;
+    await act(async () => {
+      result = await latest?.startPomodoro(1);
+    });
+
+    expect(result).toBeNull();
+    expect(latest?.error).toBe("La sesión ya no está disponible.");
+    expect(calls).toEqual([
+      "post:/intensive-sessions/1/pomodoro/start",
+      "get:/intensive-sessions/1",
+    ]);
+  });
+
+  it("does not reconcile a definitive start conflict in the hook", async () => {
+    const calls: string[] = [];
+    installSettlingAdapter(api, (config) => {
+      calls.push(`${config.method}:${config.url}`);
+      return {
+        status: 409,
+        data: { error: "Ya hay un bloque activo", code: "BLOCK_ALREADY_ACTIVE" },
+      };
+    });
+    await renderHookProbe();
+
+    await act(async () => {
+      await latest?.startPomodoro(1);
+    });
+
+    expect(latest?.error).toBe("Ya hay un bloque activo");
+    expect(calls).toEqual(["post:/intensive-sessions/1/pomodoro/start"]);
+  });
 });

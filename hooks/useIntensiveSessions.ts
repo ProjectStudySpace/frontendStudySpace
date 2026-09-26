@@ -10,6 +10,7 @@ import {
   intensiveErrorMessage,
   localIntensiveError,
   normalizeIntensiveError,
+  type IntensiveError,
 } from "../src/features/intensive-study/api/errors";
 import {
   IntensiveStudySession,
@@ -30,10 +31,24 @@ import {
 } from "../src/features/intensive-study/state/resume";
 import {
   isCommandConfirmed,
+  isSessionUnavailable,
   isUnconfirmedCommandFailure,
+  isUnconfirmedStartFailure,
+  sessionUnavailableError,
   type IntensiveCommand,
   type IntensiveMutationOutcome,
 } from "../src/features/intensive-study/state/mutationOutcome";
+
+/**
+ * Result of re-reading the authoritative session. `unavailable` means the
+ * backend answered that the session cannot be returned (missing or not owned),
+ * which is a definitive answer; `unconfirmed` means the read itself failed or
+ * was unusable, so the command outcome is still unknown.
+ */
+type SessionReconciliation =
+  | { status: "found"; payload: any; snapshot: IntensiveResumeSnapshot | null }
+  | { status: "unavailable"; error: IntensiveError }
+  | { status: "unconfirmed" };
 
 interface GetNextCardResult {
   card: IntensiveSessionCard | null;
@@ -342,26 +357,55 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
    * issued: a non-idempotent POST is never replayed.
    */
   const reconcileSession = useCallback(
-    async (sessionId: number): Promise<IntensiveResumeSnapshot | null> => {
+    async (sessionId: number): Promise<SessionReconciliation> => {
       try {
         const response = await api.get<any>(`/intensive-sessions/${sessionId}`);
         const payload = response.data;
 
-        return buildResumeSnapshot({
-          session: payload?.session || null,
-          activeBlock: payload?.activeBlock || null,
-          card: null,
-          userId: user?.id ?? null,
-        });
+        return {
+          status: "found",
+          payload,
+          snapshot: buildResumeSnapshot({
+            session: payload?.session || null,
+            activeBlock: payload?.activeBlock || null,
+            card: null,
+            userId: user?.id ?? null,
+          }),
+        };
       } catch (err) {
+        const normalized = normalizeIntensiveError(err);
+        if (isSessionUnavailable(normalized)) {
+          return {
+            status: "unavailable",
+            error: sessionUnavailableError(normalized),
+          };
+        }
         console.warn(
           "Could not reconcile ambiguous intensive command:",
           intensiveErrorMessage(err, "Error al reconciliar la sesión"),
         );
-        return null;
+        return { status: "unconfirmed" };
       }
     },
     [user],
+  );
+
+  /** Adopt a reconciled snapshot that proved the command landed. */
+  const adoptSnapshot = useCallback((snapshot: IntensiveResumeSnapshot) => {
+    setCurrentSession(snapshot.session);
+    setCurrentPomodoro(snapshot.block);
+    setCurrentCard(snapshot.card);
+    setError(null);
+  }, []);
+
+  /** Report an unavailable session without replaying or guessing. */
+  const reportUnavailable = useCallback(
+    <T,>(command: string, error: IntensiveError): IntensiveMutationOutcome<T> => {
+      console.error(`Intensive session unavailable [${command}]`);
+      setError(error.message);
+      return { status: "failed", error };
+    },
+    [],
   );
 
   /**
@@ -412,14 +456,20 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
         };
 
         if (isUnconfirmedCommandFailure(command, failure)) {
-          const snapshot = await reconcileSession(sessionId);
-          if (snapshot && isCommandConfirmed(command, snapshot.phase)) {
+          const reconciliation = await reconcileSession(sessionId);
+          if (reconciliation.status === "unavailable") {
+            return reportUnavailable<T>(command, reconciliation.error);
+          }
+
+          const snapshot =
+            reconciliation.status === "found" ? reconciliation.snapshot : null;
+          if (
+            snapshot &&
+            isCommandConfirmed(command, snapshot.phase, snapshot.session.status)
+          ) {
             // The command did land: adopt the authoritative state instead of
             // sending the request again.
-            setCurrentSession(snapshot.session);
-            setCurrentPomodoro(snapshot.block);
-            setCurrentCard(snapshot.card);
-            setError(null);
+            adoptSnapshot(snapshot);
             return { status: "success", data: fromSnapshot(snapshot), snapshot };
           }
 
@@ -445,7 +495,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
         setLoading(false);
       }
     },
-    [user, reconcileSession],
+    [user, reconcileSession, adoptSnapshot, reportUnavailable],
   );
 
   /**
@@ -553,7 +603,11 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
         command: "COMPLETE",
         sessionId: id,
         fallbackMessage: "Error al completar sesión",
-        fromSnapshot: (snapshot) => ({ session: snapshot.session, summary: null }),
+        fromSnapshot: (snapshot) => ({
+          session: snapshot.session,
+          summary: null,
+          badgeEvaluation: null,
+        }),
         send: async () => {
           const response = await api.post<any>(
             `/intensive-sessions/${id}/complete`,
@@ -588,7 +642,11 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
           );
           return {
             status: "success",
-            data: { session, summary: response.data?.summary ?? null },
+            data: {
+              session,
+              summary: response.data?.summary ?? null,
+              badgeEvaluation: response.data?.badgeEvaluation ?? null,
+            },
             snapshot: null,
           };
         },
@@ -605,23 +663,29 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
     async (
       id: number,
     ): Promise<IntensiveMutationOutcome<SessionCompletionResult>> => {
-      const snapshot = await reconcileSession(id);
-      if (snapshot && isCommandConfirmed("COMPLETE", snapshot.phase)) {
+      const reconciliation = await reconcileSession(id);
+      if (reconciliation.status === "unavailable") {
+        // Replaying against a session that cannot be read cannot succeed.
+        return reportUnavailable("COMPLETE", reconciliation.error);
+      }
+      const snapshot =
+        reconciliation.status === "found" ? reconciliation.snapshot : null;
+      if (
+        snapshot &&
+        isCommandConfirmed("COMPLETE", snapshot.phase, snapshot.session.status)
+      ) {
         // The original command landed: adopt the authoritative state instead
         // of earning a rejection the user cannot act on.
-        setCurrentSession(snapshot.session);
-        setCurrentPomodoro(snapshot.block);
-        setCurrentCard(snapshot.card);
-        setError(null);
+        adoptSnapshot(snapshot);
         return {
           status: "success",
-          data: { session: snapshot.session, summary: null },
+          data: { session: snapshot.session, summary: null, badgeEvaluation: null },
           snapshot,
         };
       }
       return completeSession(id);
     },
-    [reconcileSession, completeSession],
+    [reconcileSession, completeSession, adoptSnapshot, reportUnavailable],
   );
 
   /** Same reconcile-first contract for ABANDON. */
@@ -629,17 +693,22 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
     async (
       id: number,
     ): Promise<IntensiveMutationOutcome<IntensiveStudySession>> => {
-      const snapshot = await reconcileSession(id);
-      if (snapshot && isCommandConfirmed("ABANDON", snapshot.phase)) {
-        setCurrentSession(snapshot.session);
-        setCurrentPomodoro(snapshot.block);
-        setCurrentCard(snapshot.card);
-        setError(null);
+      const reconciliation = await reconcileSession(id);
+      if (reconciliation.status === "unavailable") {
+        return reportUnavailable("ABANDON", reconciliation.error);
+      }
+      const snapshot =
+        reconciliation.status === "found" ? reconciliation.snapshot : null;
+      if (
+        snapshot &&
+        isCommandConfirmed("ABANDON", snapshot.phase, snapshot.session.status)
+      ) {
+        adoptSnapshot(snapshot);
         return { status: "success", data: snapshot.session, snapshot };
       }
       return abandonSession(id);
     },
-    [reconcileSession, abandonSession],
+    [reconcileSession, abandonSession, adoptSnapshot, reportUnavailable],
   );
 
   // ==================== FUNCIONES DE POMODORO ====================
@@ -670,35 +739,32 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
         }
         return null;
       } catch (err: any) {
-        const hasHttpResponse = Boolean(err?.response);
-        if (!hasHttpResponse) {
-          try {
-            const snapshotResponse = await api.get<any>(
-              `/intensive-sessions/${sessionId}`,
-            );
-            const snapshot = snapshotResponse.data;
+        // A lost response or START_UNCONFIRMED may hide a start that landed:
+        // read it back instead of replaying the POST. Other start conflicts
+        // are definitive answers left to the caller.
+        if (isUnconfirmedStartFailure(normalizeIntensiveError(err))) {
+          const reconciliation = await reconcileSession(sessionId);
+          if (reconciliation.status === "unavailable") {
+            setError(reconciliation.error.message);
+            return null;
+          }
+
+          if (reconciliation.status === "found") {
+            const payload = reconciliation.payload;
             const activeBlock =
-              snapshot?.activeBlock ||
-              snapshot?.session?.pomodoroBlocks?.find(
+              payload?.activeBlock ||
+              payload?.session?.pomodoroBlocks?.find(
                 (block: { status?: string }) =>
                   block.status === "ACTIVE" || block.status === "ON_BREAK",
               );
 
             if (activeBlock) {
-              if (snapshot?.session) {
-                setCurrentSession(snapshot.session);
+              if (payload?.session) {
+                setCurrentSession(payload.session);
               }
               setCurrentPomodoro(activeBlock);
               return activeBlock;
             }
-          } catch (reconciliationError) {
-            console.warn(
-              "Could not reconcile ambiguous Pomodoro start:",
-              intensiveErrorMessage(
-                reconciliationError,
-                "Error al reconciliar Pomodoro",
-              ),
-            );
           }
         }
 
@@ -708,7 +774,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
         setLoading(false);
       }
     },
-    [user],
+    [user, reconcileSession],
   );
 
   /**
