@@ -2012,6 +2012,7 @@
     "subtitle": "Estudia con técnica Pomodoro",
     "newSession": "Nueva Sesión",
     "continueSession": "Continuar Sesión",
+    "startNoBlocksLeft": "No quedan bloques por iniciar. Completa la sesión para ver tus resultados.",
     "intensity": {
       "title": "Selecciona la Intensidad",
       "relaxed": {

@@ -2008,6 +2008,7 @@
     "subtitle": "Study with Pomodoro technique",
     "newSession": "New Session",
     "continueSession": "Continue Session",
+    "startNoBlocksLeft": "No blocks are left to start. Complete the session to see your results.",
     "intensity": {
       "title": "Select Intensity",
       "relaxed": {

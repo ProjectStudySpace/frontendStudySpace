@@ -20,7 +20,8 @@ export type IntensiveCommand =
   | "COMPLETE"
   | "COMPLETE_BLOCK"
   | "END_BREAK"
-  | "SKIP_BREAK";
+  | "SKIP_BREAK"
+  | "START";
 
 export type IntensiveMutationOutcome<T> =
   | {
@@ -32,6 +33,15 @@ export type IntensiveMutationOutcome<T> =
        */
       snapshot: IntensiveResumeSnapshot | null;
     }
+  | { status: "failed"; error: IntensiveError };
+
+/**
+ * Result of reloading the authoritative session. `unavailable` is a definitive
+ * answer (missing or not owned); `failed` means only the read failed.
+ */
+export type IntensiveSessionReload =
+  | { status: "found"; snapshot: IntensiveResumeSnapshot }
+  | { status: "unavailable"; error: IntensiveError }
   | { status: "failed"; error: IntensiveError };
 
 /** A command failure the user can retry from the current view. */
@@ -105,6 +115,47 @@ export function isUnconfirmedStartFailure(error: IntensiveError): boolean {
     isAmbiguousFailure(error) ||
     error.code === IntensiveErrorCode.START_UNCONFIRMED
   );
+}
+
+/** How the page recovers from a Pomodoro start that did not land. */
+export type StartFailureRecovery =
+  | "RELOAD"
+  | "OFFER_COMPLETION"
+  | "UNAVAILABLE"
+  | "RETRY";
+
+/** The session moved on: its authoritative phase is the answer. */
+const START_RELOAD_CODES: ReadonlySet<string> = new Set([
+  IntensiveErrorCode.SESSION_NOT_ACTIVE,
+  IntensiveErrorCode.BLOCK_ALREADY_ACTIVE,
+  IntensiveErrorCode.BLOCK_ON_BREAK,
+]);
+
+/** Nothing is left to start, so the only way forward is completing it. */
+const START_COMPLETION_CODES: ReadonlySet<string> = new Set([
+  IntensiveErrorCode.NO_PENDING_BLOCKS,
+  IntensiveErrorCode.NO_CARDS_AVAILABLE,
+]);
+
+/**
+ * Choose the recovery for a failed start. Any failure without a definitive
+ * code (including a START_UNCONFIRMED the hook could not resolve) stays
+ * retryable, so the view is never stranded.
+ */
+export function startFailureRecovery(error: IntensiveError): StartFailureRecovery {
+  if (error.code === null) {
+    return "RETRY";
+  }
+  if (error.code === IntensiveErrorCode.SESSION_UNAVAILABLE) {
+    return "UNAVAILABLE";
+  }
+  if (START_RELOAD_CODES.has(error.code)) {
+    return "RELOAD";
+  }
+  if (START_COMPLETION_CODES.has(error.code)) {
+    return "OFFER_COMPLETION";
+  }
+  return "RETRY";
 }
 
 export const SESSION_UNAVAILABLE_MESSAGE = "La sesión ya no está disponible.";
