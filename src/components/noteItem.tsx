@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NoteItemProps } from "../types/notes";
 
 import { ImageModal } from "./ImageModal";
 import { BookOpen, Edit2, Trash2 } from "lucide-react";
+import { NoteBookView } from "../features/notes/bookView/NoteBookView";
+import { parseNoteContent } from "../features/notes/bookView/parseNoteContent";
 
 export const NoteItem: React.FC<NoteItemProps> = ({
   note,
@@ -19,16 +21,19 @@ export const NoteItem: React.FC<NoteItemProps> = ({
 
   const topicColor = note.topic?.color || "#60A5FA";
 
-  // leftContent = question = título de la nota
+  // leftContent holds the note title, rightContent holds the note body.
   const displayTitle = note.leftContent || null;
-  // rightContent = answer = contenido de la nota
   const displayContent = note.rightContent || "";
 
-  // Combinar todas las imágenes con índices únicos
-  const allImages = [
-    ...(note.leftImageUrls || []).map((url, i) => ({ url, index: `left-${i}` })),
-    ...(note.rightImageUrls || []).map((url, i) => ({ url, index: `right-${i}` }))
-  ];
+  // Figure numbers index the combined list: left images first, then right images.
+  const blocks = useMemo(
+    () =>
+      parseNoteContent(displayContent, [
+        ...(note.leftImageUrls || []),
+        ...(note.rightImageUrls || []),
+      ]),
+    [displayContent, note.leftImageUrls, note.rightImageUrls],
+  );
 
   const handleDelete = async () => {
     if (window.confirm(t("reviews.deleteNoteConfirm"))) {
@@ -36,37 +41,35 @@ export const NoteItem: React.FC<NoteItemProps> = ({
       try {
         await onDelete(note.id);
       } catch (error) {
-        console.error("Error al eliminar nota:", error);
+        console.error("Error deleting note:", error);
       } finally {
         setIsDeleting(false);
       }
     }
   };
 
-  const handleImageClick = (imageUrl: string, altText?: string) => {
-    setSelectedImage({ url: imageUrl, alt: altText });
+  const handleImageClick = (imageUrl: string, figureNumber: number) => {
+    setSelectedImage({
+      url: imageUrl,
+      alt: t("components.noteBook.figureAlt", { number: figureNumber }),
+    });
   };
 
   return (
     <>
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col min-h-[300px]">
-        {/* Encabezado con color del tema - igual que tarjetas */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col">
+        {/* Topic header: tinted in light mode, solid in dark mode */}
         <div
-          className="px-4 py-3"
-          style={{
-            backgroundColor: typeof window !== 'undefined' && document.documentElement.classList.contains('dark') 
-              ? `${topicColor}` 
-              : `${topicColor}80`,
-          }}
+          className="px-4 py-2 bg-[color-mix(in_srgb,var(--topic-color)_50%,transparent)] dark:bg-[var(--topic-color)]"
+          style={{ "--topic-color": topicColor } as React.CSSProperties}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <BookOpen size={16} className="text-gray-700 dark:text-gray-700" />
-              <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-700 uppercase tracking-wide">
+              <BookOpen size={16} className="text-gray-700" />
+              <h4 className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
                 {note.topic?.name || t("content.noTopic")}
               </h4>
             </div>
-            {/* Botones de acción */}
             <div className="flex gap-2">
               <button
                 onClick={() => onEdit(note)}
@@ -89,57 +92,17 @@ export const NoteItem: React.FC<NoteItemProps> = ({
           </div>
         </div>
 
-        {/* Página de libro - diseño limpio */}
-        <div className="p-4 flex-1 flex flex-col">
-          {/* Título de la nota - negrita, centrado y más grande */}
-          {displayTitle && (
-            <div className="mb-4">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 text-center mb-3">
-                {displayTitle}
-              </h3>
-              {/* Línea fina gray separadora */}
-              <div className="h-px bg-gray-200 dark:bg-gray-600 w-full"></div>
-            </div>
-          )}
-
-          {/* Contenido principal - mismo tamaño que tarjetas */}
-          <div className="flex-1 overflow-y-auto">
-            {displayContent ? (
-              <div className="prose prose-sm dark:prose-invert max-w-none">
-                <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap text-sm leading-relaxed">
-                  {displayContent}
-                </p>
-              </div>
-            ) : (
-              <p className="text-gray-400 dark:text-gray-500 italic text-sm text-center">
-                {t("content.noContent")}
-              </p>
-            )}
-
-            {/* Imagenes */}
-            {allImages.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex flex-wrap gap-2 justify-center">
-                {allImages.map((img) => (
-                  <img
-                    key={img.index}
-                    src={img.url}
-                    alt={img.url}
-                    className="w-24 h-24 object-cover rounded-md border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity"
-                    onClick={() =>
-                      handleImageClick(
-                        img.url,
-                        img.url
-                      )
-                    }
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+        {/* Open-book reader */}
+        <div className="px-5 py-6 md:px-10 md:py-8">
+          <NoteBookView
+            title={displayTitle}
+            blocks={blocks}
+            accentColor={topicColor}
+            onImageClick={handleImageClick}
+          />
         </div>
       </div>
 
-      {/* Modal de imagen */}
       {selectedImage && (
         <ImageModal
           imageUrl={selectedImage.url}

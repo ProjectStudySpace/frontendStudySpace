@@ -308,6 +308,8 @@
     "changeImage": "Change image",
     "images": "images",
     "maxImagesReached": "You have reached the maximum limit of {{max}} images",
+    "insertImageIntoText": "Insert into text",
+    "imageMarkerHint": "Place images inside the text with [img:N], where N is the image number. Use \"Insert into text\" to add one at the cursor. Images without a marker appear at the end.",
     "optional": "Optional",
     "maxSize": "Maximum 5MB",
     "saving": "Saving...",
@@ -1862,6 +1864,15 @@
           "unknown": "We could not connect Google Calendar. Please try again."
         }
       }
+    },
+    "noteBook": {
+      "readerLabel": "Note pages. Use the left and right arrow keys to turn pages.",
+      "previousPage": "Previous pages",
+      "nextPage": "Next pages",
+      "pageIndicator": "Page {{first}} of {{total}}",
+      "pagesIndicator": "Pages {{first}}–{{last}} of {{total}}",
+      "figure": "Fig. {{number}}",
+      "figureAlt": "Figure {{number}}"
     },
     "noteList": {
       "noNotes": "No notes in this topic",
