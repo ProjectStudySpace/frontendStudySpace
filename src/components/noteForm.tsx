@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { NoteFormProps } from "../types/notes";
 import { ImagePreview } from "./imagePreview";
-import { Image as ImageIcon, BookOpen, X } from "lucide-react";
+import { Image as ImageIcon, BookOpen, X, CornerDownLeft } from "lucide-react";
+import { insertImageMarker } from "../features/notes/bookView/parseNoteContent";
 
 const MAX_IMAGES = 10; // Backend limit per request
 
@@ -25,6 +26,43 @@ export const NoteForm: React.FC<NoteFormProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const contentRef = useRef<HTMLTextAreaElement>(null);
+
+  // Figure numbers follow the reader: saved images (left, then right) come
+  // first, then newly added files in upload order.
+  const existingImageUrls = [
+    ...(initialData?.leftImageUrls || []),
+    ...(initialData?.rightImageUrls || []),
+  ];
+  const existingImageNumber = existingImageUrl
+    ? existingImageUrls.indexOf(existingImageUrl) + 1 || 1
+    : 1;
+  const newImageNumber = (index: number) => existingImageUrls.length + index + 1;
+
+  const insertMarker = (n: number) => {
+    const textarea = contentRef.current;
+    const start = textarea?.selectionStart ?? rightContent.length;
+    const end = textarea?.selectionEnd ?? rightContent.length;
+    const { text, caret } = insertImageMarker(rightContent, start, end, n);
+    setRightContent(text);
+    requestAnimationFrame(() => {
+      if (!contentRef.current) return;
+      contentRef.current.focus();
+      contentRef.current.setSelectionRange(caret, caret);
+    });
+  };
+
+  const renderInsertButton = (n: number) => (
+    <button
+      type="button"
+      onClick={() => insertMarker(n)}
+      disabled={isSubmitting}
+      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      <CornerDownLeft size={14} />
+      {t("forms.insertImageIntoText")} <code>[img:{n}]</code>
+    </button>
+  );
 
   useEffect(() => {
     if (initialData) {
@@ -201,6 +239,8 @@ export const NoteForm: React.FC<NoteFormProps> = ({
           </label>
           <textarea
             id="content"
+            ref={contentRef}
+            aria-describedby="content-image-hint"
             value={rightContent}
             onChange={(e) => setRightContent(e.target.value)}
             rows={16}
@@ -209,6 +249,12 @@ export const NoteForm: React.FC<NoteFormProps> = ({
             className="w-full px-4 py-4 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-600 resize-none text-lg leading-relaxed"
             placeholder={t("forms.contentPlaceholder")}
           />
+          <p
+            id="content-image-hint"
+            className="mt-1 text-xs text-gray-500 dark:text-gray-400"
+          >
+            {t("forms.imageMarkerHint")}
+          </p>
         </div>
 
         {/* Imagen - Botón azul con placeholder */}
@@ -242,7 +288,8 @@ export const NoteForm: React.FC<NoteFormProps> = ({
             <ImagePreview
               existingUrl={existingImageUrl}
               onRemove={removeExistingImage}
-              label={t("forms.image")}
+              label={`${t("forms.image")} ${existingImageNumber}`}
+              actions={renderInsertButton(existingImageNumber)}
             />
           </div>
         )}
@@ -255,7 +302,8 @@ export const NoteForm: React.FC<NoteFormProps> = ({
                 key={`new-${index}`}
                 file={file}
                 onRemove={() => removeImage(index)}
-                label={`${t("forms.image")} ${index + 1}`}
+                label={`${t("forms.image")} ${newImageNumber(index)}`}
+                actions={renderInsertButton(newImageNumber(index))}
               />
             ))}
           </div>
