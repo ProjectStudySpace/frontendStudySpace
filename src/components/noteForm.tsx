@@ -3,7 +3,10 @@ import { useTranslation } from "react-i18next";
 import { NoteFormProps } from "../types/notes";
 import { ImagePreview } from "./imagePreview";
 import { Image as ImageIcon, BookOpen, X, CornerDownLeft } from "lucide-react";
-import { insertImageMarker } from "../features/notes/bookView/parseNoteContent";
+import {
+  insertImageMarker,
+  removeImageMarker,
+} from "../features/notes/bookView/parseNoteContent";
 
 const MAX_IMAGES = 10; // Backend limit per request
 
@@ -121,6 +124,8 @@ export const NoteForm: React.FC<NoteFormProps> = ({
 
   const removeImage = (index: number) => {
     setLeftImages((prev) => prev.filter((_, i) => i !== index));
+    // Later images shift down one figure number; keep the text markers aligned.
+    setRightContent((prev) => removeImageMarker(prev, newImageNumber(index)));
   };
 
   const removeExistingImage = () => {

@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { insertImageMarker, parseNoteContent } from "./parseNoteContent";
+import {
+  insertImageMarker,
+  parseNoteContent,
+  removeImageMarker,
+} from "./parseNoteContent";
 
 const URLS = ["a.png", "b.png", "c.png"];
 
@@ -99,5 +103,49 @@ describe("insertImageMarker", () => {
       text: "a\n[img:1]\nb",
       caret: 9,
     });
+  });
+});
+
+describe("parseNoteContent whitespace", () => {
+  it("keeps leading indentation of the first line", () => {
+    expect(parseNoteContent("    indented code\nnext", [])).toEqual([
+      { kind: "text", text: "    indented code\nnext" },
+    ]);
+  });
+
+  it("keeps indentation on the line after a marker while dropping the line break", () => {
+    expect(parseNoteContent("intro\n[img:1]\n  SELECT *\n  FROM t", URLS.slice(0, 1))).toEqual([
+      { kind: "text", text: "intro" },
+      { kind: "image", url: "a.png", number: 1 },
+      { kind: "text", text: "  SELECT *\n  FROM t" },
+    ]);
+  });
+
+  it("drops blank lines and trailing whitespace around markers", () => {
+    expect(parseNoteContent("a  \n\n[img:1]\n\n\n  b\n\n", URLS.slice(0, 1))).toEqual([
+      { kind: "text", text: "a" },
+      { kind: "image", url: "a.png", number: 1 },
+      { kind: "text", text: "  b" },
+    ]);
+  });
+});
+
+describe("removeImageMarker", () => {
+  it("removes markers of the deleted image together with their line", () => {
+    expect(removeImageMarker("a\n[img:2]\nb", 2)).toBe("a\nb");
+  });
+
+  it("renumbers markers after the deleted image", () => {
+    expect(removeImageMarker("[img:1]\n[img:2]\n[img:3] x [IMG: 4]", 2)).toBe(
+      "[img:1]\n[img:2] x [img:3]",
+    );
+  });
+
+  it("leaves markers before the deleted image untouched", () => {
+    expect(removeImageMarker("x [img:1] y", 3)).toBe("x [img:1] y");
+  });
+
+  it("removes an inline marker without joining surrounding words", () => {
+    expect(removeImageMarker("see [img:1] here", 1)).toBe("see here");
   });
 });
