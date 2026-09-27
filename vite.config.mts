@@ -25,6 +25,7 @@ export default defineConfig({
     include: [
       "src/features/intensive-study/**/*.test.ts",
       "src/features/landing/**/*.test.ts",
+      "src/features/notes/**/*.test.ts",
     ],
     setupFiles: ["src/test/setup.ts"],
     // Fail the run on any stray `.only`. Vitest defaults this to `!process.env.CI`,
