@@ -75,7 +75,6 @@ function baseSession(overrides: Record<string, unknown> = {}) {
     status: "ACTIVE",
     totalCards: 1,
     completedCards: 1,
-    totalPomodoros: 1,
     completedPomodoros: 0,
     xpEarned: 0,
     createdAt: "2026-08-05T09:59:00.000Z",
@@ -385,7 +384,7 @@ describe("intensive completion contract", () => {
   });
 
   describe("completePomodoro", () => {
-    it("returns the break boundary and badge evaluation with the block", async () => {
+    it("returns the break boundary, released cards and badge evaluation with the block", async () => {
       postResponse = {
         status: 200,
         data: {
@@ -395,6 +394,7 @@ describe("intensive completion contract", () => {
           breakEndsAt: "2026-08-05T10:30:00.000Z",
           isLongBreak: false,
           xpAwarded: 10,
+          releasedCards: 2,
           badgeEvaluation: { status: "failed", retryable: true },
         },
       };
@@ -414,6 +414,7 @@ describe("intensive completion contract", () => {
         breakEndsAt: "2026-08-05T10:30:00.000Z",
         isLongBreak: false,
         xpAwarded: 10,
+        releasedCards: 2,
         badgeEvaluation: { status: "failed", retryable: true },
       });
       expect(latest?.currentPomodoro?.status).toBe("ON_BREAK");

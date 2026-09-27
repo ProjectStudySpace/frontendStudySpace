@@ -12,11 +12,32 @@ function getCurrentLocale(): string {
   return language === "es" ? "es-ES" : "en-US";
 }
 
+/** Timezone the backend itself defaults to. */
+const FALLBACK_TIMEZONE = "UTC";
+
 /**
- * Obtiene la zona horaria del navegador del usuario
+ * Obtiene la zona horaria del navegador del usuario.
+ * The backend rejects a missing, empty or non-IANA timezone, so anything the
+ * browser cannot resolve to a valid IANA name falls back to UTC.
  */
 export function getUserTimezone(): string {
-  return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  let timeZone: unknown;
+  try {
+    timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  } catch {
+    return FALLBACK_TIMEZONE;
+  }
+  if (typeof timeZone !== "string" || timeZone.trim() === "") {
+    return FALLBACK_TIMEZONE;
+  }
+  const trimmed = timeZone.trim();
+  try {
+    // Throws a RangeError for names that are not valid IANA time zones.
+    new Intl.DateTimeFormat("en-US", { timeZone: trimmed });
+    return trimmed;
+  } catch {
+    return FALLBACK_TIMEZONE;
+  }
 }
 
 /**

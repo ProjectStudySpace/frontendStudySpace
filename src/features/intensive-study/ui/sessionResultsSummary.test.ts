@@ -16,6 +16,7 @@ import type {
   IntensiveSessionDetail,
   SessionCompletionSummary,
 } from "../../../types/intensiveSessions";
+import { BadgeType } from "../../../types/gamification";
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
@@ -32,7 +33,6 @@ const BARE_SESSION = {
   status: "COMPLETED",
   totalCards: 12,
   completedCards: 0,
-  totalPomodoros: 4,
   completedPomodoros: 0,
   xpEarned: 0,
   createdAt: "2026-08-05T09:59:00.000Z",
@@ -80,6 +80,14 @@ function summary(
 let root: Root | null = null;
 let container: HTMLDivElement;
 
+/** Value of the Pomodoro stat tile, located by its label. */
+function pomodoroStat(): string | undefined {
+  const label = Array.from(container.querySelectorAll("p")).find(
+    (p) => p.textContent === "intensiveStudy.pomodoros",
+  );
+  return label?.previousElementSibling?.textContent ?? undefined;
+}
+
 async function render(props: React.ComponentProps<typeof SessionResultsSummary>) {
   container = document.createElement("div");
   document.body.appendChild(container);
@@ -110,6 +118,7 @@ describe("SessionResultsSummary", () => {
     await render({
       session: BARE_SESSION,
       summary: result,
+      totalBlocks: 4,
       intradayReviews: result.nextReviews,
     });
 
@@ -118,6 +127,54 @@ describe("SessionResultsSummary", () => {
     expect(text).toContain("3/4");
     expect(text).toContain("+240");
     expect(text).toContain("Biology");
+  });
+
+  it("shows only the completed Pomodoros when the block total is unknown", async () => {
+    await render({ session: BARE_SESSION, summary: summary() });
+
+    const pomodoros = pomodoroStat();
+    expect(pomodoros).toBe("3");
+  });
+
+  it("counts the session's blocks as the Pomodoro total of a reconciled completion", async () => {
+    const reconciled = {
+      ...BARE_SESSION,
+      pomodoroBlocks: [
+        { id: 1, status: "COMPLETED" },
+        { id: 2, status: "COMPLETED" },
+        { id: 3, status: "ABANDONED" },
+      ],
+    } as unknown as IntensiveSessionDetail;
+    await render({ session: reconciled, summary: null });
+
+    expect(pomodoroStat()).toBe("2/3");
+  });
+
+  it("lists the badges earned in the session", async () => {
+    await render({
+      session: BARE_SESSION,
+      summary: summary(),
+      newBadges: [
+        {
+          id: 7,
+          userId: 10,
+          badgeType: BadgeType.NIGHT_OWL,
+          earnedAt: "2026-08-05T11:00:00.000Z",
+        },
+        {
+          id: 8,
+          userId: 10,
+          // A backend badge the client has no copy for yet.
+          badgeType: "STREAK_ON_FIRE" as BadgeType,
+          earnedAt: "2026-08-05T11:00:00.000Z",
+        },
+      ],
+    });
+
+    const text = container.textContent ?? "";
+    expect(text).toContain("intensiveStudy.newBadges");
+    expect(text).toContain("gamification.badges.nightOwl.name");
+    expect(text).toContain("Streak On Fire");
   });
 
   it("lists upcoming reviews with their card count", async () => {
@@ -140,7 +197,7 @@ describe("SessionResultsSummary", () => {
     expect(text).not.toContain("9 intensiveStudy.cards");
   });
 
-  it("shows a non-blocking notice when review scheduling did not complete", async () => {
+  it("shows a non-blocking notice when review scheduling awaits reconciliation", async () => {
     await render({
       session: BARE_SESSION,
       summary: summary({
@@ -155,6 +212,22 @@ describe("SessionResultsSummary", () => {
     expect(notice?.textContent).toBe(
       "intensiveStudy.results.reviewSchedulingPending",
     );
+  });
+
+  it("shows no scheduling notice when only review reminders are pending", async () => {
+    // `notification_pending` is normal (e.g. no push subscription): the
+    // reviews exist, only their reminder is outstanding.
+    await render({
+      session: BARE_SESSION,
+      summary: summary({
+        intradayReviewScheduling: {
+          status: "notification_pending",
+          retryable: true,
+        },
+      }),
+    });
+
+    expect(container.querySelector('[role="status"]')).toBeNull();
   });
 
   it("shows no scheduling notice when review scheduling completed", async () => {

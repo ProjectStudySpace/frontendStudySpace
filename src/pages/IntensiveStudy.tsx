@@ -65,6 +65,7 @@ import {
 import { createSingleFlight } from "../features/intensive-study/state/singleFlight";
 import { resolveTotalBlocks } from "../features/intensive-study/state/blockProgress";
 import type { IntensiveError } from "../features/intensive-study/api/errors";
+import { loadSessionBadges } from "../features/intensive-study/api/sessionBadges";
 import { IntradayReview } from "../types/intradayReviews";
 import { UserBadge } from "../types/gamification";
 
@@ -220,6 +221,9 @@ const IntensiveStudy: React.FC = () => {
   // bloque ya vencido deja el timer en cero sin emitir señal, así que la
   // reanudación nunca fabrica una transición en el backend.
   const lastHandledCompletionRef = useRef(0);
+  // Identifies the results view a badge read belongs to, so a late answer
+  // never lands on a later session.
+  const badgeRequestRef = useRef(0);
   // Single-flight lock for handlePomodoroComplete: the expiry effect, the
   // break panel button, and the card-complete path can all reach it. A
   // second call landing while the first is still awaiting must not restart
@@ -755,9 +759,23 @@ const IntensiveStudy: React.FC = () => {
     // back to the authoritative session relations.
     setSessionSummary(outcome.data.summary);
     setIntradayReviews(outcome.data.summary?.nextReviews ?? []);
-    // Aquí normalmente vendrían los nuevos badges del backend
     setNewBadges([]);
     setCurrentView("RESULTS");
+
+    // Badges are awarded after the commit and are not part of the response.
+    // Reading them is best effort: the session is already complete.
+    const request = ++badgeRequestRef.current;
+    const completed = outcome.snapshot
+      ? outcome.snapshot.session
+      : outcome.data.session;
+    loadSessionBadges({
+      badgeEvaluation: outcome.data.badgeEvaluation,
+      sessionStartedAt: completed?.startedAt,
+    })
+      .catch(() => [])
+      .then((badges) => {
+        if (badgeRequestRef.current === request) setNewBadges(badges);
+      });
   };
 
   const handleSessionComplete = () => finishSession(completeSession);
@@ -804,6 +822,8 @@ const IntensiveStudy: React.FC = () => {
 
   // Volver a configuración
   const handleBackToConfig = () => {
+    badgeRequestRef.current += 1;
+    setNewBadges([]);
     setCurrentView("CONFIG");
     setSelectedTopicId(null);
     setSelectedIntensity(null);
@@ -1303,6 +1323,7 @@ const IntensiveStudy: React.FC = () => {
     <SessionResultsSummary
       session={sessionResults || (currentSession as IntensiveSessionDetail)}
       summary={sessionSummary}
+      totalBlocks={totalBlocks}
       newBadges={newBadges}
       intradayReviews={intradayReviews}
       onClose={handleBackToConfig}
