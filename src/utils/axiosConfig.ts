@@ -230,9 +230,12 @@ api.interceptors.request.use(
       };
     }
 
-    // Ensure Content-Type is set for POST/PUT/PATCH requests with data
+    // Ensure Content-Type is set for POST/PUT/PATCH requests with data.
+    // FormData is excluded: the browser must set multipart/form-data with its
+    // boundary, and a JSON Content-Type makes axios serialize files away.
     if (
       typed.data &&
+      !(typed.data instanceof FormData) &&
       (typed.method === "post" ||
         typed.method === "put" ||
         typed.method === "patch")

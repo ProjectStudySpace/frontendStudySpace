@@ -523,4 +523,54 @@ describe("strict transport contracts", () => {
     });
     expect(attempts).toBe(1);
   });
+
+  it("sends FormData as multipart instead of forcing a JSON body", async () => {
+    let sentData: unknown;
+    let sentContentType: unknown;
+    api.defaults.adapter = async (config) => {
+      sentData = config.data;
+      sentContentType = config.headers?.["Content-Type"];
+      return {
+        data: {},
+        status: 201,
+        statusText: "Created",
+        headers: {},
+        config: config as InternalAxiosRequestConfig,
+      };
+    };
+
+    const form = new FormData();
+    form.append("question", "What is shown?");
+    form.append(
+      "questionImage",
+      new File([new Uint8Array([1, 2, 3])], "diagram.png", { type: "image/png" }),
+    );
+
+    await api.post("/cards", form);
+
+    expect(sentData).toBeInstanceOf(FormData);
+    expect((sentData as FormData).get("questionImage")).toBeInstanceOf(File);
+    expect(String(sentContentType ?? "")).not.toContain("application/json");
+  });
+
+  it("keeps sending plain object bodies as JSON", async () => {
+    let sentData: unknown;
+    let sentContentType: unknown;
+    api.defaults.adapter = async (config) => {
+      sentData = config.data;
+      sentContentType = config.headers?.["Content-Type"];
+      return {
+        data: {},
+        status: 201,
+        statusText: "Created",
+        headers: {},
+        config: config as InternalAxiosRequestConfig,
+      };
+    };
+
+    await api.post("/cards", { question: "What is shown?" });
+
+    expect(String(sentContentType)).toContain("application/json");
+    expect(sentData).toBe(JSON.stringify({ question: "What is shown?" }));
+  });
 });
