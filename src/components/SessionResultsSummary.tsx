@@ -19,12 +19,17 @@ import {
   SessionCompletionSummary,
 } from "../types/intensiveSessions";
 import { IntradayReview, IntradayReviewStatus } from "../types/intradayReviews";
-import { UserBadge } from "../types/gamification";
+import { BADGE_CONFIG, UserBadge } from "../types/gamification";
 
 interface SessionResultsSummaryProps {
   session: IntensiveSessionDetail;
   /** Authoritative completion results; null when completion was reconciled. */
   summary?: SessionCompletionSummary | null;
+  /**
+   * Total Pomodoro blocks of the session (session status `totalBlocks`), when
+   * known. The completion response does not carry it.
+   */
+  totalBlocks?: number | null;
   newBadges?: UserBadge[];
   intradayReviews?: IntradayReview[];
   onClose?: () => void;
@@ -34,6 +39,7 @@ interface SessionResultsSummaryProps {
 const SessionResultsSummary: React.FC<SessionResultsSummaryProps> = ({
   session,
   summary = null,
+  totalBlocks = null,
   newBadges = [],
   intradayReviews = [],
   onClose,
@@ -43,6 +49,13 @@ const SessionResultsSummary: React.FC<SessionResultsSummaryProps> = ({
 
   // Calcular estadísticas de la sesión
   const stats = useMemo(() => {
+    // The session has no planned Pomodoro count: the total is the number of
+    // blocks it has, 0 when unknown (a bare completion row carries no blocks).
+    const totalPomodoros = Math.max(
+      Number.isFinite(totalBlocks) ? (totalBlocks as number) : 0,
+      session.pomodoroBlocks?.length ?? 0,
+    );
+
     if (summary) {
       // The completion response carries a bare session row, so the summary is
       // the only source of the completed counts.
@@ -50,7 +63,7 @@ const SessionResultsSummary: React.FC<SessionResultsSummaryProps> = ({
         completedCards: summary.cardsCompleted,
         totalCards: summary.totalCards,
         completedPomodoros: summary.pomodorosCompleted,
-        totalPomodoros: session.totalPomodoros || 0,
+        totalPomodoros,
         xpEarned: summary.xpEarned,
       };
     }
@@ -62,7 +75,6 @@ const SessionResultsSummary: React.FC<SessionResultsSummaryProps> = ({
     const completedPomodoros =
       session.pomodoroBlocks?.filter((p) => p.status === "COMPLETED").length ||
       0;
-    const totalPomodoros = session.totalPomodoros || 0;
 
     return {
       completedCards,
@@ -71,12 +83,14 @@ const SessionResultsSummary: React.FC<SessionResultsSummaryProps> = ({
       totalPomodoros,
       xpEarned: session.xpEarned || 0,
     };
-  }, [session, summary]);
+  }, [session, summary, totalBlocks]);
 
-  // A committed session must still render if the payload omits scheduling.
-  const schedulingStatus = summary?.intradayReviewScheduling?.status;
+  // Only a deferred reconciliation means reviews may still be missing.
+  // `notification_pending` is normal (e.g. no push subscription): the reviews
+  // exist and only their reminder is outstanding. A committed session must
+  // still render if the payload omits scheduling.
   const reviewSchedulingPending =
-    schedulingStatus !== undefined && schedulingStatus !== "completed";
+    summary?.intradayReviewScheduling?.status === "pending_reconciliation";
 
   // Formatear hora de repaso
   const formatReviewTime = (isoString: string): string => {
@@ -97,13 +111,25 @@ const SessionResultsSummary: React.FC<SessionResultsSummaryProps> = ({
 
   // Obtener badge icon
   const getBadgeIcon = (badgeType: string): string => {
-    // Badge types: POMODORO_*, SESSION_*, STREAK_*, CARD_*, EARLY_BIRD
+    // Badge types: POMODORO_*, SESSION_*, STREAK_*, CARD_*, special badges
     if (badgeType.startsWith("POMODORO")) return "🍅";
     if (badgeType.startsWith("SESSION")) return "📚";
     if (badgeType.startsWith("STREAK")) return "🔥";
     if (badgeType.startsWith("CARD")) return "🃏";
     if (badgeType === "EARLY_BIRD") return "🌅";
+    if (badgeType === "NIGHT_OWL") return "🦉";
+    if (badgeType === "NEVER_GIVE_UP") return "💪";
     return "🏆";
+  };
+
+  // Nombre del badge: copy configurada, o el tipo legible si no hay copy.
+  const getBadgeName = (badgeType: string): string => {
+    const readable = badgeType
+      .toLowerCase()
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (l) => l.toUpperCase());
+    const config = BADGE_CONFIG[badgeType as keyof typeof BADGE_CONFIG];
+    return config ? t(config.nameKey, readable) : readable;
   };
 
   // Repasos pendientes
@@ -157,7 +183,9 @@ const SessionResultsSummary: React.FC<SessionResultsSummaryProps> = ({
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-800 dark:text-white">
-                {stats.completedPomodoros}/{stats.totalPomodoros}
+                {stats.totalPomodoros > 0
+                  ? `${stats.completedPomodoros}/${stats.totalPomodoros}`
+                  : stats.completedPomodoros}
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 {t("intensiveStudy.pomodoros", "Pomodoros")}
@@ -205,9 +233,7 @@ const SessionResultsSummary: React.FC<SessionResultsSummaryProps> = ({
                 </span>
                 <div>
                   <p className="text-sm font-medium text-gray-800 dark:text-white">
-                    {badge.badgeType
-                      .replace(/_/g, " ")
-                      .replace(/\b\w/g, (l) => l.toUpperCase())}
+                    {getBadgeName(badge.badgeType)}
                   </p>
                   {badge.earnedAt && (
                     <p className="text-xs text-gray-500">

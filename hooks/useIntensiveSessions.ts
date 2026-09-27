@@ -841,6 +841,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
           breakEndsAt: null,
           isLongBreak: null,
           xpAwarded: null,
+          releasedCards: null,
           badgeEvaluation: null,
         }),
         send: async () => {
@@ -869,6 +870,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
               breakEndsAt: payload.breakEndsAt ?? null,
               isLongBreak: payload.isLongBreak ?? null,
               xpAwarded: payload.xpAwarded ?? null,
+              releasedCards: payload.releasedCards ?? null,
               badgeEvaluation: payload.badgeEvaluation ?? null,
             },
             snapshot: null,

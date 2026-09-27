@@ -93,7 +93,6 @@ export interface IntensiveStudySession {
   status: SessionStatus;
   totalCards: number;
   completedCards: number;
-  totalPomodoros: number;
   completedPomodoros: number;
   xpEarned: number;
   startedAt?: string;
@@ -237,6 +236,8 @@ export interface PomodoroCompletionResult {
   breakEndsAt: string | null;
   isLongBreak: boolean | null;
   xpAwarded: number | null;
+  /** Unanswered cards returned to the session pool for the next block. */
+  releasedCards: number | null;
   badgeEvaluation: BadgeEvaluation | null;
 }
 

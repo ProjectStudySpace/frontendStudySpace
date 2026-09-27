@@ -30,22 +30,25 @@ export enum BadgeType {
   CARD_COLLECTOR = "CARD_COLLECTOR",
   CARD_MASTER = "CARD_MASTER",
 
-  // Special badge
-  EARLY_BIRD = "EARLY_BIRD",
+  // Special badges (10 completed sessions each, hours in the user's timezone)
+  EARLY_BIRD = "EARLY_BIRD", // completed before 08:00
+  NIGHT_OWL = "NIGHT_OWL", // completed at or after 21:00
+  NEVER_GIVE_UP = "NEVER_GIVE_UP", // any completed session
 }
 
 /**
- * Tipos de transacciones de XP
+ * Tipos de transacciones de XP.
+ * Mirrors the backend `XpTransactionType` Prisma enum.
  */
 export enum XpTransactionType {
   CARD_COMPLETE = "CARD_COMPLETE",
   POMODORO_COMPLETE = "POMODORO_COMPLETE",
   SESSION_COMPLETE = "SESSION_COMPLETE",
-  INTRADAY_REVIEW_COMPLETE = "INTRADAY_REVIEW_COMPLETE",
+  ALL_SESSIONS_COMPLETE = "ALL_SESSIONS_COMPLETE",
+  LONG_BREAK_COMPLETE = "LONG_BREAK_COMPLETE",
   BADGE_EARNED = "BADGE_EARNED",
   STREAK_BONUS = "STREAK_BONUS",
-  LEVEL_UP_BONUS = "LEVEL_UP_BONUS",
-  PENALTY_ABANDON = "PENALTY_ABANDON",
+  ABANDON_PENALTY = "ABANDON_PENALTY",
 }
 
 /**
@@ -72,28 +75,36 @@ export interface BadgeMetadata {
 }
 
 /**
- * Badge ganado por el usuario
+ * Badge ganado por el usuario.
+ * Mirrors the backend `UserBadge` row served by `GET /gamification/badges`.
  */
 export interface UserBadge {
   id: number;
   userId: number;
   badgeType: BadgeType;
   earnedAt: string;
-  topicId?: number;
-  metadata?: BadgeMetadata;
-  createdAt: string;
+  topicId?: number | null;
+  /** Backend-defined JSON; not the client's visual `BadgeMetadata`. */
+  metadata?: Record<string, unknown> | null;
 }
 
 /**
- * Transacción de XP
+ * Transacción de XP.
+ * Mirrors the backend `XpTransaction` row.
  */
 export interface XpTransaction {
   id: number;
   userId: number;
   amount: number;
   type: XpTransactionType;
-  multiplier: number;
-  metadata?: Record<string, unknown>;
+  /** Prisma `Decimal(3, 2)`, serialized as a string such as "1.25". */
+  multiplier: string;
+  finalAmount: number;
+  description: string | null;
+  sessionId: number | null;
+  pomodoroId: number | null;
+  cardId: number | null;
+  badgeType: BadgeType | null;
   createdAt: string;
 }
 
@@ -273,12 +284,27 @@ export const BADGE_CONFIG: Record<BadgeType, BadgeMetadata> = {
     requirement: 200,
   },
 
-  // Special badge
+  // Special badges
   [BadgeType.EARLY_BIRD]: {
     icon: "sunrise",
     nameKey: "gamification.badges.earlyBird.name",
     descriptionKey: "gamification.badges.earlyBird.description",
     color: "#fbbf24", // amber-light
+    requirement: 10,
+  },
+  [BadgeType.NIGHT_OWL]: {
+    icon: "moon",
+    nameKey: "gamification.badges.nightOwl.name",
+    descriptionKey: "gamification.badges.nightOwl.description",
+    color: "#4f46e5", // indigo-dark
+    requirement: 10,
+  },
+  [BadgeType.NEVER_GIVE_UP]: {
+    icon: "shield",
+    nameKey: "gamification.badges.neverGiveUp.name",
+    descriptionKey: "gamification.badges.neverGiveUp.description",
+    color: "#dc2626", // red-dark
+    requirement: 10,
   },
 };
 

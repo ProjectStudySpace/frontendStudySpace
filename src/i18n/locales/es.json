@@ -2078,7 +2078,7 @@
       "intradayReviews": "Repasos Programados",
       "backToTopics": "Volver a Temas",
       "startNewSession": "Nueva Sesión",
-      "reviewSchedulingPending": "La sesión se guardó correctamente. Algunos repasos intradía o sus recordatorios aún se están programando y aparecerán en breve."
+      "reviewSchedulingPending": "La sesión se guardó correctamente. Algunos repasos intradía aún se están programando y aparecerán en breve."
     },
     "noCards": {
       "title": "Sin tarjetas",
@@ -2192,7 +2192,15 @@
       },
       "earlyBird": {
         "name": "Madrugador",
-        "description": "Completa una sesión antes de las 7am"
+        "description": "Completa 10 sesiones antes de las 8:00 en tu zona horaria"
+      },
+      "nightOwl": {
+        "name": "Búho nocturno",
+        "description": "Completa 10 sesiones a partir de las 21:00 en tu zona horaria"
+      },
+      "neverGiveUp": {
+        "name": "Nunca te rindas",
+        "description": "Completa 10 sesiones intensivas"
       },
       "unknown": {
         "name": "Badge Desconocido",
@@ -2233,11 +2241,11 @@
       "CARD_COMPLETE": "Tarjeta completada",
       "POMODORO_COMPLETE": "Pomodoro completado",
       "SESSION_COMPLETE": "Sesión completada",
-      "INTRADAY_REVIEW_COMPLETE": "Repaso completado",
+      "ALL_SESSIONS_COMPLETE": "Todas las sesiones completadas",
+      "LONG_BREAK_COMPLETE": "Descanso largo completado",
       "BADGE_EARNED": "Badge ganado",
       "STREAK_BONUS": "Bonus de racha",
-      "LEVEL_UP_BONUS": "Subida de nivel",
-      "PENALTY_ABANDON": "Abandono"
+      "ABANDON_PENALTY": "Abandono"
     }
   },
   "pushNotifications": {
