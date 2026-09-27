@@ -228,7 +228,10 @@ describe("useIntensiveSessions corrective production seams", () => {
           data: { error: "Inicio sin confirmar", code: "START_UNCONFIRMED" },
         };
       }
-      return { status: 500, data: { error: "Sesión no encontrada" } };
+      return {
+        status: 404,
+        data: { error: "Sesión no encontrada", code: "SESSION_NOT_FOUND" },
+      };
     });
     await renderHookProbe();
 
@@ -285,6 +288,40 @@ describe("useIntensiveSessions corrective production seams", () => {
   });
 
   describe("reloadSession", () => {
+    it("keeps the block total reported by the session status GET", async () => {
+      installSettlingAdapter(api, () => ({
+        status: 200,
+        data: {
+          session: { id: 1, userId: 10, status: "PAUSED", pomodoroBlocks: [] },
+          activeBlock: null,
+          completedBlocks: 2,
+          totalBlocks: 5,
+        },
+      }));
+      await renderHookProbe();
+      expect(latest?.sessionTotalBlocks).toBeNull();
+
+      await act(async () => {
+        await latest?.reloadSession(1);
+      });
+
+      expect(latest?.sessionTotalBlocks).toBe(5);
+    });
+
+    it("does not keep a block total when the status GET fails", async () => {
+      installSettlingAdapter(api, () => ({
+        status: 503,
+        data: { error: "Servicio no disponible" },
+      }));
+      await renderHookProbe();
+
+      await act(async () => {
+        await latest?.reloadSession(1);
+      });
+
+      expect(latest?.sessionTotalBlocks).toBeNull();
+    });
+
     it("adopts the authoritative session and reports its snapshot", async () => {
       const calls: string[] = [];
       installSettlingAdapter(api, (config) => {
@@ -313,8 +350,8 @@ describe("useIntensiveSessions corrective production seams", () => {
 
     it("tags a session the backend no longer returns as unavailable", async () => {
       installSettlingAdapter(api, () => ({
-        status: 500,
-        data: { error: "Sesión no encontrada" },
+        status: 404,
+        data: { error: "Sesión no encontrada", code: "SESSION_NOT_FOUND" },
       }));
       await renderHookProbe();
 
@@ -327,6 +364,25 @@ describe("useIntensiveSessions corrective production seams", () => {
       if (result?.status !== "unavailable") throw new Error("expected unavailable");
       expect(result.error.code).toBe("SESSION_UNAVAILABLE");
       expect(latest?.error).toBe("La sesión ya no está disponible.");
+    });
+
+    it("reports an uncoded 500 as a retryable read, not as an unavailable session", async () => {
+      installSettlingAdapter(api, () => ({
+        status: 500,
+        data: { error: "Fallo interno" },
+      }));
+      await renderHookProbe();
+
+      let result: Awaited<ReturnType<HookState["reloadSession"]>> | undefined;
+      await act(async () => {
+        result = await latest?.reloadSession(1);
+      });
+
+      expect(result?.status).toBe("failed");
+      if (result?.status !== "failed") throw new Error("expected failed");
+      expect(result.error.code).toBeNull();
+      expect(result.error.status).toBe(500);
+      expect(latest?.error).toBe("Fallo interno");
     });
 
     it("reports a failed read as retryable, not as an unavailable session", async () => {

@@ -158,14 +158,24 @@ describe("isUnconfirmedStartFailure", () => {
 });
 
 describe("isSessionUnavailable", () => {
-  it("treats an uncoded 500 or a 404 from the session GET as an unavailable session", () => {
-    expect(isSessionUnavailable(error({ status: 500 }))).toBe(true);
-    expect(isSessionUnavailable(error({ status: 404 }))).toBe(true);
+  it("treats a 404 SESSION_NOT_FOUND from the session GET as an unavailable session", () => {
+    expect(
+      isSessionUnavailable(error({ status: 404, code: "SESSION_NOT_FOUND" })),
+    ).toBe(true);
   });
 
-  it("keeps gateway errors, coded errors and lost responses as a failed read", () => {
-    expect(isSessionUnavailable(error({ status: 503 }))).toBe(false);
-    expect(isSessionUnavailable(error({ status: 500, code: "X" }))).toBe(false);
+  it("keeps every 5xx, including an uncoded 500, as a failed read to retry", () => {
+    for (const status of [500, 502, 503, 504]) {
+      expect(isSessionUnavailable(error({ status }))).toBe(false);
+    }
+    expect(
+      isSessionUnavailable(error({ status: 500, code: "SESSION_NOT_FOUND" })),
+    ).toBe(false);
+  });
+
+  it("keeps an uncoded 404, other codes and lost responses as a failed read", () => {
+    expect(isSessionUnavailable(error({ status: 404 }))).toBe(false);
+    expect(isSessionUnavailable(error({ status: 404, code: "X" }))).toBe(false);
     expect(
       isSessionUnavailable(error({ kind: "network", status: null })),
     ).toBe(false);
@@ -175,10 +185,12 @@ describe("isSessionUnavailable", () => {
   });
 
   it("builds a coded unavailable error the caller can branch on", () => {
-    const unavailable = sessionUnavailableError(error({ status: 500 }));
+    const unavailable = sessionUnavailableError(
+      error({ status: 404, code: "SESSION_NOT_FOUND" }),
+    );
     expect(unavailable.code).toBe("SESSION_UNAVAILABLE");
     expect(unavailable.message).toBe("La sesión ya no está disponible.");
-    expect(unavailable.status).toBe(500);
+    expect(unavailable.status).toBe(404);
   });
 });
 

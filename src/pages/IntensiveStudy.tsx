@@ -63,6 +63,7 @@ import {
   type IntensiveMutationOutcome,
 } from "../features/intensive-study/state/mutationOutcome";
 import { createSingleFlight } from "../features/intensive-study/state/singleFlight";
+import { resolveTotalBlocks } from "../features/intensive-study/state/blockProgress";
 import type { IntensiveError } from "../features/intensive-study/api/errors";
 import { IntradayReview } from "../types/intradayReviews";
 import { UserBadge } from "../types/gamification";
@@ -84,6 +85,7 @@ const IntensiveStudy: React.FC = () => {
   const {
     sessions,
     currentSession,
+    sessionTotalBlocks,
     currentPomodoro,
     currentCard,
     loading,
@@ -118,6 +120,11 @@ const IntensiveStudy: React.FC = () => {
   } = useTopics();
 
   const pomodoroTimer = usePomodoroTimer();
+  const totalBlocks = resolveTotalBlocks({
+    statusTotalBlocks: sessionTotalBlocks,
+    session: currentSession,
+    blockNumber: pomodoroTimer.blockNumber,
+  });
 
   // Estado local
   const [currentView, setCurrentView] = useState<SessionView>("CONFIG");
@@ -990,7 +997,7 @@ const IntensiveStudy: React.FC = () => {
           totalTime={25 * 60} // 25 minutos por defecto
           phase="WORK"
           blockNumber={1}
-          totalBlocks={currentSession?.totalPomodoros || 4}
+          totalBlocks={totalBlocks}
           isPaused={true}
         />
       </div>
@@ -1030,7 +1037,7 @@ const IntensiveStudy: React.FC = () => {
               {t("intensiveStudy.pomodoros", "Pomodoros")}
             </p>
             <p className="font-medium text-indigo-800 dark:text-indigo-200">
-              {currentSession?.totalPomodoros}
+              {totalBlocks}
             </p>
           </div>
         </div>
@@ -1075,7 +1082,7 @@ const IntensiveStudy: React.FC = () => {
           totalTime={pomodoroTimer.totalTime}
           phase={pomodoroTimer.phase as "WORK" | "SHORT_BREAK" | "LONG_BREAK"}
           blockNumber={pomodoroTimer.blockNumber}
-          totalBlocks={currentSession?.totalPomodoros || 4}
+          totalBlocks={totalBlocks}
           isPaused={!pomodoroTimer.isRunning}
         />
 
@@ -1101,7 +1108,7 @@ const IntensiveStudy: React.FC = () => {
         {t("intensiveStudy.cards", "tarjetas")}
         {" • "}
         {t("intensiveStudy.pomodoro", "Pomodoro")} {pomodoroTimer.blockNumber} /{" "}
-        {currentSession?.totalPomodoros || 4}
+        {totalBlocks}
       </p>
 
       {/* Panel de bloque completado: se revisaron todas las tarjetas del bloque,
@@ -1231,7 +1238,7 @@ const IntensiveStudy: React.FC = () => {
         totalTime={pomodoroTimer.totalTime}
         phase={pomodoroTimer.phase as "WORK" | "SHORT_BREAK" | "LONG_BREAK"}
         blockNumber={pomodoroTimer.blockNumber}
-        totalBlocks={currentSession?.totalPomodoros || 4}
+        totalBlocks={totalBlocks}
         isPaused={!pomodoroTimer.isRunning}
         onSkipBreak={handleSkipBreak}
       />
