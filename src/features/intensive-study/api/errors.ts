@@ -4,8 +4,10 @@ import { api, type AuthRequestMeta } from "../../../utils/axiosConfig";
 export type IntensiveErrorKind = "business" | "auth" | "network" | "unknown";
 
 /**
- * Machine-readable codes the backend sends as HTTP 409 for intensive-study
- * conflicts. Branch on these, never on the human-readable `error` text.
+ * Machine-readable codes the backend sends for intensive-study failures: HTTP
+ * 409 for conflicts and HTTP 404 `SESSION_NOT_FOUND` for a session that is
+ * missing or owned by someone else. Branch on these, never on the
+ * human-readable `error` text.
  * `SESSION_UNAVAILABLE` is the only client-side code: the authoritative GET
  * could not return the session, so there is nothing to reconcile against.
  */
@@ -19,6 +21,7 @@ export const IntensiveErrorCode = {
   NO_PENDING_BLOCKS: "NO_PENDING_BLOCKS",
   NO_CARDS_AVAILABLE: "NO_CARDS_AVAILABLE",
   PENDING_CARDS: "PENDING_CARDS",
+  SESSION_NOT_FOUND: "SESSION_NOT_FOUND",
   SESSION_UNAVAILABLE: "SESSION_UNAVAILABLE",
 } as const;
 

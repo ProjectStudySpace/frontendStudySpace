@@ -364,4 +364,27 @@ describe("IntensiveStudy start recovery", () => {
     expect(timerFn("setBlockNumber")).toHaveBeenLastCalledWith(2);
     expect(text()).toContain("intensiveStudy.cards");
   });
+
+  describe("block progress", () => {
+    it("shows the block total reported by the session status", async () => {
+      hook.current.sessionTotalBlocks = 6;
+      await resumeInto("BREAK");
+
+      expect(text()).toContain("intensiveStudy.block 1 intensiveStudy.of 6");
+    });
+
+    it("falls back to the session's Pomodoro blocks without a status total", async () => {
+      hook.current.sessionTotalBlocks = null;
+      const session = {
+        ...SESSION,
+        pomodoroBlocks: [block(), block({ id: 12 }), block({ id: 13 })],
+      };
+      hook.current.currentSession = session;
+      fn("rehydrateSession").mockResolvedValue(snapshot("BREAK", { session }));
+      await renderPage();
+      await click("intensiveStudy.continueSession");
+
+      expect(text()).toContain("intensiveStudy.block 1 intensiveStudy.of 3");
+    });
+  });
 });

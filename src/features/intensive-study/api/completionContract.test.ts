@@ -150,10 +150,15 @@ function conflict(code: string, error = "Conflicto"): TestResponse {
   return { status: 409, data: { error, code, path: "/api", method: "POST" } };
 }
 
-/** The session GET answers an uncoded 500 for a missing or foreign session. */
+/** The session GET answers a coded 404 for a missing or foreign session. */
 const SESSION_GONE: TestResponse = {
-  status: 500,
-  data: { error: "Sesión no encontrada", path: "/api", method: "GET" },
+  status: 404,
+  data: {
+    error: "Sesión no encontrada",
+    code: "SESSION_NOT_FOUND",
+    path: "/api",
+    method: "GET",
+  },
 };
 
 type CompleteOutcome = Awaited<ReturnType<HookState["completeSession"]>>;
