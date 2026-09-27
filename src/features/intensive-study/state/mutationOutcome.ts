@@ -97,7 +97,8 @@ export function isUnconfirmedCommandFailure(
   if (error.code !== null && RECONCILE_CODES[command]?.has(error.code)) {
     return true;
   }
-  // Fallback for a backend that still answers a lost claim with an uncoded 5xx.
+  // A 5xx on a completion may come from a proxy or gateway (502/503/504) after
+  // the backend already committed, so it is reconciled rather than trusted.
   return (
     COMPLETION_COMMANDS.has(command) &&
     error.status !== null &&
@@ -161,15 +162,16 @@ export function startFailureRecovery(error: IntensiveError): StartFailureRecover
 export const SESSION_UNAVAILABLE_MESSAGE = "La sesión ya no está disponible.";
 
 /**
- * The session GET answers an uncoded 500 (or a 404) when the session does not
+ * The session GET answers 404 `SESSION_NOT_FOUND` when the session does not
  * exist or belongs to someone else. That is a definitive answer, unlike a lost
- * response or a gateway error, which only mean the read itself failed.
+ * response, an uncoded 404 or any 5xx, which only mean the read itself failed
+ * and may be retried.
  */
 export function isSessionUnavailable(error: IntensiveError): boolean {
   return (
     error.kind === "business" &&
-    error.code === null &&
-    (error.status === 404 || error.status === 500)
+    error.status === 404 &&
+    error.code === IntensiveErrorCode.SESSION_NOT_FOUND
   );
 }
 

@@ -63,6 +63,8 @@ interface UseIntensiveSessionsReturn {
   // Estado
   sessions: IntensiveStudySession[];
   currentSession: IntensiveSessionDetail | null;
+  /** `totalBlocks` from the latest session status GET of `currentSession`. */
+  sessionTotalBlocks: number | null;
   currentPomodoro: PomodoroBlock | null;
   currentCard: IntensiveSessionCard | null;
   loading: boolean;
@@ -157,6 +159,10 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
   const [sessions, setSessions] = useState<IntensiveStudySession[]>([]);
   const [currentSession, setCurrentSession] =
     useState<IntensiveSessionDetail | null>(null);
+  const [statusTotalBlocks, setStatusTotalBlocks] = useState<{
+    sessionId: number;
+    totalBlocks: number;
+  } | null>(null);
   const [currentPomodoro, setCurrentPomodoro] = useState<PomodoroBlock | null>(
     null,
   );
@@ -165,6 +171,23 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  /** Keep the block total the session status GET reports for a session. */
+  const rememberStatusTotalBlocks = useCallback(
+    (sessionId: number, payload: { totalBlocks?: unknown } | null) => {
+      const totalBlocks = payload?.totalBlocks;
+      setStatusTotalBlocks(
+        typeof totalBlocks === "number" && Number.isFinite(totalBlocks)
+          ? { sessionId, totalBlocks }
+          : null,
+      );
+    },
+    [],
+  );
+  const sessionTotalBlocks =
+    statusTotalBlocks && statusTotalBlocks.sessionId === currentSession?.id
+      ? statusTotalBlocks.totalBlocks
+      : null;
 
   // ==================== FUNCIONES DE SESIÓN ====================
 
@@ -301,6 +324,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
           const apiResponse = response.data;
           const sessionDetail = apiResponse.session;
           setCurrentSession(sessionDetail);
+          rememberStatusTotalBlocks(id, apiResponse);
           return sessionDetail;
         }
         return null;
@@ -312,7 +336,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
         setLoading(false);
       }
     },
-    [user],
+    [user, rememberStatusTotalBlocks],
   );
 
   /**
@@ -817,6 +841,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
           breakEndsAt: null,
           isLongBreak: null,
           xpAwarded: null,
+          releasedCards: null,
           badgeEvaluation: null,
         }),
         send: async () => {
@@ -845,6 +870,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
               breakEndsAt: payload.breakEndsAt ?? null,
               isLongBreak: payload.isLongBreak ?? null,
               xpAwarded: payload.xpAwarded ?? null,
+              releasedCards: payload.releasedCards ?? null,
               badgeEvaluation: payload.badgeEvaluation ?? null,
             },
             snapshot: null,
@@ -1097,6 +1123,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
         setCurrentSession(snapshot.session);
         setCurrentPomodoro(snapshot.block);
         setCurrentCard(snapshot.card);
+        rememberStatusTotalBlocks(sessionId, payload);
 
         return { status: "found", snapshot };
       } catch (err: any) {
@@ -1117,7 +1144,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
         setLoading(false);
       }
     },
-    [user, getNextCard],
+    [user, getNextCard, rememberStatusTotalBlocks],
   );
 
   /**
@@ -1168,6 +1195,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
     // Estado
     sessions,
     currentSession,
+    sessionTotalBlocks,
     currentPomodoro,
     currentCard,
     loading,

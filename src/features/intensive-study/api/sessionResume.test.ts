@@ -42,7 +42,6 @@ function baseSession(overrides: Record<string, unknown> = {}) {
     status: "ACTIVE",
     totalCards: 10,
     completedCards: 2,
-    totalPomodoros: 4,
     completedPomodoros: 0,
     xpEarned: 0,
     createdAt: "2026-08-05T09:59:00.000Z",
@@ -405,8 +404,27 @@ describe("intensive session discovery and authoritative resume", () => {
 
     expect(snapshot).toBeNull();
     expect(latest?.currentSession).toBeNull();
-    // An uncoded 500 is the backend's "missing or not owned" answer, rendered
-    // with the same unavailable message as a reconciliation read.
+    // A 5xx only means the read failed: it surfaces as a retryable error, not
+    // as an unavailable session.
+    expect(latest?.error).toBe("Detalle no disponible");
+  });
+
+  it("reports a missing or foreign session as unavailable without hydrating", async () => {
+    installRoutes({
+      "/intensive-sessions/1": {
+        status: 404,
+        data: { error: "Sesión no encontrada", code: "SESSION_NOT_FOUND" },
+      },
+    });
+    await renderHookProbe();
+
+    let snapshot: Awaited<ReturnType<HookState["rehydrateSession"]>> | undefined;
+    await act(async () => {
+      snapshot = await latest?.rehydrateSession(1);
+    });
+
+    expect(snapshot).toBeNull();
+    expect(latest?.currentSession).toBeNull();
     expect(latest?.error).toBe("La sesión ya no está disponible.");
   });
 });

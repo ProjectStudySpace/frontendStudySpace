@@ -2074,7 +2074,7 @@
       "intradayReviews": "Scheduled Reviews",
       "backToTopics": "Back to Topics",
       "startNewSession": "New Session",
-      "reviewSchedulingPending": "Your session is saved. Some intraday reviews or their reminders are still being scheduled and will appear shortly."
+      "reviewSchedulingPending": "Your session is saved. Some intraday reviews are still being scheduled and will appear shortly."
     },
     "noCards": {
       "title": "No cards",
@@ -2188,7 +2188,15 @@
       },
       "earlyBird": {
         "name": "Early Bird",
-        "description": "Complete a session before 7am"
+        "description": "Complete 10 sessions before 8:00 AM in your timezone"
+      },
+      "nightOwl": {
+        "name": "Night Owl",
+        "description": "Complete 10 sessions at or after 9:00 PM in your timezone"
+      },
+      "neverGiveUp": {
+        "name": "Never Give Up",
+        "description": "Complete 10 intensive sessions"
       },
       "unknown": {
         "name": "Unknown Badge",
@@ -2229,11 +2237,11 @@
       "CARD_COMPLETE": "Card completed",
       "POMODORO_COMPLETE": "Pomodoro completed",
       "SESSION_COMPLETE": "Session completed",
-      "INTRADAY_REVIEW_COMPLETE": "Review completed",
+      "ALL_SESSIONS_COMPLETE": "All sessions completed",
+      "LONG_BREAK_COMPLETE": "Long break completed",
       "BADGE_EARNED": "Badge earned",
       "STREAK_BONUS": "Streak bonus",
-      "LEVEL_UP_BONUS": "Level up",
-      "PENALTY_ABANDON": "Abandon"
+      "ABANDON_PENALTY": "Abandon"
     }
   },
   "pushNotifications": {

@@ -63,7 +63,9 @@ import {
   type IntensiveMutationOutcome,
 } from "../features/intensive-study/state/mutationOutcome";
 import { createSingleFlight } from "../features/intensive-study/state/singleFlight";
+import { resolveTotalBlocks } from "../features/intensive-study/state/blockProgress";
 import type { IntensiveError } from "../features/intensive-study/api/errors";
+import { loadSessionBadges } from "../features/intensive-study/api/sessionBadges";
 import { IntradayReview } from "../types/intradayReviews";
 import { UserBadge } from "../types/gamification";
 
@@ -84,6 +86,7 @@ const IntensiveStudy: React.FC = () => {
   const {
     sessions,
     currentSession,
+    sessionTotalBlocks,
     currentPomodoro,
     currentCard,
     loading,
@@ -118,6 +121,11 @@ const IntensiveStudy: React.FC = () => {
   } = useTopics();
 
   const pomodoroTimer = usePomodoroTimer();
+  const totalBlocks = resolveTotalBlocks({
+    statusTotalBlocks: sessionTotalBlocks,
+    session: currentSession,
+    blockNumber: pomodoroTimer.blockNumber,
+  });
 
   // Estado local
   const [currentView, setCurrentView] = useState<SessionView>("CONFIG");
@@ -213,6 +221,9 @@ const IntensiveStudy: React.FC = () => {
   // bloque ya vencido deja el timer en cero sin emitir señal, así que la
   // reanudación nunca fabrica una transición en el backend.
   const lastHandledCompletionRef = useRef(0);
+  // Identifies the results view a badge read belongs to, so a late answer
+  // never lands on a later session.
+  const badgeRequestRef = useRef(0);
   // Single-flight lock for handlePomodoroComplete: the expiry effect, the
   // break panel button, and the card-complete path can all reach it. A
   // second call landing while the first is still awaiting must not restart
@@ -748,9 +759,23 @@ const IntensiveStudy: React.FC = () => {
     // back to the authoritative session relations.
     setSessionSummary(outcome.data.summary);
     setIntradayReviews(outcome.data.summary?.nextReviews ?? []);
-    // Aquí normalmente vendrían los nuevos badges del backend
     setNewBadges([]);
     setCurrentView("RESULTS");
+
+    // Badges are awarded after the commit and are not part of the response.
+    // Reading them is best effort: the session is already complete.
+    const request = ++badgeRequestRef.current;
+    const completed = outcome.snapshot
+      ? outcome.snapshot.session
+      : outcome.data.session;
+    loadSessionBadges({
+      badgeEvaluation: outcome.data.badgeEvaluation,
+      sessionStartedAt: completed?.startedAt,
+    })
+      .catch(() => [])
+      .then((badges) => {
+        if (badgeRequestRef.current === request) setNewBadges(badges);
+      });
   };
 
   const handleSessionComplete = () => finishSession(completeSession);
@@ -797,6 +822,8 @@ const IntensiveStudy: React.FC = () => {
 
   // Volver a configuración
   const handleBackToConfig = () => {
+    badgeRequestRef.current += 1;
+    setNewBadges([]);
     setCurrentView("CONFIG");
     setSelectedTopicId(null);
     setSelectedIntensity(null);
@@ -990,7 +1017,7 @@ const IntensiveStudy: React.FC = () => {
           totalTime={25 * 60} // 25 minutos por defecto
           phase="WORK"
           blockNumber={1}
-          totalBlocks={currentSession?.totalPomodoros || 4}
+          totalBlocks={totalBlocks}
           isPaused={true}
         />
       </div>
@@ -1030,7 +1057,7 @@ const IntensiveStudy: React.FC = () => {
               {t("intensiveStudy.pomodoros", "Pomodoros")}
             </p>
             <p className="font-medium text-indigo-800 dark:text-indigo-200">
-              {currentSession?.totalPomodoros}
+              {totalBlocks}
             </p>
           </div>
         </div>
@@ -1075,7 +1102,7 @@ const IntensiveStudy: React.FC = () => {
           totalTime={pomodoroTimer.totalTime}
           phase={pomodoroTimer.phase as "WORK" | "SHORT_BREAK" | "LONG_BREAK"}
           blockNumber={pomodoroTimer.blockNumber}
-          totalBlocks={currentSession?.totalPomodoros || 4}
+          totalBlocks={totalBlocks}
           isPaused={!pomodoroTimer.isRunning}
         />
 
@@ -1101,7 +1128,7 @@ const IntensiveStudy: React.FC = () => {
         {t("intensiveStudy.cards", "tarjetas")}
         {" • "}
         {t("intensiveStudy.pomodoro", "Pomodoro")} {pomodoroTimer.blockNumber} /{" "}
-        {currentSession?.totalPomodoros || 4}
+        {totalBlocks}
       </p>
 
       {/* Panel de bloque completado: se revisaron todas las tarjetas del bloque,
@@ -1231,7 +1258,7 @@ const IntensiveStudy: React.FC = () => {
         totalTime={pomodoroTimer.totalTime}
         phase={pomodoroTimer.phase as "WORK" | "SHORT_BREAK" | "LONG_BREAK"}
         blockNumber={pomodoroTimer.blockNumber}
-        totalBlocks={currentSession?.totalPomodoros || 4}
+        totalBlocks={totalBlocks}
         isPaused={!pomodoroTimer.isRunning}
         onSkipBreak={handleSkipBreak}
       />
@@ -1296,6 +1323,7 @@ const IntensiveStudy: React.FC = () => {
     <SessionResultsSummary
       session={sessionResults || (currentSession as IntensiveSessionDetail)}
       summary={sessionSummary}
+      totalBlocks={totalBlocks}
       newBadges={newBadges}
       intradayReviews={intradayReviews}
       onClose={handleBackToConfig}

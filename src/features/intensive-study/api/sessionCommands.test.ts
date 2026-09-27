@@ -67,7 +67,6 @@ function baseSession(overrides: Record<string, unknown> = {}) {
     status: "ACTIVE",
     totalCards: 10,
     completedCards: 2,
-    totalPomodoros: 4,
     completedPomodoros: 0,
     xpEarned: 0,
     createdAt: "2026-08-05T09:59:00.000Z",
@@ -141,8 +140,8 @@ async function hydrate(unchangedDetail: TestResponse = UNCHANGED_DETAIL) {
 }
 
 /**
- * A gateway error only means the reconciliation read failed. An uncoded 500
- * is reserved for the backend's "session not found" answer (SESSION_GONE).
+ * A gateway error only means the reconciliation read failed. The backend
+ * answers a missing or foreign session with a coded 404 (SESSION_GONE).
  */
 const READ_FAILED: TestResponse = {
   status: 503,
@@ -150,8 +149,8 @@ const READ_FAILED: TestResponse = {
 };
 
 const SESSION_GONE: TestResponse = {
-  status: 500,
-  data: { error: "Sesión no encontrada" },
+  status: 404,
+  data: { error: "Sesión no encontrada", code: "SESSION_NOT_FOUND" },
 };
 
 interface CommandCase {

@@ -45,7 +45,6 @@ function makeSession(
     status: SessionStatus.ACTIVE,
     totalCards: 10,
     completedCards: 2,
-    totalPomodoros: 4,
     completedPomodoros: 0,
     xpEarned: 0,
     createdAt: "2026-08-05T09:59:00.000Z",

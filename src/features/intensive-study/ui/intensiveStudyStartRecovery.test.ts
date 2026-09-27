@@ -17,6 +17,7 @@ import type {
 import {
   PomodoroStatus,
   type IntensiveResumeSnapshot,
+  type IntensiveSessionDetail,
   type PomodoroBlock,
   type ResumePhase,
 } from "../../../types/intensiveSessions";
@@ -43,6 +44,12 @@ vi.mock("../../../../hooks/usePomodoroTimer", () => ({
   usePomodoroTimer: () => timer.current,
 }));
 
+const sessionBadges = vi.hoisted(() => ({ load: vi.fn() }));
+
+vi.mock("../api/sessionBadges", () => ({
+  loadSessionBadges: sessionBadges.load,
+}));
+
 vi.mock("../../../../hooks/useTopics", () => ({
   useTopics: () => ({ topics: [], fetchUserTopics: vi.fn(), loading: false }),
 }));
@@ -53,7 +60,6 @@ const SESSION = {
   status: PomodoroStatus.ACTIVE,
   totalCards: 8,
   completedCards: 0,
-  totalPomodoros: 4,
   pomodoroBlocks: [],
   sessionCards: [],
 };
@@ -317,6 +323,62 @@ describe("IntensiveStudy start recovery", () => {
     },
   );
 
+  describe("session results", () => {
+    const COMPLETED = {
+      ...SESSION,
+      status: "COMPLETED",
+      startedAt: "2026-08-05T10:00:00.000Z",
+    };
+
+    async function completeFromOffer(badgeStatus: string) {
+      await resumeInto("BREAK");
+      fn("startPomodoro").mockResolvedValue(
+        failedStart({ code: "NO_PENDING_BLOCKS" }),
+      );
+      fn("completeSession").mockResolvedValue({
+        status: "success",
+        data: {
+          session: COMPLETED,
+          summary: null,
+          badgeEvaluation: { status: badgeStatus, retryable: false },
+        },
+        snapshot: null,
+      });
+      await click("intensiveStudy.skipBreak");
+      await click("intensiveStudy.actions.complete");
+    }
+
+    it("shows the badges earned during the session", async () => {
+      sessionBadges.load.mockResolvedValue([
+        {
+          id: 7,
+          userId: 10,
+          badgeType: "NIGHT_OWL",
+          earnedAt: "2026-08-05T11:00:00.000Z",
+        },
+      ]);
+
+      await completeFromOffer("completed");
+
+      await vi.waitFor(() =>
+        expect(text()).toContain("gamification.badges.nightOwl.name"),
+      );
+      expect(sessionBadges.load).toHaveBeenCalledWith({
+        badgeEvaluation: { status: "completed", retryable: false },
+        sessionStartedAt: "2026-08-05T10:00:00.000Z",
+      });
+    });
+
+    it("keeps the results view when the badge read fails", async () => {
+      sessionBadges.load.mockRejectedValue(new Error("badges down"));
+
+      await completeFromOffer("completed");
+
+      expect(text()).toContain("intensiveStudy.sessionCompleted");
+      expect(text()).not.toContain("intensiveStudy.newBadges");
+    });
+  });
+
   it("keeps a failed next-block start retryable and derives the block number from the started block", async () => {
     await resumeInto("BREAK");
     fn("startPomodoro")
@@ -363,5 +425,28 @@ describe("IntensiveStudy start recovery", () => {
     expect(fn("startPomodoro")).toHaveBeenCalledTimes(1);
     expect(timerFn("setBlockNumber")).toHaveBeenLastCalledWith(2);
     expect(text()).toContain("intensiveStudy.cards");
+  });
+
+  describe("block progress", () => {
+    it("shows the block total reported by the session status", async () => {
+      hook.current.sessionTotalBlocks = 6;
+      await resumeInto("BREAK");
+
+      expect(text()).toContain("intensiveStudy.block 1 intensiveStudy.of 6");
+    });
+
+    it("falls back to the session's Pomodoro blocks without a status total", async () => {
+      hook.current.sessionTotalBlocks = null;
+      const session = {
+        ...SESSION,
+        pomodoroBlocks: [block(), block({ id: 12 }), block({ id: 13 })],
+      } as unknown as IntensiveSessionDetail;
+      hook.current.currentSession = session;
+      fn("rehydrateSession").mockResolvedValue(snapshot("BREAK", { session }));
+      await renderPage();
+      await click("intensiveStudy.continueSession");
+
+      expect(text()).toContain("intensiveStudy.block 1 intensiveStudy.of 3");
+    });
   });
 });
