@@ -42,7 +42,7 @@ import {
   POMODORO_CONFIG,
   PomodoroStatus,
   IntensiveSessionDetail,
-  IntensiveStudySession,
+  AbandonSessionResult,
   IntensiveResumeSnapshot,
   PomodoroBlock,
   AbandonInfo,
@@ -438,7 +438,7 @@ const IntensiveStudy: React.FC = () => {
   const runAbandon = async (
     send: (
       id: number,
-    ) => Promise<IntensiveMutationOutcome<IntensiveStudySession>>,
+    ) => Promise<IntensiveMutationOutcome<AbandonSessionResult>>,
   ) => {
     if (!currentSession) return;
 

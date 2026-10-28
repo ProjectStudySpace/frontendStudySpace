@@ -280,6 +280,25 @@ export interface AbandonInfo {
   message: string;
 }
 
+/**
+ * Backend acknowledgement of `POST /intensive-sessions/:id/pause`. It carries
+ * no session; `message` is null when the pause was confirmed by reconciliation.
+ */
+export interface PauseSessionResult {
+  success: true;
+  message: string | null;
+}
+
+/**
+ * Backend acknowledgement of `POST /intensive-sessions/:id/abandon`. Both
+ * fields are null when the abandon was confirmed by reconciliation instead of
+ * by the command response.
+ */
+export interface AbandonSessionResult {
+  xpLost: number | null;
+  message: string | null;
+}
+
 // ==================== PROPS DE COMPONENTES ====================
 
 /**
