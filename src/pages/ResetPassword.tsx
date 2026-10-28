@@ -7,7 +7,7 @@ import {
   CircularProgress,
   AlertTitle,
 } from "@mui/material";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import api from "../utils/axiosConfig";
 import "./Login.css";

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button, Typography, Alert } from "@mui/material";
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
 

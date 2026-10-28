@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { MotionConfig } from "motion/react";
 import { useAuth } from "../context/AuthContext";
 import { LandingNav } from "../features/landing/components/LandingNav";

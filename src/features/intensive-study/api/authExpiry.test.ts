@@ -10,7 +10,7 @@ import { installSettlingAdapter } from "./testAxios";
 const doubles = vi.hoisted(() => ({ showSuccess: vi.fn(), showError: vi.fn(), navigate: vi.fn(), searchParams: new URLSearchParams() }));
 vi.mock("../../../context/NotificationContext", () => ({ useNotification: () => ({ showSuccess: doubles.showSuccess, showError: doubles.showError }) }));
 vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key, i18n: { language: "en" } }), initReactI18next: { type: "3rdParty", init: () => undefined } }));
-vi.mock("react-router-dom", () => ({ useNavigate: () => doubles.navigate, useSearchParams: () => [doubles.searchParams] }));
+vi.mock("react-router", () => ({ useNavigate: () => doubles.navigate, useSearchParams: () => [doubles.searchParams] }));
 
 function httpFailure(config: InternalAxiosRequestConfig, status: number, data: unknown): AxiosError {
   const response = { data, status, statusText: String(status), headers: {}, config, request: {} } as AxiosResponse;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button, TextField, Typography, Container, Alert } from "@mui/material";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
 import GoogleSignInButton from "../components/GoogleSignInButton";

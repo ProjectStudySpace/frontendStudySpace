@@ -4,7 +4,7 @@ import {
   Routes,
   Route,
   Navigate,
-} from "react-router-dom";
+} from "react-router";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ThemeProvider as CustomThemeProvider } from "./context/ThemeContext";
 import { NotificationProvider } from "./context/NotificationContext";

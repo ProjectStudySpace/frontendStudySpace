@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { User, TrendingUp, Calendar, Trash2, Lock } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useProfile } from "../../hooks/useProfile";
