@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import ProgressSection from "../components/progressSection";
+import AchievementsPanel from "../features/gamification/ui/AchievementsPanel";
 
 const ProgressPage = () => {
   const { t } = useTranslation();
@@ -15,6 +16,7 @@ const ProgressPage = () => {
       </div>
 
       <ProgressSection />
+      <AchievementsPanel />
     </div>
   );
 };

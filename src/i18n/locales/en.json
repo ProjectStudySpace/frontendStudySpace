@@ -2141,6 +2141,15 @@
       "nextLevel": "Next level",
       "progress": "Progress"
     },
+    "achievements": {
+      "title": "Achievements",
+      "loading": "Loading achievements",
+      "loadError": "We couldn't load your achievements.",
+      "retry": "Try again",
+      "currentStreak": "Current streak",
+      "xpToNextLevel": "XP to next level",
+      "masteredTopics": "Mastered topics"
+    },
     "badges": {
       "title": "Badges",
       "earned": "Earned",

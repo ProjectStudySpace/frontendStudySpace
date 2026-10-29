@@ -2145,6 +2145,15 @@
       "nextLevel": "Siguiente nivel",
       "progress": "Progreso"
     },
+    "achievements": {
+      "title": "Logros",
+      "loading": "Cargando logros",
+      "loadError": "No se pudieron cargar tus logros.",
+      "retry": "Reintentar",
+      "currentStreak": "Racha actual",
+      "xpToNextLevel": "XP para el siguiente nivel",
+      "masteredTopics": "Temas dominados"
+    },
     "badges": {
       "title": "Badges",
       "earned": "Ganados",
