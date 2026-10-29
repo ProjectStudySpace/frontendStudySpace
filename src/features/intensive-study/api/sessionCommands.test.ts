@@ -553,6 +553,46 @@ describe("intensive lifecycle commands", () => {
     expect(calls).toEqual(["post:/intensive-sessions/1/pause"]);
   });
 
+  it("flags an active-session conflict by its code, whatever the message says", async () => {
+    postOutcome = () => ({
+      status: 409,
+      data: { error: "Conflict", code: "ACTIVE_SESSION_EXISTS" },
+    });
+    await renderHookProbe();
+
+    let thrown: unknown;
+    await act(async () => {
+      try {
+        await latest?.createSession(7, "NORMAL" as never);
+      } catch (error) {
+        thrown = error;
+      }
+    });
+
+    expect((thrown as { code?: string } | undefined)?.code).toBe(
+      "ACTIVE_SESSION_EXISTS",
+    );
+    expect((thrown as { status?: number } | undefined)?.status).toBe(409);
+  });
+
+  it("does not infer an active session from the message text alone", async () => {
+    postOutcome = () => ({
+      status: 500,
+      data: { error: "Ya tienes una sesión activa. Complétala o abandónala primero." },
+    });
+    await renderHookProbe();
+
+    let result: unknown = "unset";
+    await act(async () => {
+      result = await latest?.createSession(7, "NORMAL" as never);
+    });
+
+    expect(result).toBeNull();
+    expect(latest?.error).toBe(
+      "Ya tienes una sesión activa. Complétala o abandónala primero.",
+    );
+  });
+
   runTerminalCommandRetryTests();
 });
 
