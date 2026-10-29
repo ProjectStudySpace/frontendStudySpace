@@ -6,34 +6,34 @@
 // ==================== ENUMS ====================
 
 /**
- * Tipos de badges disponibles (15 tipos según backend)
+ * Badge types. Mirrors the backend `BadgeType` Prisma enum (same order).
  */
 export enum BadgeType {
-  // Pomodoro badges
+  // Pomodoros completed
   POMODORO_NOVICE = "POMODORO_NOVICE",
   POMODORO_FOCUSED = "POMODORO_FOCUSED",
-  POMODORO_EXPERT = "POMODORO_EXPERT",
   POMODORO_MASTER = "POMODORO_MASTER",
+  POMODORO_LEGEND = "POMODORO_LEGEND",
 
-  // Session badges
-  SESSION_STARTER = "SESSION_STARTER",
-  SESSION_REGULAR = "SESSION_REGULAR",
-  SESSION_DEVOTED = "SESSION_DEVOTED",
-  SESSION_LEGEND = "SESSION_LEGEND",
+  // Daily study streak (spaced reviews or intensive sessions)
+  STREAK_ON_FIRE = "STREAK_ON_FIRE",
+  STREAK_UNSTOPPABLE = "STREAK_UNSTOPPABLE",
+  STREAK_LEGEND = "STREAK_LEGEND",
 
-  // Streak badges
-  STREAK_WEEK = "STREAK_WEEK",
-  STREAK_MONTH = "STREAK_MONTH",
-  STREAK_CHAMPION = "STREAK_CHAMPION",
-
-  // Card badges
-  CARD_COLLECTOR = "CARD_COLLECTOR",
-  CARD_MASTER = "CARD_MASTER",
+  // Total XP
+  XP_BEGINNER = "XP_BEGINNER",
+  XP_INTERMEDIATE = "XP_INTERMEDIATE",
+  XP_ADVANCED = "XP_ADVANCED",
+  XP_EXPERT = "XP_EXPERT",
 
   // Special badges (10 completed sessions each, hours in the user's timezone)
   EARLY_BIRD = "EARLY_BIRD", // completed before 08:00
-  NIGHT_OWL = "NIGHT_OWL", // completed at or after 21:00
+  NIGHT_OWL = "NIGHT_OWL", // retired: no longer awarded, earned ones are kept
   NEVER_GIVE_UP = "NEVER_GIVE_UP", // any completed session
+
+  // Spaced repetition
+  PERFECTIONIST = "PERFECTIONIST", // 7 days in a row with no overdue reviews
+  TOPIC_MASTERY = "TOPIC_MASTERY", // every card of a topic at a 30-day interval
 }
 
 /**
@@ -72,6 +72,8 @@ export interface BadgeMetadata {
   descriptionKey: string;
   color: string;
   requirement?: number;
+  /** No longer awarded by the backend; shown only when already earned. */
+  retired?: boolean;
 }
 
 /**
@@ -120,21 +122,30 @@ export interface LevelInfo {
 }
 
 /**
- * Estadísticas de gamificación del usuario
+ * Estadísticas de gamificación del usuario.
+ * Mirrors `GET /api/gamification/stats`.
  */
 export interface GamificationStats {
   totalXp: number;
+  todayXp: number;
+  weekXp: number;
   level: number;
-  currentLevelXp: number;
-  nextLevelXp: number;
-  progressPercent: number;
+  /** Progress through the current level, 0-100. */
+  levelProgress: number;
+  xpToNextLevel: number;
+  xpForCurrentLevel: number;
   currentStreak: number;
   longestStreak: number;
-  badges: UserBadge[];
-  recentTransactions: XpTransaction[];
+  lastStudyDate: string | null;
   pomodorosCompleted: number;
   sessionsCompleted: number;
   sessionsAbandoned: number;
+  /** Completed sessions over completed plus abandoned, 0-100. */
+  completionRate: number;
+  badges: UserBadge[];
+  badgeCount: number;
+  /** The 20 latest XP transactions. */
+  recentXp: XpTransaction[];
 }
 
 /**
@@ -185,103 +196,87 @@ export interface ActiveMultipliersData {
  * Mapea cada tipo de badge a su información visual
  */
 export const BADGE_CONFIG: Record<BadgeType, BadgeMetadata> = {
-  // Pomodoro badges
+  // Pomodoros completed
   [BadgeType.POMODORO_NOVICE]: {
     icon: "timer",
     nameKey: "gamification.badges.pomodoroNovice.name",
     descriptionKey: "gamification.badges.pomodoroNovice.description",
-    color: "#6366f1", // indigo
-    requirement: 1,
+    color: "#6366f1",
+    requirement: 5,
   },
   [BadgeType.POMODORO_FOCUSED]: {
     icon: "timer",
     nameKey: "gamification.badges.pomodoroFocused.name",
     descriptionKey: "gamification.badges.pomodoroFocused.description",
-    color: "#8b5cf6", // violet
-    requirement: 10,
-  },
-  [BadgeType.POMODORO_EXPERT]: {
-    icon: "timer",
-    nameKey: "gamification.badges.pomodoroExpert.name",
-    descriptionKey: "gamification.badges.pomodoroExpert.description",
-    color: "#a855f7", // purple
-    requirement: 50,
+    color: "#8b5cf6",
+    requirement: 25,
   },
   [BadgeType.POMODORO_MASTER]: {
     icon: "timer",
     nameKey: "gamification.badges.pomodoroMaster.name",
     descriptionKey: "gamification.badges.pomodoroMaster.description",
-    color: "#c026d3", // fuchsia
+    color: "#a855f7",
     requirement: 100,
   },
-
-  // Session badges
-  [BadgeType.SESSION_STARTER]: {
-    icon: "zap",
-    nameKey: "gamification.badges.sessionStarter.name",
-    descriptionKey: "gamification.badges.sessionStarter.description",
-    color: "#22c55e", // green
-    requirement: 1,
-  },
-  [BadgeType.SESSION_REGULAR]: {
-    icon: "zap",
-    nameKey: "gamification.badges.sessionRegular.name",
-    descriptionKey: "gamification.badges.sessionRegular.description",
-    color: "#14b8a6", // teal
-    requirement: 10,
-  },
-  [BadgeType.SESSION_DEVOTED]: {
-    icon: "zap",
-    nameKey: "gamification.badges.sessionDevoted.name",
-    descriptionKey: "gamification.badges.sessionDevoted.description",
-    color: "#0ea5e9", // sky
-    requirement: 25,
-  },
-  [BadgeType.SESSION_LEGEND]: {
-    icon: "zap",
-    nameKey: "gamification.badges.sessionLegend.name",
-    descriptionKey: "gamification.badges.sessionLegend.description",
-    color: "#f59e0b", // amber
-    requirement: 50,
+  [BadgeType.POMODORO_LEGEND]: {
+    icon: "timer",
+    nameKey: "gamification.badges.pomodoroLegend.name",
+    descriptionKey: "gamification.badges.pomodoroLegend.description",
+    color: "#c026d3",
+    requirement: 500,
   },
 
-  // Streak badges
-  [BadgeType.STREAK_WEEK]: {
+  // Daily study streak
+  [BadgeType.STREAK_ON_FIRE]: {
     icon: "flame",
-    nameKey: "gamification.badges.streakWeek.name",
-    descriptionKey: "gamification.badges.streakWeek.description",
-    color: "#ef4444", // red
+    nameKey: "gamification.badges.streakOnFire.name",
+    descriptionKey: "gamification.badges.streakOnFire.description",
+    color: "#ef4444",
     requirement: 7,
   },
-  [BadgeType.STREAK_MONTH]: {
+  [BadgeType.STREAK_UNSTOPPABLE]: {
     icon: "flame",
-    nameKey: "gamification.badges.streakMonth.name",
-    descriptionKey: "gamification.badges.streakMonth.description",
-    color: "#f97316", // orange
+    nameKey: "gamification.badges.streakUnstoppable.name",
+    descriptionKey: "gamification.badges.streakUnstoppable.description",
+    color: "#f97316",
     requirement: 30,
   },
-  [BadgeType.STREAK_CHAMPION]: {
+  [BadgeType.STREAK_LEGEND]: {
     icon: "flame",
-    nameKey: "gamification.badges.streakChampion.name",
-    descriptionKey: "gamification.badges.streakChampion.description",
-    color: "#eab308", // yellow
+    nameKey: "gamification.badges.streakLegend.name",
+    descriptionKey: "gamification.badges.streakLegend.description",
+    color: "#eab308",
     requirement: 100,
   },
 
-  // Card badges
-  [BadgeType.CARD_COLLECTOR]: {
-    icon: "layers",
-    nameKey: "gamification.badges.cardCollector.name",
-    descriptionKey: "gamification.badges.cardCollector.description",
-    color: "#3b82f6", // blue
-    requirement: 50,
+  // Total XP
+  [BadgeType.XP_BEGINNER]: {
+    icon: "zap",
+    nameKey: "gamification.badges.xpBeginner.name",
+    descriptionKey: "gamification.badges.xpBeginner.description",
+    color: "#22c55e",
+    requirement: 1000,
   },
-  [BadgeType.CARD_MASTER]: {
-    icon: "layers",
-    nameKey: "gamification.badges.cardMaster.name",
-    descriptionKey: "gamification.badges.cardMaster.description",
-    color: "#6366f1", // indigo
-    requirement: 200,
+  [BadgeType.XP_INTERMEDIATE]: {
+    icon: "zap",
+    nameKey: "gamification.badges.xpIntermediate.name",
+    descriptionKey: "gamification.badges.xpIntermediate.description",
+    color: "#14b8a6",
+    requirement: 10000,
+  },
+  [BadgeType.XP_ADVANCED]: {
+    icon: "zap",
+    nameKey: "gamification.badges.xpAdvanced.name",
+    descriptionKey: "gamification.badges.xpAdvanced.description",
+    color: "#0ea5e9",
+    requirement: 50000,
+  },
+  [BadgeType.XP_EXPERT]: {
+    icon: "zap",
+    nameKey: "gamification.badges.xpExpert.name",
+    descriptionKey: "gamification.badges.xpExpert.description",
+    color: "#f59e0b",
+    requirement: 100000,
   },
 
   // Special badges
@@ -289,22 +284,39 @@ export const BADGE_CONFIG: Record<BadgeType, BadgeMetadata> = {
     icon: "sunrise",
     nameKey: "gamification.badges.earlyBird.name",
     descriptionKey: "gamification.badges.earlyBird.description",
-    color: "#fbbf24", // amber-light
+    color: "#fbbf24",
     requirement: 10,
   },
   [BadgeType.NIGHT_OWL]: {
     icon: "moon",
     nameKey: "gamification.badges.nightOwl.name",
     descriptionKey: "gamification.badges.nightOwl.description",
-    color: "#4f46e5", // indigo-dark
+    color: "#4f46e5",
     requirement: 10,
+    retired: true,
   },
   [BadgeType.NEVER_GIVE_UP]: {
     icon: "shield",
     nameKey: "gamification.badges.neverGiveUp.name",
     descriptionKey: "gamification.badges.neverGiveUp.description",
-    color: "#dc2626", // red-dark
+    color: "#dc2626",
     requirement: 10,
+  },
+
+  // Spaced repetition
+  [BadgeType.PERFECTIONIST]: {
+    icon: "check-circle",
+    nameKey: "gamification.badges.perfectionist.name",
+    descriptionKey: "gamification.badges.perfectionist.description",
+    color: "#10b981",
+    requirement: 7,
+  },
+  [BadgeType.TOPIC_MASTERY]: {
+    icon: "layers",
+    nameKey: "gamification.badges.topicMastery.name",
+    descriptionKey: "gamification.badges.topicMastery.description",
+    color: "#3b82f6",
+    requirement: 30,
   },
 };
 

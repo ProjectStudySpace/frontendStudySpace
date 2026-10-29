@@ -164,8 +164,14 @@ describe("SessionResultsSummary", () => {
         {
           id: 8,
           userId: 10,
-          // A backend badge the client has no copy for yet.
-          badgeType: "STREAK_ON_FIRE" as BadgeType,
+          badgeType: BadgeType.STREAK_ON_FIRE,
+          earnedAt: "2026-08-05T11:00:00.000Z",
+        },
+        {
+          id: 9,
+          userId: 10,
+          // A future backend badge the client has no copy for yet.
+          badgeType: "FUTURE_BADGE" as BadgeType,
           earnedAt: "2026-08-05T11:00:00.000Z",
         },
       ],
@@ -174,7 +180,8 @@ describe("SessionResultsSummary", () => {
     const text = container.textContent ?? "";
     expect(text).toContain("intensiveStudy.newBadges");
     expect(text).toContain("gamification.badges.nightOwl.name");
-    expect(text).toContain("Streak On Fire");
+    expect(text).toContain("gamification.badges.streakOnFire.name");
+    expect(text).toContain("Future Badge");
   });
 
   it("lists upcoming reviews with their card count", async () => {

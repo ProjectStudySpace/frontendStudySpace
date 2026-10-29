@@ -2151,55 +2151,47 @@
       "locked": "Bloqueados",
       "pomodoroNovice": {
         "name": "Novato Pomodoro",
-        "description": "Completa tu primer Pomodoro"
+        "description": "Completa 5 Pomodoros"
       },
       "pomodoroFocused": {
         "name": "Pomodoro Enfocado",
-        "description": "Completa 10 Pomodoros"
-      },
-      "pomodoroExpert": {
-        "name": "Experto Pomodoro",
-        "description": "Completa 50 Pomodoros"
+        "description": "Completa 25 Pomodoros"
       },
       "pomodoroMaster": {
         "name": "Maestro Pomodoro",
         "description": "Completa 100 Pomodoros"
       },
-      "sessionStarter": {
-        "name": "Inicio de Sesiones",
-        "description": "Completa tu primera sesión intensiva"
+      "pomodoroLegend": {
+        "name": "Leyenda Pomodoro",
+        "description": "Completa 500 Pomodoros"
       },
-      "sessionRegular": {
-        "name": "Sesión Regular",
-        "description": "Completa 10 sesiones intensivas"
+      "streakOnFire": {
+        "name": "En racha",
+        "description": "Estudia 7 días seguidos (repasos o sesiones)"
       },
-      "sessionDevoted": {
-        "name": "Sesión Dedicada",
-        "description": "Completa 25 sesiones intensivas"
+      "streakUnstoppable": {
+        "name": "Imparable",
+        "description": "Estudia 30 días seguidos"
       },
-      "sessionLegend": {
-        "name": "Leyenda de Sesiones",
-        "description": "Completa 50 sesiones intensivas"
+      "streakLegend": {
+        "name": "Leyenda de la constancia",
+        "description": "Estudia 100 días seguidos"
       },
-      "streakWeek": {
-        "name": "Racha Semanal",
-        "description": "Mantén una racha de 7 días"
+      "xpBeginner": {
+        "name": "Aprendiz",
+        "description": "Acumula 1.000 XP"
       },
-      "streakMonth": {
-        "name": "Racha Mensual",
-        "description": "Mantén una racha de 30 días"
+      "xpIntermediate": {
+        "name": "Estudiante dedicado",
+        "description": "Acumula 10.000 XP"
       },
-      "streakChampion": {
-        "name": "Campeón de Racha",
-        "description": "Mantén una racha de 100 días"
+      "xpAdvanced": {
+        "name": "Erudito",
+        "description": "Acumula 50.000 XP"
       },
-      "cardCollector": {
-        "name": "Coleccionista",
-        "description": "Completa 50 tarjetas"
-      },
-      "cardMaster": {
-        "name": "Maestro de Tarjetas",
-        "description": "Completa 200 tarjetas"
+      "xpExpert": {
+        "name": "Sabio",
+        "description": "Acumula 100.000 XP"
       },
       "earlyBird": {
         "name": "Madrugador",
@@ -2207,11 +2199,19 @@
       },
       "nightOwl": {
         "name": "Búho nocturno",
-        "description": "Completa 10 sesiones a partir de las 21:00 en tu zona horaria"
+        "description": "Completaste 10 sesiones a partir de las 21:00 en tu zona horaria (logro retirado)"
       },
       "neverGiveUp": {
         "name": "Nunca te rindas",
         "description": "Completa 10 sesiones intensivas"
+      },
+      "perfectionist": {
+        "name": "Perfeccionista",
+        "description": "7 días seguidos repasando sin dejar repasos vencidos"
+      },
+      "topicMastery": {
+        "name": "Dominio del tema",
+        "description": "Todas las tarjetas de un tema alcanzan un intervalo de repaso de 30 días"
       },
       "unknown": {
         "name": "Badge Desconocido",
