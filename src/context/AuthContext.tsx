@@ -228,8 +228,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           "Revisa tu correo para verificar tu cuenta."
         );
         return data;
-      } catch (error) {
+      } catch (error: any) {
         console.error(error);
+        if (error?.response?.data?.code === "EMAIL_ALREADY_EXISTS") {
+          showError(
+            "Error al crear cuenta",
+            "Ese email ya está registrado. Inicia sesión o recupera tu contraseña."
+          );
+          return null;
+        }
         showError(
           "Error al crear cuenta",
           "No se pudo conectar con el servidor"

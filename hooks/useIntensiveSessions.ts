@@ -10,6 +10,7 @@ import {
   intensiveErrorMessage,
   localIntensiveError,
   normalizeIntensiveError,
+  IntensiveErrorCode,
   type IntensiveError,
 } from "../src/features/intensive-study/api/errors";
 import {
@@ -225,14 +226,14 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
       } catch (err: any) {
         const errorMessage = intensiveErrorMessage(err, "Error al crear sesión");
 
-        // Detectar error de sesión activa existente
-        const isActiveSessionError =
-          errorMessage.toLowerCase().includes("sesión activa") ||
-          errorMessage.toLowerCase().includes("active session");
-
-        if (isActiveSessionError) {
+        // The backend answers an open session with 409 ACTIVE_SESSION_EXISTS.
+        if (
+          normalizeIntensiveError(err).code ===
+          IntensiveErrorCode.ACTIVE_SESSION_EXISTS
+        ) {
           const activeSessionError = new Error(errorMessage);
-          (activeSessionError as any).code = "ACTIVE_SESSION_EXISTS";
+          (activeSessionError as any).code =
+            IntensiveErrorCode.ACTIVE_SESSION_EXISTS;
           (activeSessionError as any).status = err.response?.status;
           throw activeSessionError;
         }
