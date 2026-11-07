@@ -111,14 +111,15 @@ const SessionResultsSummary: React.FC<SessionResultsSummaryProps> = ({
 
   // Obtener badge icon
   const getBadgeIcon = (badgeType: string): string => {
-    // Badge types: POMODORO_*, SESSION_*, STREAK_*, CARD_*, special badges
+    // Badge types: POMODORO_*, STREAK_*, XP_*, special and spaced-review badges
     if (badgeType.startsWith("POMODORO")) return "🍅";
-    if (badgeType.startsWith("SESSION")) return "📚";
     if (badgeType.startsWith("STREAK")) return "🔥";
-    if (badgeType.startsWith("CARD")) return "🃏";
+    if (badgeType.startsWith("XP")) return "⚡";
     if (badgeType === "EARLY_BIRD") return "🌅";
     if (badgeType === "NIGHT_OWL") return "🦉";
     if (badgeType === "NEVER_GIVE_UP") return "💪";
+    if (badgeType === "PERFECTIONIST") return "✅";
+    if (badgeType === "TOPIC_MASTERY") return "🎓";
     return "🏆";
   };
 
