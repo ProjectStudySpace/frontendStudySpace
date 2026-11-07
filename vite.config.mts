@@ -23,6 +23,7 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     include: [
+      "src/features/gamification/**/*.test.ts",
       "src/features/intensive-study/**/*.test.ts",
       "src/features/landing/**/*.test.ts",
       "src/features/notes/**/*.test.ts",

@@ -9,6 +9,7 @@ import {
   BADGE_CONFIG,
   BadgeType,
   XpTransactionType,
+  type GamificationStats,
   type XpTransaction,
 } from "../../../types/gamification";
 
@@ -72,17 +73,62 @@ describe("XP transaction contract", () => {
   });
 });
 
-describe("special badges", () => {
-  it("includes the backend special badges", () => {
-    expect(Object.values(BadgeType)).toEqual(
-      expect.arrayContaining(["EARLY_BIRD", "NIGHT_OWL", "NEVER_GIVE_UP"]),
-    );
+describe("badge catalog", () => {
+  it("matches the backend BadgeType enum", () => {
+    expect(Object.values(BadgeType)).toEqual([
+      "POMODORO_NOVICE",
+      "POMODORO_FOCUSED",
+      "POMODORO_MASTER",
+      "POMODORO_LEGEND",
+      "STREAK_ON_FIRE",
+      "STREAK_UNSTOPPABLE",
+      "STREAK_LEGEND",
+      "XP_BEGINNER",
+      "XP_INTERMEDIATE",
+      "XP_ADVANCED",
+      "XP_EXPERT",
+      "EARLY_BIRD",
+      "NIGHT_OWL",
+      "NEVER_GIVE_UP",
+      "PERFECTIONIST",
+      "TOPIC_MASTERY",
+    ]);
   });
 
-  it("requires 10 sessions for each special badge", () => {
-    expect(BADGE_CONFIG[BadgeType.EARLY_BIRD].requirement).toBe(10);
-    expect(BADGE_CONFIG[BadgeType.NIGHT_OWL].requirement).toBe(10);
-    expect(BADGE_CONFIG[BadgeType.NEVER_GIVE_UP].requirement).toBe(10);
+  it("uses the backend thresholds as badge requirements", () => {
+    const requirements = Object.fromEntries(
+      Object.entries(BADGE_CONFIG).map(([type, config]) => [
+        type,
+        config.requirement,
+      ]),
+    );
+
+    expect(requirements).toEqual({
+      POMODORO_NOVICE: 5,
+      POMODORO_FOCUSED: 25,
+      POMODORO_MASTER: 100,
+      POMODORO_LEGEND: 500,
+      STREAK_ON_FIRE: 7,
+      STREAK_UNSTOPPABLE: 30,
+      STREAK_LEGEND: 100,
+      XP_BEGINNER: 1000,
+      XP_INTERMEDIATE: 10000,
+      XP_ADVANCED: 50000,
+      XP_EXPERT: 100000,
+      EARLY_BIRD: 10,
+      NIGHT_OWL: 10,
+      NEVER_GIVE_UP: 10,
+      PERFECTIONIST: 7,
+      TOPIC_MASTERY: 30,
+    });
+  });
+
+  it("marks NIGHT_OWL as retired so it is only shown when already earned", () => {
+    const retired = Object.entries(BADGE_CONFIG)
+      .filter(([, config]) => config.retired)
+      .map(([type]) => type);
+
+    expect(retired).toEqual(["NIGHT_OWL"]);
   });
 
   it("describes every configured badge in both locales", () => {
@@ -98,13 +144,46 @@ describe("special badges", () => {
     }
   });
 
-  it("states the backend hour boundaries in the special badge copy", () => {
+  it("states each badge requirement in its copy", () => {
     const describe = (locale: unknown, type: BadgeType) =>
       String(lookup(locale, BADGE_CONFIG[type].descriptionKey));
 
-    expect(describe(en, BadgeType.EARLY_BIRD)).toContain("8:00");
-    expect(describe(es, BadgeType.EARLY_BIRD)).toContain("8:00");
+    for (const locale of [en, es]) {
+      expect(describe(locale, BadgeType.EARLY_BIRD)).toContain("8:00");
+      expect(describe(locale, BadgeType.POMODORO_LEGEND)).toContain("500");
+      expect(describe(locale, BadgeType.STREAK_ON_FIRE)).toContain("7");
+      expect(describe(locale, BadgeType.XP_BEGINNER)).toMatch(/1[.,]?000/);
+      expect(describe(locale, BadgeType.PERFECTIONIST)).toContain("7");
+      expect(describe(locale, BadgeType.TOPIC_MASTERY)).toContain("30");
+    }
     expect(describe(en, BadgeType.NIGHT_OWL)).toContain("9:00");
     expect(describe(es, BadgeType.NIGHT_OWL)).toContain("21:00");
+  });
+});
+
+describe("gamification stats contract", () => {
+  it("types GET /api/gamification/stats with the backend fields", () => {
+    // Compile-time contract: `npm run build` fails if the fields drift.
+    const stats: GamificationStats = {
+      totalXp: 1200,
+      todayXp: 15,
+      weekXp: 300,
+      level: 4,
+      levelProgress: 40,
+      xpToNextLevel: 300,
+      xpForCurrentLevel: 1000,
+      currentStreak: 3,
+      longestStreak: 9,
+      lastStudyDate: "2026-10-28T00:00:00.000Z",
+      pomodorosCompleted: 30,
+      sessionsCompleted: 8,
+      sessionsAbandoned: 1,
+      completionRate: 89,
+      badges: [],
+      badgeCount: 0,
+      recentXp: [],
+    };
+
+    expect(stats.levelProgress).toBe(40);
   });
 });

@@ -10,6 +10,7 @@ import {
   intensiveErrorMessage,
   localIntensiveError,
   normalizeIntensiveError,
+  IntensiveErrorCode,
   type IntensiveError,
 } from "../src/features/intensive-study/api/errors";
 import {
@@ -24,6 +25,9 @@ import {
   IntensiveResumeSnapshot,
   PomodoroCompletionResult,
   SessionCompletionResult,
+  PauseSessionResult,
+  AbandonSessionResult,
+  SessionStatus,
 } from "../src/types/intensiveSessions";
 import {
   buildResumeSnapshot,
@@ -80,10 +84,10 @@ interface UseIntensiveSessionsReturn {
   startSession: (id: number) => Promise<IntensiveSessionDetail | null>;
   pauseSession: (
     id: number,
-  ) => Promise<IntensiveMutationOutcome<IntensiveSessionDetail>>;
+  ) => Promise<IntensiveMutationOutcome<PauseSessionResult>>;
   abandonSession: (
     id: number,
-  ) => Promise<IntensiveMutationOutcome<IntensiveStudySession>>;
+  ) => Promise<IntensiveMutationOutcome<AbandonSessionResult>>;
   getAbandonInfo: (id: number) => Promise<AbandonInfo | null>;
   completeSession: (
     id: number,
@@ -93,7 +97,7 @@ interface UseIntensiveSessionsReturn {
   ) => Promise<IntensiveMutationOutcome<SessionCompletionResult>>;
   retryAbandonSession: (
     id: number,
-  ) => Promise<IntensiveMutationOutcome<IntensiveStudySession>>;
+  ) => Promise<IntensiveMutationOutcome<AbandonSessionResult>>;
   getActiveSession: () => Promise<IntensiveStudySession | null>;
   rehydrateSession: (id: number) => Promise<IntensiveResumeSnapshot | null>;
   reloadSession: (id: number) => Promise<IntensiveSessionReload>;
@@ -222,14 +226,14 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
       } catch (err: any) {
         const errorMessage = intensiveErrorMessage(err, "Error al crear sesión");
 
-        // Detectar error de sesión activa existente
-        const isActiveSessionError =
-          errorMessage.toLowerCase().includes("sesión activa") ||
-          errorMessage.toLowerCase().includes("active session");
-
-        if (isActiveSessionError) {
+        // The backend answers an open session with 409 ACTIVE_SESSION_EXISTS.
+        if (
+          normalizeIntensiveError(err).code ===
+          IntensiveErrorCode.ACTIVE_SESSION_EXISTS
+        ) {
           const activeSessionError = new Error(errorMessage);
-          (activeSessionError as any).code = "ACTIVE_SESSION_EXISTS";
+          (activeSessionError as any).code =
+            IntensiveErrorCode.ACTIVE_SESSION_EXISTS;
           (activeSessionError as any).status = err.response?.status;
           throw activeSessionError;
         }
@@ -531,32 +535,43 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
    * Pausar una sesión
    */
   const pauseSession = useCallback(
-    (id: number): Promise<IntensiveMutationOutcome<IntensiveSessionDetail>> =>
+    (id: number): Promise<IntensiveMutationOutcome<PauseSessionResult>> =>
       runCommand({
         command: "PAUSE",
         sessionId: id,
         fallbackMessage: "Error al pausar sesión",
-        fromSnapshot: (snapshot) => snapshot.session,
+        fromSnapshot: () => ({ success: true, message: null }),
         send: async () => {
+          // The backend answers `{ success, message }` and carries no session,
+          // so the paused status is applied to the session already known.
           const response = await api.post<any>(
             `/intensive-sessions/${id}/pause`,
           );
-          const sessionDetail = response.data?.session;
+          const ack = response.data;
 
-          if (!sessionDetail) {
+          if (ack?.success !== true) {
             return {
               status: "failed",
-              error: localIntensiveError("business", "Error al pausar sesión"),
+              error: localIntensiveError(
+                "business",
+                ack?.message || ack?.error || "Error al pausar sesión",
+              ),
             };
           }
 
-          setCurrentSession(sessionDetail);
+          setCurrentSession((prev) =>
+            prev?.id === id ? { ...prev, status: SessionStatus.PAUSED } : prev,
+          );
           setSessions((prev) =>
             prev.map((s) =>
-              s.id === id ? { ...s, status: sessionDetail.status } : s,
+              s.id === id ? { ...s, status: SessionStatus.PAUSED } : s,
             ),
           );
-          return { status: "success", data: sessionDetail, snapshot: null };
+          return {
+            status: "success",
+            data: { success: true, message: ack.message ?? null },
+            snapshot: null,
+          };
         },
       }),
     [runCommand],
@@ -590,18 +605,20 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
    * Abandonar una sesión
    */
   const abandonSession = useCallback(
-    (id: number): Promise<IntensiveMutationOutcome<IntensiveStudySession>> =>
+    (id: number): Promise<IntensiveMutationOutcome<AbandonSessionResult>> =>
       runCommand({
         command: "ABANDON",
         sessionId: id,
         fallbackMessage: "Error al abandonar sesión",
-        fromSnapshot: (snapshot) => snapshot.session,
+        fromSnapshot: () => ({ xpLost: null, message: null }),
         send: async () => {
-          const response = await api.post<IntensiveStudySession>(
+          // The backend answers `{ xpLost, message }`, not a session row.
+          const response = await api.post<any>(
             `/intensive-sessions/${id}/abandon`,
           );
+          const ack = response.data;
 
-          if (!response.data) {
+          if (typeof ack?.xpLost !== "number") {
             return {
               status: "failed",
               error: localIntensiveError(
@@ -615,9 +632,15 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
           setCurrentPomodoro(null);
           setCurrentCard(null);
           setSessions((prev) =>
-            prev.map((s) => (s.id === id ? response.data : s)),
+            prev.map((s) =>
+              s.id === id ? { ...s, status: SessionStatus.ABANDONED } : s,
+            ),
           );
-          return { status: "success", data: response.data, snapshot: null };
+          return {
+            status: "success",
+            data: { xpLost: ack.xpLost, message: ack.message ?? null },
+            snapshot: null,
+          };
         },
       }),
     [runCommand],
@@ -721,7 +744,7 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
   const retryAbandonSession = useCallback(
     async (
       id: number,
-    ): Promise<IntensiveMutationOutcome<IntensiveStudySession>> => {
+    ): Promise<IntensiveMutationOutcome<AbandonSessionResult>> => {
       const reconciliation = await reconcileSession(id);
       if (reconciliation.status === "unavailable") {
         return reportUnavailable("ABANDON", reconciliation.error);
@@ -733,7 +756,11 @@ export const useIntensiveSessions = (): UseIntensiveSessionsReturn => {
         isCommandConfirmed("ABANDON", snapshot.phase, snapshot.session.status)
       ) {
         adoptSnapshot(snapshot);
-        return { status: "success", data: snapshot.session, snapshot };
+        return {
+          status: "success",
+          data: { xpLost: null, message: null },
+          snapshot,
+        };
       }
       return abandonSession(id);
     },

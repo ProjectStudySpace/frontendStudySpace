@@ -2141,61 +2141,62 @@
       "nextLevel": "Next level",
       "progress": "Progress"
     },
+    "achievements": {
+      "title": "Achievements",
+      "loading": "Loading achievements",
+      "loadError": "We couldn't load your achievements.",
+      "retry": "Try again",
+      "currentStreak": "Current streak",
+      "xpToNextLevel": "XP to next level",
+      "masteredTopics": "Mastered topics"
+    },
     "badges": {
       "title": "Badges",
       "earned": "Earned",
       "locked": "Locked",
       "pomodoroNovice": {
         "name": "Pomodoro Novice",
-        "description": "Complete your first Pomodoro"
+        "description": "Complete 5 Pomodoros"
       },
       "pomodoroFocused": {
-        "name": "Pomodoro Focused",
-        "description": "Complete 10 Pomodoros"
-      },
-      "pomodoroExpert": {
-        "name": "Pomodoro Expert",
-        "description": "Complete 50 Pomodoros"
+        "name": "Focused",
+        "description": "Complete 25 Pomodoros"
       },
       "pomodoroMaster": {
         "name": "Pomodoro Master",
         "description": "Complete 100 Pomodoros"
       },
-      "sessionStarter": {
-        "name": "Session Starter",
-        "description": "Complete your first intensive session"
+      "pomodoroLegend": {
+        "name": "Pomodoro Legend",
+        "description": "Complete 500 Pomodoros"
       },
-      "sessionRegular": {
-        "name": "Session Regular",
-        "description": "Complete 10 intensive sessions"
+      "streakOnFire": {
+        "name": "On Fire",
+        "description": "Study 7 days in a row (reviews or sessions)"
       },
-      "sessionDevoted": {
-        "name": "Session Devoted",
-        "description": "Complete 25 intensive sessions"
+      "streakUnstoppable": {
+        "name": "Unstoppable",
+        "description": "Study 30 days in a row"
       },
-      "sessionLegend": {
-        "name": "Session Legend",
-        "description": "Complete 50 intensive sessions"
+      "streakLegend": {
+        "name": "Consistency Legend",
+        "description": "Study 100 days in a row"
       },
-      "streakWeek": {
-        "name": "Week Streak",
-        "description": "Maintain a 7-day streak"
+      "xpBeginner": {
+        "name": "Apprentice",
+        "description": "Earn 1,000 XP"
       },
-      "streakMonth": {
-        "name": "Month Streak",
-        "description": "Maintain a 30-day streak"
+      "xpIntermediate": {
+        "name": "Dedicated Learner",
+        "description": "Earn 10,000 XP"
       },
-      "streakChampion": {
-        "name": "Streak Champion",
-        "description": "Maintain a 100-day streak"
+      "xpAdvanced": {
+        "name": "Scholar",
+        "description": "Earn 50,000 XP"
       },
-      "cardCollector": {
-        "name": "Card Collector",
-        "description": "Complete 50 cards"
-      },
-      "cardMaster": {
-        "name": "Card Master",
-        "description": "Complete 200 cards"
+      "xpExpert": {
+        "name": "Sage",
+        "description": "Earn 100,000 XP"
       },
       "earlyBird": {
         "name": "Early Bird",
@@ -2203,11 +2204,19 @@
       },
       "nightOwl": {
         "name": "Night Owl",
-        "description": "Complete 10 sessions at or after 9:00 PM in your timezone"
+        "description": "Completed 10 sessions at or after 9:00 PM in your timezone (retired)"
       },
       "neverGiveUp": {
         "name": "Never Give Up",
         "description": "Complete 10 intensive sessions"
+      },
+      "perfectionist": {
+        "name": "Perfectionist",
+        "description": "7 days in a row reviewing without overdue reviews"
+      },
+      "topicMastery": {
+        "name": "Topic Mastery",
+        "description": "Every card of a topic reaches a 30-day review interval"
       },
       "unknown": {
         "name": "Unknown Badge",
