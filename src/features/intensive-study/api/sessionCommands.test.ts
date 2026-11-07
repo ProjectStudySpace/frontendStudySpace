@@ -106,6 +106,9 @@ function installRoutes() {
     calls.push(`${method}:${url}`);
 
     if (method === "get") {
+      if (url === "/intensive-sessions") {
+        return { status: 200, data: { sessions: [baseSession()] } };
+      }
       if (url === "/intensive-sessions/1") {
         return currentDetail;
       }
@@ -170,18 +173,25 @@ interface CommandCase {
   invoke: (hook: HookState) => Promise<Outcome>;
 }
 
+/** Real backend acknowledgements (StudySpaceAPI intensiveStudyService). */
+const PAUSE_BODY = { success: true, message: "Sesión pausada" };
+const ABANDON_BODY = {
+  xpLost: 40,
+  message: "Sesión abandonada. Has perdido 40 XP acumulados.",
+};
+
 const CASES: CommandCase[] = [
   {
     name: "pauseSession",
     url: "/intensive-sessions/1/pause",
-    successBody: { session: baseSession({ status: "PAUSED" }) },
+    successBody: PAUSE_BODY,
     landedDetail: detail("PAUSED", null),
     invoke: (hook) => hook.pauseSession(1),
   },
   {
     name: "abandonSession",
     url: "/intensive-sessions/1/abandon",
-    successBody: baseSession({ status: "ABANDONED" }),
+    successBody: ABANDON_BODY,
     landedDetail: detail("ABANDONED", null),
     invoke: (hook) => hook.abandonSession(1),
   },
@@ -430,6 +440,69 @@ describe("intensive lifecycle commands", () => {
     expect(latest?.currentPomodoro?.status).toBe("ON_BREAK");
   });
 
+  it("marks the session paused from the backend pause acknowledgement", async () => {
+    postOutcome = () => ({ status: 200, data: PAUSE_BODY });
+    await renderHookProbe();
+    await hydrate();
+    await act(async () => {
+      await latest?.fetchSessions();
+    });
+
+    let outcome: Outcome | undefined;
+    await act(async () => {
+      outcome = await latest?.pauseSession(1);
+    });
+
+    expect(outcome?.status).toBe("success");
+    expect(latest?.currentSession?.status).toBe("PAUSED");
+    expect(latest?.currentSession?.id).toBe(1);
+    expect(latest?.sessions.find((s) => s.id === 1)?.status).toBe("PAUSED");
+    expect(latest?.error).toBeNull();
+  });
+
+  it("treats an unsuccessful pause acknowledgement as a failure", async () => {
+    postOutcome = () => ({
+      status: 200,
+      data: { success: false, message: "La sesión no está activa" },
+    });
+    await renderHookProbe();
+    await hydrate();
+    const before = latest?.currentSession;
+
+    let outcome: Outcome | undefined;
+    await act(async () => {
+      outcome = await latest?.pauseSession(1);
+    });
+
+    expect(outcome?.status).toBe("failed");
+    expect(latest?.currentSession).toBe(before);
+    expect(latest?.error).toBe("La sesión no está activa");
+  });
+
+  it("keeps the abandoned session in the list and reports the XP lost", async () => {
+    postOutcome = () => ({ status: 200, data: ABANDON_BODY });
+    await renderHookProbe();
+    await hydrate();
+    await act(async () => {
+      await latest?.fetchSessions();
+    });
+
+    let outcome: Outcome | undefined;
+    await act(async () => {
+      outcome = await latest?.abandonSession(1);
+    });
+
+    expect(outcome?.status).toBe("success");
+    expect(outcome?.status === "success" ? outcome.data : null).toEqual({
+      xpLost: 40,
+      message: "Sesión abandonada. Has perdido 40 XP acumulados.",
+    });
+    const listed = latest?.sessions.find((s) => s.id === 1);
+    expect(listed?.status).toBe("ABANDONED");
+    expect(listed?.topicId).toBe(7);
+    expect(latest?.currentSession).toBeNull();
+  });
+
   it("treats an unsuccessful end-break acknowledgement as a failure", async () => {
     postOutcome = () => ({
       status: 200,
@@ -512,7 +585,7 @@ const RETRY_CASES: RetryCase[] = [
   {
     name: "retryAbandonSession",
     url: "/intensive-sessions/1/abandon",
-    successBody: baseSession({ status: "ABANDONED" }),
+    successBody: ABANDON_BODY,
     landedDetail: detail("ABANDONED", null),
     invoke: (hook) => hook.retryAbandonSession(1),
   },
