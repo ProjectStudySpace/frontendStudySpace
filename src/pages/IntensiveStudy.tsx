@@ -455,7 +455,7 @@ const IntensiveStudy: React.FC = () => {
     // backend confirms keeps a failed abandon from freezing a live session.
     pomodoroTimer.pause();
 
-    setCurrentView("RESULTS");
+    setCurrentView("CONFIG");
   };
 
   // Abandonar sesión
